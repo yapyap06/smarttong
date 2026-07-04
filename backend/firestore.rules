@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Bins: public read (dashboard + citizen app), authenticated write (firmware/functions)
+    match /bins/{binId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Readings: public read, authenticated write (ESP32 device)
+    match /readings/{binId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // History: public read, authenticated write
+    match /history/{binId}/readings/{readingId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Alerts: PBT staff read/write (authenticated), public read (summary only)
+    match /alerts/{alertId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Routes: authenticated only
+    match /routes/{routeId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Citizen reports: authenticated write (signed-in citizen), authenticated read
+    match /reports/{reportId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Users (points/leaderboard): own data write, public leaderboard read (points only)
+    match /users/{userId} {
+      allow read: if true;   // leaderboard is public
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Analytics: admin/functions write only, authenticated read
+    match /analytics/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;  // only written by Cloud Functions
+    }
+
+    // Demo collections: open read/write
+    match /sessions/{docId} {
+      allow read, write: if true;
+    }
+    match /broadcasts/{docId} {
+      allow read, write: if true;
+    }
+    match /citizen_qa/{docId} {
+      allow read, write: if true;
+    }
+    match /agent_reports/{docId} {
+      allow read, write: if true;
+    }
+    match /dispatches/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

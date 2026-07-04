@@ -1,0 +1,12 @@
+[wokwi]
+version = 1
+elf = firmware/SmartTong_main/.pio/build/esp32dev/firmware.elf
+firmware = firmware/SmartTong_main/.pio/build/esp32dev/firmware.bin
+
+[[chip]]
+name = "esp32"
+freq = 240000000
+
+[wifi]
+ssid = "Wokwi-GUEST"
+password = ""

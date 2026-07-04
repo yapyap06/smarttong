@@ -1,0 +1,2649 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#ffffff"/>
+  <title>SmartTONG AI — Portal Pintar Selangor</title>
+  <meta name="description" content="SmartTONG — Portal pengurusan sisa pintar berasaskan AI untuk warganegara dan PBT Selangor."/>
+  <link rel="manifest" href="manifest.json"/>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <!-- Lucide (loaded last so it's definitely available) -->
+  <script src="https://unpkg.com/lucide@0.395.0/dist/umd/lucide.min.js"></script>
+
+<style>
+/* ═══════════════════════ SmartTONG — Design System ════════════════════════ */
+:root {
+  --white:    #FFFFFF;
+  --g50:      #F8F9FA;
+  --g100:     #F1F3F5;
+  --g200:     #E9ECEF;
+  --g300:     #DEE2E6;
+  --g400:     #CED4DA;
+  --g500:     #ADB5BD;
+  --g600:     #6C757D;
+  --g700:     #495057;
+  --dark:     #212529;
+  --green:    #16A34A;
+  --green-l:  #DCFCE7;
+  --green-m:  #86EFAC;
+  --amber:    #D97706;
+  --amber-l:  #FEF3C7;
+  --orange:   #EA580C;
+  --orange-l: #FFEDD5;
+  --red:      #DC2626;
+  --red-l:    #FEE2E2;
+  --blue:     #2563EB;
+  --blue-l:   #DBEAFE;
+  --purple:   #7C3AED;
+  --purple-l: #EDE9FE;
+  --r:        12px;
+  --rsm:      8px;
+  --rlg:      16px;
+  --sh-sm:    0 1px 3px rgba(0,0,0,.08);
+  --sh-md:    0 4px 12px rgba(0,0,0,.08);
+  --sh-lg:    0 8px 24px rgba(0,0,0,.10);
+  --nav-h:    66px;
+  --hdr-h:    58px;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+
+html,body {
+  width:100%; height:100%;
+  font-family:'Inter',-apple-system,sans-serif;
+  background:var(--g100);
+  color:var(--dark);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+
+/* ── Full-screen layout ─────────────────────────────── */
+#login-screen {
+  position:fixed; inset:0; z-index:500;
+  background:var(--white);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:32px 20px;
+  overflow-y:auto;
+}
+#login-screen.hidden { display:none; }
+
+#app {
+  position:fixed; inset:0;
+  display:none; flex-direction:column;
+  background:var(--white);
+}
+#app.visible { display:flex; }
+
+/* ── HEADER ─────────────────────────────────────────── */
+#app-header {
+  flex-shrink:0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 20px;
+  height:var(--hdr-h);
+  background:var(--white);
+  border-bottom:1px solid var(--g200);
+  z-index:50;
+}
+.hdr-brand { display:flex; align-items:center; gap:10px; }
+.hdr-logo {
+  width:34px; height:34px; background:var(--green);
+  border-radius:9px; display:flex; align-items:center; justify-content:center;
+}
+.hdr-logo svg { color:white; width:18px; height:18px; }
+.hdr-title { font-size:16px; font-weight:700; color:var(--dark); }
+.hdr-sub   { font-size:10px; color:var(--g500); line-height:1.2; }
+.hdr-right { display:flex; align-items:center; gap:8px; }
+.hdr-pts {
+  display:flex; align-items:center; gap:5px;
+  background:var(--green-l); border:1px solid var(--green-m);
+  border-radius:20px; padding:5px 12px;
+}
+.hdr-pts-num { font-size:14px; font-weight:700; color:var(--green); }
+.hdr-pts-lbl { font-size:10px; color:var(--green); font-weight:500; }
+.hdr-icon-btn {
+  width:36px; height:36px; border-radius:9px;
+  background:var(--g100); border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--g600); position:relative; transition:background .15s;
+}
+.hdr-icon-btn:hover { background:var(--g200); }
+.hdr-icon-btn svg { width:17px; height:17px; }
+.notif-badge {
+  position:absolute; top:-2px; right:-2px;
+  width:16px; height:16px; border-radius:8px;
+  background:var(--red); color:white;
+  font-size:9px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  border:2px solid var(--white);
+}
+
+/* ── SCROLL AREA ────────────────────────────────────── */
+#scroll-area {
+  flex:1; overflow-y:auto; overflow-x:hidden;
+  padding-bottom:var(--nav-h);
+  -webkit-overflow-scrolling:touch;
+}
+
+/* ── BOTTOM NAV ─────────────────────────────────────── */
+#bottom-nav {
+  flex-shrink:0;
+  height:var(--nav-h);
+  background:var(--white);
+  border-top:1px solid var(--g200);
+  display:flex; align-items:center;
+  box-shadow:0 -2px 12px rgba(0,0,0,.06);
+  z-index:50;
+}
+.nav-btn {
+  flex:1; height:100%;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:3px;
+  background:none; border:none;
+  font-family:'Inter',sans-serif;
+  font-size:10px; font-weight:500;
+  color:var(--g400); cursor:pointer;
+  transition:color .15s; position:relative;
+  padding:8px 4px;
+}
+.nav-btn svg { width:22px; height:22px; stroke:var(--g400); transition:stroke .15s; }
+.nav-btn.active { color:var(--green); }
+.nav-btn.active svg { stroke:var(--green); }
+.nav-dot {
+  position:absolute; top:7px;
+  width:4px; height:4px; border-radius:50%;
+  background:var(--green); opacity:0; transition:opacity .2s;
+}
+.nav-btn.active .nav-dot { opacity:1; }
+
+/* ── PAGES ──────────────────────────────────────────── */
+.pg { display:none; }
+.pg.on { display:block; animation:fadeIn .2s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── SHARED HELPERS ─────────────────────────────────── */
+.sec-hdr {
+  padding:18px 20px 10px;
+  display:flex; align-items:flex-start; justify-content:space-between;
+}
+.sec-title { font-size:18px; font-weight:700; color:var(--dark); }
+.sec-sub   { font-size:12px; color:var(--g500); margin-top:2px; }
+.sec-badge {
+  padding:4px 10px; border-radius:20px;
+  font-size:11px; font-weight:600;
+  background:var(--green-l); color:var(--green);
+  flex-shrink:0; white-space:nowrap;
+}
+.card {
+  background:var(--white); border:1px solid var(--g200);
+  border-radius:var(--r); box-shadow:var(--sh-sm);
+}
+.mx20 { margin:0 20px; }
+.mb12 { margin-bottom:12px; }
+.mb16 { margin-bottom:16px; }
+.mb20 { margin-bottom:20px; }
+.px20 { padding:0 20px; }
+.btn-primary {
+  width:100%; padding:13px; background:var(--green);
+  border:none; border-radius:var(--r); color:white;
+  font-family:'Inter',sans-serif; font-size:14px; font-weight:600;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+  box-shadow:0 2px 8px rgba(22,163,74,.3); transition:background .15s, transform .1s;
+}
+.btn-primary:hover { background:#15803d; }
+.btn-primary:active { transform:scale(.98); }
+
+/* ── LOGIN ──────────────────────────────────────────── */
+.login-logo {
+  width:72px; height:72px; background:var(--green);
+  border-radius:22px; display:flex; align-items:center; justify-content:center;
+  margin-bottom:18px; box-shadow:0 8px 24px rgba(22,163,74,.3);
+}
+.login-logo svg { width:36px; height:36px; color:white; }
+.login-brand { font-size:28px; font-weight:800; color:var(--dark); margin-bottom:6px; }
+.login-tagline { font-size:13px; color:var(--g600); margin-bottom:28px; text-align:center; }
+.role-tabs {
+  display:flex; gap:0; background:var(--g100);
+  border-radius:var(--r); padding:4px; width:100%; max-width:440px; margin-bottom:24px;
+}
+.role-tab {
+  flex:1; padding:10px; border:none; border-radius:var(--rsm);
+  background:none; cursor:pointer;
+  font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:var(--g600);
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:all .2s;
+}
+.role-tab svg { width:15px; height:15px; }
+.role-tab.active { background:var(--white); color:var(--dark); box-shadow:var(--sh-sm); }
+
+.login-form { width:100%; max-width:440px; }
+.lf-group { margin-bottom:14px; }
+.lf-label {
+  display:block; font-size:12px; font-weight:600;
+  color:var(--g700); margin-bottom:6px;
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.lf-input, .lf-select {
+  width:100%; background:var(--g50); border:1.5px solid var(--g200);
+  border-radius:var(--rsm); padding:13px 14px;
+  color:var(--dark); font-family:'Inter',sans-serif;
+  font-size:15px; outline:none; transition:border-color .2s, box-shadow .2s;
+}
+.lf-input:focus, .lf-select:focus {
+  border-color:var(--green); background:var(--white);
+  box-shadow:0 0 0 3px rgba(22,163,74,.12);
+}
+.lf-hint { font-size:11px; color:var(--g500); margin-top:4px; }
+.lf-select { appearance:none; cursor:pointer; }
+.lf-err {
+  display:none; font-size:12px; color:var(--red);
+  background:var(--red-l); border:1px solid #FCA5A5;
+  border-radius:var(--rsm); padding:10px 14px; margin-bottom:14px;
+}
+
+/* MyDigital ID button */
+.mydigid-btn {
+  width:100%; padding:13px; margin-bottom:12px;
+  background:linear-gradient(135deg,#1a237e,#283593);
+  border:none; border-radius:var(--r); color:white;
+  font-family:'Inter',sans-serif; font-size:14px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;
+  box-shadow:0 2px 12px rgba(26,35,126,.35); transition:opacity .15s;
+}
+.mydigid-btn:hover { opacity:.9; }
+.mydigid-badge {
+  background:rgba(255,255,255,.2); border-radius:6px;
+  padding:2px 8px; font-size:11px; font-weight:700; letter-spacing:.5px;
+}
+.login-divider {
+  display:flex; align-items:center; gap:12px;
+  margin:16px 0; color:var(--g500); font-size:12px;
+}
+.login-divider::before,.login-divider::after {
+  content:''; flex:1; height:1px; background:var(--g200);
+}
+.login-note { font-size:11px; color:var(--g500); text-align:center; margin-top:18px; line-height:1.6; }
+
+/* ── SETTINGS PANEL ─────────────────────────────────── */
+#settings-overlay {
+  position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,.4); backdrop-filter:blur(3px);
+  display:none;
+}
+#settings-overlay.open { display:block; }
+#settings-panel {
+  position:fixed; top:0; right:-340px; width:320px; height:100%;
+  background:var(--white); z-index:201;
+  box-shadow:-8px 0 40px rgba(0,0,0,.12);
+  overflow-y:auto; display:flex; flex-direction:column;
+  transition:right .3s cubic-bezier(.25,.8,.25,1);
+}
+#settings-panel.open { right:0; }
+.sp-hdr {
+  padding:18px 20px; border-bottom:1px solid var(--g200);
+  display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+}
+.sp-hdr-title { font-size:16px; font-weight:700; }
+.sp-close {
+  width:28px; height:28px; border:none; background:var(--g100);
+  border-radius:7px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; color:var(--g600);
+}
+.sp-close svg { width:14px; height:14px; }
+.sp-body { padding:18px 20px; flex:1; }
+.sp-user {
+  background:var(--g50); border:1px solid var(--g200);
+  border-radius:var(--r); padding:16px; margin-bottom:18px;
+}
+.sp-role-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--green-l); color:var(--green);
+  font-size:11px; font-weight:700;
+  padding:3px 10px; border-radius:20px; margin-bottom:8px;
+}
+.sp-role-badge svg { width:12px; height:12px; }
+.sp-name { font-size:16px; font-weight:700; margin-bottom:2px; }
+.sp-id   { font-size:12px; color:var(--g500); }
+.sp-section { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:var(--g500); margin:16px 0 8px; }
+.sp-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:11px 0; border-bottom:1px solid var(--g100);
+}
+.sp-item:last-child { border:none; }
+.sp-item-left { display:flex; align-items:center; gap:10px; }
+.sp-item-icon {
+  width:32px; height:32px; border-radius:9px; background:var(--g100);
+  display:flex; align-items:center; justify-content:center; color:var(--g600); flex-shrink:0;
+}
+.sp-item-icon svg { width:15px; height:15px; }
+.sp-item-lbl { font-size:13px; font-weight:600; color:var(--dark); }
+.sp-item-sub { font-size:11px; color:var(--g500); margin-top:1px; }
+.sp-logout {
+  width:100%; margin-top:22px; padding:13px;
+  background:var(--red-l); border:1.5px solid #FCA5A5;
+  border-radius:var(--r); color:var(--red);
+  font-family:'Inter',sans-serif; font-size:14px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:all .15s;
+}
+.sp-logout svg { width:16px; height:16px; }
+.sp-logout:hover { background:var(--red); color:white; }
+
+/* Toggle */
+.tgl {
+  width:42px; height:22px; background:var(--g300); border-radius:11px;
+  cursor:pointer; position:relative; transition:background .25s; border:none; flex-shrink:0;
+}
+.tgl.on { background:var(--green); }
+.tgl::after {
+  content:''; position:absolute; top:2px; left:2px;
+  width:18px; height:18px; background:white; border-radius:50%;
+  transition:transform .25s; box-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.tgl.on::after { transform:translateX(20px); }
+
+/* Font size */
+.fsc { display:flex; align-items:center; gap:6px; }
+.fsbtn {
+  width:28px; height:28px; border-radius:7px;
+  background:var(--g100); border:1px solid var(--g200);
+  color:var(--dark); font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Inter',sans-serif;
+}
+
+/* ── NOTIF PANEL ─────────────────────────────────────── */
+#notif-overlay { position:fixed; inset:0; z-index:150; display:none; }
+#notif-overlay.open { display:block; }
+.notif-box {
+  position:absolute; top:var(--hdr-h); right:8px;
+  width:300px; max-height:70vh;
+  background:var(--white); border:1px solid var(--g200);
+  border-radius:var(--r); box-shadow:var(--sh-lg);
+  overflow-y:auto;
+}
+.nb-hdr {
+  padding:12px 16px; border-bottom:1px solid var(--g200);
+  font-size:14px; font-weight:700;
+  display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:var(--white);
+}
+.notif-item { padding:12px 16px; border-bottom:1px solid var(--g100); display:flex; gap:10px; }
+.notif-item:last-child { border:none; }
+.ndot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+.notif-text { font-size:12px; color:var(--dark); line-height:1.5; }
+.notif-time { font-size:10px; color:var(--g500); margin-top:2px; }
+
+/* ── AI AGENT PANEL ─────────────────────────────────── */
+.agent-strip {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:10px; padding:0 20px; margin-bottom:14px;
+}
+.agent-card {
+  background:var(--white); border:1px solid var(--g200);
+  border-radius:var(--r); padding:14px 12px; box-shadow:var(--sh-sm);
+}
+.agent-icon-wrap {
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center; margin-bottom:8px;
+}
+.agent-icon-wrap svg { width:17px; height:17px; }
+.agent-name { font-size:11px; font-weight:700; color:var(--dark); margin-bottom:2px; }
+.agent-desc { font-size:10px; color:var(--g500); margin-bottom:6px; }
+.agent-pulse { display:flex; align-items:center; gap:4px; }
+.pdot {
+  width:7px; height:7px; border-radius:50%; background:var(--green);
+  animation:pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
+.plbl { font-size:10px; color:var(--green); font-weight:600; }
+
+/* Agent report output */
+.agent-report-card {
+  margin:0 20px 14px; border-radius:var(--r);
+  border:1px solid var(--g200); overflow:hidden; box-shadow:var(--sh-sm);
+}
+.arc-header {
+  padding:12px 16px; border-bottom:1px solid var(--g200);
+  display:flex; align-items:center; gap:10px;
+}
+.arc-icon { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.arc-icon svg { width:16px; height:16px; }
+.arc-title { font-size:13px; font-weight:700; }
+.arc-sub   { font-size:11px; color:var(--g500); margin-top:1px; }
+.arc-body { padding:14px 16px; font-size:12px; color:var(--dark); line-height:1.7; white-space:pre-wrap; }
+.arc-footer { padding:10px 16px; border-top:1px solid var(--g200); display:flex; align-items:center; gap:8px; }
+.arc-stamp { font-size:10px; color:var(--g500); flex:1; }
+
+/* KPI row */
+.kpi-row {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:10px; padding:0 20px; margin-bottom:14px;
+}
+.kpi-card {
+  background:var(--white); border:1px solid var(--g200);
+  border-radius:var(--r); padding:14px 14px;
+  box-shadow:var(--sh-sm); display:flex; align-items:center; gap:12px;
+}
+.kpi-icon {
+  width:40px; height:40px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.kpi-icon svg { width:18px; height:18px; }
+.kpi-num { font-size:22px; font-weight:800; color:var(--dark); line-height:1; }
+.kpi-lbl { font-size:11px; color:var(--g500); margin-top:2px; }
+
+/* Schedule table */
+.sched-wrap { margin:0 20px 14px; border-radius:var(--r); overflow:hidden; border:1px solid var(--g200); box-shadow:var(--sh-sm); }
+.sched-tbl { width:100%; border-collapse:collapse; font-size:12px; }
+.sched-tbl th { text-align:left; padding:9px 12px; background:var(--g50); color:var(--g600); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.4px; }
+.sched-tbl td { padding:10px 12px; border-top:1px solid var(--g200); }
+.sched-tbl tr:hover td { background:var(--g50); }
+.pc { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px; font-size:10px; font-weight:700; }
+.pc-red    { background:var(--red-l);    color:var(--red); }
+.pc-amber  { background:var(--amber-l);  color:var(--amber); }
+.pc-green  { background:var(--green-l);  color:var(--green); }
+.pc-blue   { background:var(--blue-l);   color:var(--blue); }
+.pc-purple { background:var(--purple-l); color:var(--purple); }
+
+/* Map */
+.map-wrap { margin:0 20px 14px; border-radius:var(--r); overflow:hidden; border:1px solid var(--g200); box-shadow:var(--sh-sm); }
+#gov-map, #citizen-map { height:280px; display:block; }
+
+/* Filter chips */
+.fchips { display:flex; gap:8px; padding:0 20px 10px; overflow-x:auto; scrollbar-width:none; }
+.fchips::-webkit-scrollbar { display:none; }
+.fchip {
+  display:flex; align-items:center; gap:5px;
+  padding:6px 12px; border-radius:20px;
+  font-size:12px; font-weight:600; white-space:nowrap; flex-shrink:0;
+  border:1.5px solid var(--g200); background:var(--white); color:var(--g600);
+  cursor:pointer; transition:all .15s;
+}
+.fchip svg { width:12px; height:12px; }
+.fchip.on { background:var(--green-l); border-color:var(--green-m); color:var(--green); }
+
+/* Bin list */
+.bin-list { padding:0 20px; display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+.bin-card {
+  background:var(--white); border:1px solid var(--g200);
+  border-radius:var(--r); padding:14px 16px;
+  display:flex; align-items:flex-start; gap:14px;
+  box-shadow:var(--sh-sm); cursor:pointer; transition:box-shadow .15s, transform .12s;
+}
+.bin-card:hover { box-shadow:var(--sh-md); transform:translateY(-1px); }
+.bin-si { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.bin-si svg { width:18px; height:18px; }
+.bin-info { flex:1; min-width:0; }
+.bin-name { font-size:13px; font-weight:600; color:var(--dark); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.bin-meta { font-size:11px; color:var(--g500); margin-top:3px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.bin-meta-i { display:flex; align-items:center; gap:3px; }
+.bin-meta-i svg { width:11px; height:11px; }
+.fill-bar  { width:100%; height:5px; background:var(--g200); border-radius:3px; margin-top:7px; }
+.fill-in   { height:100%; border-radius:3px; transition:width .5s; }
+.bin-act   { display:flex; gap:6px; margin-top:9px; }
+.bin-dispatch-btn {
+  flex:1; padding:7px; background:var(--green); color:white;
+  border:none; border-radius:var(--rsm);
+  font-family:'Inter',sans-serif; font-size:11px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px;
+  transition:background .15s;
+}
+.bin-dispatch-btn svg { width:12px; height:12px; }
+.bin-dispatch-btn:hover { background:#15803d; }
+.bin-nav-btn {
+  width:34px; height:32px; background:var(--g100);
+  border:1px solid var(--g200); border-radius:var(--rsm);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--g600); text-decoration:none; transition:background .15s; flex-shrink:0;
+}
+.bin-nav-btn svg { width:13px; height:13px; }
+.bin-nav-btn:hover { background:var(--g200); }
+.bin-pct { font-size:14px; font-weight:700; flex-shrink:0; align-self:center; margin-left:4px; }
+
+/* Aduan */
+.aduan-card { background:var(--white); border:1px solid var(--g200); border-radius:var(--r); overflow:hidden; box-shadow:var(--sh-sm); margin-bottom:10px; }
+.aduan-hdr { padding:14px 16px; border-bottom:1px solid var(--g200); display:flex; align-items:center; gap:12px; }
+.aduan-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.aduan-icon svg { width:20px; height:20px; }
+.aduan-title { font-size:13px; font-weight:700; }
+.aduan-loc { font-size:11px; color:var(--g500); margin-top:2px; display:flex; align-items:center; gap:4px; }
+.aduan-loc svg { width:11px; height:11px; }
+.aduan-time { font-size:10px; color:var(--g500); margin-left:auto; white-space:nowrap; }
+.aduan-acts { display:flex; gap:8px; padding:12px 16px; }
+.a-btn { flex:1; padding:9px; border:none; border-radius:var(--rsm); font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; transition:all .15s; }
+.a-btn svg { width:12px; height:12px; }
+.a-pri { background:var(--green); color:white; }
+.a-pri:hover { background:#15803d; }
+.a-sec { background:var(--g100); color:var(--g700); border:1px solid var(--g200); }
+.a-sec:hover { background:var(--g200); }
+
+/* Leaderboard */
+.lb-item { display:flex; align-items:center; gap:12px; background:var(--white); border:1px solid var(--g200); border-radius:var(--r); padding:12px 14px; box-shadow:var(--sh-sm); margin-bottom:8px; transition:box-shadow .15s; }
+.lb-item:hover { box-shadow:var(--sh-md); }
+.lb-item.me { border-color:var(--green); background:var(--green-l); }
+.lb-rank { font-size:14px; font-weight:700; min-width:24px; text-align:center; color:var(--g500); }
+.lb-rank.gold   { color:#CA8A04; }
+.lb-rank.silver { color:#64748B; }
+.lb-rank.bronze { color:#B45309; }
+.lb-avatar { width:36px; height:36px; border-radius:50%; background:var(--g100); display:flex; align-items:center; justify-content:center; color:var(--g500); }
+.lb-avatar svg { width:16px; height:16px; }
+.lb-name { flex:1; font-size:13px; font-weight:600; color:var(--dark); }
+.lb-pts  { font-size:13px; font-weight:700; color:var(--green); }
+
+/* Broadcast */
+.bc-card { background:var(--white); border:1px solid var(--g200); border-radius:var(--r); padding:16px; box-shadow:var(--sh-sm); margin-bottom:10px; }
+.bc-meta { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.bc-role { display:inline-flex; align-items:center; gap:4px; background:var(--green-l); color:var(--green); font-size:10px; font-weight:700; padding:2px 8px; border-radius:12px; }
+.bc-role svg { width:10px; height:10px; }
+.bc-time { font-size:10px; color:var(--g500); margin-left:auto; }
+.bc-text { font-size:13px; color:var(--dark); line-height:1.6; }
+.compose-box { background:var(--white); border:1px solid var(--g200); border-radius:var(--r); box-shadow:var(--sh-sm); overflow:hidden; margin:0 20px 14px; }
+.compose-hdr { padding:12px 16px; border-bottom:1px solid var(--g200); font-size:13px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.compose-hdr svg { width:15px; height:15px; color:var(--amber); }
+.compose-ta { width:100%; border:none; outline:none; resize:none; font-family:'Inter',sans-serif; font-size:13px; color:var(--dark); background:transparent; min-height:72px; padding:12px 16px; }
+.compose-ft { padding:10px 16px; border-top:1px solid var(--g200); display:flex; align-items:center; justify-content:flex-end; gap:8px; }
+
+/* Points hero */
+.pts-hero {
+  margin:0 20px 14px;
+  background:linear-gradient(135deg, var(--green), #15803d);
+  border-radius:var(--rlg); padding:22px 22px 18px;
+  color:white; position:relative; overflow:hidden;
+}
+.pts-hero::before { content:''; position:absolute; top:-30px; right:-30px; width:100px; height:100px; background:rgba(255,255,255,.08); border-radius:50%; }
+.pts-hero::after  { content:''; position:absolute; bottom:-20px; right:20px; width:70px; height:70px; background:rgba(255,255,255,.05); border-radius:50%; }
+.pts-big  { font-size:38px; font-weight:800; line-height:1; }
+.pts-unit { font-size:13px; opacity:.85; margin-left:4px; }
+.pts-tier { font-size:12px; opacity:.9; font-weight:500; margin:4px 0 14px; }
+.pts-bar-bg { height:6px; background:rgba(255,255,255,.25); border-radius:3px; margin-bottom:5px; }
+.pts-bar-fill { height:100%; background:rgba(255,255,255,.9); border-radius:3px; transition:width 1s; }
+.pts-bar-lbls { display:flex; justify-content:space-between; font-size:10px; opacity:.7; }
+.pts-next { font-size:11px; opacity:.8; margin-top:6px; }
+
+/* Stat row */
+.stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:0 20px; margin-bottom:14px; }
+.stat-card { background:var(--white); border:1px solid var(--g200); border-radius:var(--r); padding:14px 10px; text-align:center; box-shadow:var(--sh-sm); }
+.stat-icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; }
+.stat-icon svg { width:15px; height:15px; }
+.stat-num { font-size:19px; font-weight:700; color:var(--dark); }
+.stat-lbl { font-size:10px; color:var(--g500); margin-top:2px; }
+
+/* Tips */
+.tips-card { margin:0 20px 14px; background:var(--amber-l); border:1px solid #FDE68A; border-radius:var(--r); padding:16px; }
+.tips-lbl { font-size:11px; font-weight:700; color:var(--amber); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.tips-lbl svg { width:13px; height:13px; }
+.tips-txt { font-size:13px; color:var(--dark); line-height:1.6; }
+
+/* Schedule list */
+.sched-list { padding:0 20px; display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+.sched-item { background:var(--white); border:1px solid var(--g200); border-radius:var(--r); padding:12px 14px; display:flex; align-items:center; gap:12px; box-shadow:var(--sh-sm); }
+.sched-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.sched-icon svg { width:18px; height:18px; }
+.sched-title { font-size:13px; font-weight:600; color:var(--dark); }
+.sched-time  { font-size:11px; color:var(--g500); margin-top:2px; }
+.sched-eta   { font-size:12px; font-weight:700; color:var(--green); margin-left:auto; white-space:nowrap; }
+
+/* Scan */
+.scan-card { margin:0 20px 14px; background:var(--white); border:1px solid var(--g200); border-radius:var(--rlg); overflow:hidden; box-shadow:var(--sh-sm); }
+.scan-hdr { padding:14px 16px; border-bottom:1px solid var(--g200); display:flex; align-items:center; gap:12px; }
+.scan-hdr-icon { width:38px; height:38px; border-radius:10px; background:var(--amber-l); color:var(--amber); display:flex; align-items:center; justify-content:center; }
+.scan-hdr-icon svg { width:20px; height:20px; }
+.scan-title { font-size:14px; font-weight:700; }
+.scan-sub   { font-size:11px; color:var(--g500); margin-top:1px; }
+#cam-viewport { width:100%; aspect-ratio:4/3; background:var(--g100); display:none; object-fit:cover; }
+#cam-preview  { display:none; width:100%; aspect-ratio:4/3; object-fit:cover; }
+.scan-ctrls { display:flex; gap:10px; padding:12px 16px; }
+.scan-sec { flex:1; padding:11px; border:1.5px solid var(--g200); border-radius:var(--rsm); background:var(--white); color:var(--g700); font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all .15s; }
+.scan-sec svg { width:15px; height:15px; }
+.scan-sec:hover { border-color:var(--green); color:var(--green); }
+.scan-pri { flex:1; padding:11px; border:none; border-radius:var(--rsm); background:var(--green); color:white; font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 2px 8px rgba(22,163,74,.3); transition:all .15s; }
+.scan-pri svg { width:15px; height:15px; }
+.scan-pri:disabled { background:var(--g300); color:var(--g500); box-shadow:none; cursor:not-allowed; }
+.scan-pri:not(:disabled):hover { background:#15803d; }
+
+.scan-loading { display:none; text-align:center; padding:24px; }
+.spin { width:36px; height:36px; border:3px solid var(--g200); border-top-color:var(--green); border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 10px; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+.arm-result { display:none; margin:0 20px 14px; border-radius:var(--r); padding:16px; animation:fadeIn .3s ease; }
+.arm-result.accepted  { background:var(--green-l); border:1.5px solid var(--green-m); }
+.arm-result.rejected  { background:var(--red-l);   border:1.5px solid #FCA5A5; }
+.arm-result.hazardous { background:var(--orange-l); border:1.5px solid #FDBA74; }
+.arm-verdict { font-size:15px; font-weight:800; display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.arm-verdict svg { width:18px; height:18px; }
+.arm-result.accepted  .arm-verdict { color:var(--green); }
+.arm-result.rejected  .arm-verdict { color:var(--red); }
+.arm-result.hazardous .arm-verdict { color:var(--orange); }
+.arm-label  { font-size:13px; font-weight:600; margin-bottom:2px; }
+.arm-slot   { font-size:12px; color:var(--g600); margin-bottom:5px; }
+.arm-reason { font-size:12px; color:var(--g600); font-style:italic; margin-bottom:12px; }
+.arm-action { width:100%; padding:11px; border:none; border-radius:var(--rsm); font-family:'Inter',sans-serif; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+.arm-action svg { width:14px; height:14px; }
+
+.slot-guide { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 20px 20px; }
+.slot-card { background:var(--white); border:1px solid var(--g200); border-radius:var(--r); padding:14px 12px; text-align:center; box-shadow:var(--sh-sm); }
+.slot-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; }
+.slot-icon svg { width:18px; height:18px; }
+.slot-lbl { font-size:12px; font-weight:700; color:var(--dark); }
+.slot-sub { font-size:10px; color:var(--g500); margin-top:3px; }
+
+/* Chat */
+.chat-msgs { padding:14px 16px; display:flex; flex-direction:column; gap:12px; min-height:300px; max-height:380px; overflow-y:auto; background:var(--g50); margin:0 20px; border-radius:var(--r); border:1px solid var(--g200); margin-bottom:12px; }
+.msg { display:flex; flex-direction:column; gap:4px; }
+.msg-user { align-items:flex-end; }
+.msg-bot  { align-items:flex-start; }
+.msg-name { font-size:10px; font-weight:600; color:var(--g500); }
+.msg-bubble { max-width:88%; padding:10px 14px; border-radius:12px; font-size:13px; line-height:1.6; }
+.msg-user .msg-bubble { background:var(--green); color:white; border-bottom-right-radius:4px; }
+.msg-bot  .msg-bubble { background:var(--white); color:var(--dark); border:1px solid var(--g200); border-bottom-left-radius:4px; }
+.chat-in-row { display:flex; gap:8px; padding:0 20px; margin-bottom:16px; }
+.chat-in { flex:1; background:var(--white); border:1.5px solid var(--g200); border-radius:var(--rsm); padding:11px 14px; font-family:'Inter',sans-serif; font-size:13px; color:var(--dark); outline:none; transition:border-color .2s; }
+.chat-in:focus { border-color:var(--green); }
+.chat-send { width:44px; height:44px; background:var(--green); border:none; border-radius:var(--rsm); color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(22,163,74,.3); transition:background .15s; }
+.chat-send svg { width:16px; height:16px; }
+.chat-send:hover { background:#15803d; }
+.qq-row { display:flex; gap:6px; padding:0 20px 12px; overflow-x:auto; scrollbar-width:none; }
+.qq-row::-webkit-scrollbar { display:none; }
+.qq { flex-shrink:0; padding:6px 12px; background:var(--white); border:1.5px solid var(--g200); border-radius:20px; cursor:pointer; font-family:'Inter',sans-serif; font-size:11px; font-weight:600; color:var(--g700); transition:all .15s; }
+.qq:hover { border-color:var(--green); color:var(--green); background:var(--green-l); }
+.typing-bubble { display:flex; gap:4px; align-items:center; padding:2px 0; }
+.tydot { width:8px; height:8px; background:var(--g400); border-radius:50%; animation:tdBounce 1.2s ease-in-out infinite; }
+.tydot:nth-child(2) { animation-delay:.2s; }
+.tydot:nth-child(3) { animation-delay:.4s; }
+@keyframes tdBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+/* Form */
+.rtype-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 20px 14px; }
+.rtype-card { background:var(--white); border:1.5px solid var(--g200); border-radius:var(--r); padding:14px 12px; display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; box-shadow:var(--sh-sm); transition:all .15s; }
+.rtype-card:hover { border-color:var(--green); }
+.rtype-card.sel { border-color:var(--green); background:var(--green-l); }
+.rtype-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; }
+.rtype-icon svg { width:20px; height:20px; }
+.rtype-lbl { font-size:12px; font-weight:600; color:var(--dark); text-align:center; }
+.form-sec { padding:0 20px 20px; }
+.form-grp { margin-bottom:14px; }
+.form-lbl { display:block; font-size:12px; font-weight:600; color:var(--g700); margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px; }
+.form-inp,.form-ta { width:100%; background:var(--g50); border:1.5px solid var(--g200); border-radius:var(--rsm); padding:11px 14px; color:var(--dark); font-family:'Inter',sans-serif; font-size:14px; outline:none; transition:border-color .2s, box-shadow .2s; }
+.form-inp:focus,.form-ta:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(22,163,74,.1); background:var(--white); }
+.form-ta { resize:none; min-height:80px; }
+.photo-upload { width:100%; height:74px; background:var(--g50); border:2px dashed var(--g300); border-radius:var(--rsm); display:flex; align-items:center; justify-content:center; gap:8px; color:var(--g500); font-size:13px; font-weight:500; cursor:pointer; transition:all .15s; }
+.photo-upload svg { width:18px; height:18px; }
+.photo-upload:hover { border-color:var(--green); color:var(--green); }
+#photo-input { display:none; }
+
+/* Toast */
+.toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-10px); background:var(--dark); color:white; padding:10px 20px; border-radius:20px; font-size:13px; font-weight:600; box-shadow:var(--sh-lg); opacity:0; transition:all .3s; pointer-events:none; z-index:600; white-space:nowrap; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ════════ LOGIN ════════ -->
+<div id="login-screen">
+  <div class="login-logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+  </div>
+  <div class="login-brand">SmartTONG AI</div>
+  <div class="login-tagline">Portal Pengurusan Sisa Pintar Selangor<br>KDEBWM · AINS 2026</div>
+
+  <div class="role-tabs">
+    <button class="role-tab active" id="rt-c" onclick="setRole('citizen')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Warganegara
+    </button>
+    <button class="role-tab" id="rt-g" onclick="setRole('gov')">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+      PBT / KDEB
+    </button>
+  </div>
+
+  <!-- Citizen -->
+  <div id="lf-citizen" class="login-form">
+    <button class="mydigid-btn" onclick="myDigitalLogin()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      <span>Log Masuk dengan</span>
+      <span class="mydigid-badge">MyDigital ID</span>
+    </button>
+
+    <div class="login-divider">atau masuk dengan IC</div>
+
+    <div class="lf-group">
+      <label class="lf-label" for="c-ic">Nombor MyKad / Pengenalan</label>
+      <input class="lf-input" type="tel" id="c-ic" placeholder="cth. 950101141234 (demo: taip apa sahaja)" autocomplete="off"
+        onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div class="lf-hint">Demo: taip sebarang nilai (cth. &quot;1&quot;) untuk masuk</div>
+    </div>
+  </div>
+
+  <!-- Gov -->
+  <div id="lf-gov" class="login-form" style="display:none;">
+    <div class="lf-group">
+      <label class="lf-label" for="g-id">KDEB / PBT Staff ID</label>
+      <input class="lf-input" type="text" id="g-id" placeholder="cth. KDEB-1234"
+        onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div class="lf-hint">Demo: taip sebarang ID</div>
+    </div>
+    <div class="lf-group">
+      <label class="lf-label" for="g-dept">Jabatan / Daerah</label>
+      <select class="lf-select" id="g-dept">
+        <option value="">Pilih Jabatan...</option>
+        <option>KDEBWM — Bahagian Operasi</option>
+        <option>MPKS — Klang</option>
+        <option>MBSJ — Subang Jaya</option>
+        <option>MBPJ — Petaling Jaya</option>
+        <option>MBSA — Shah Alam</option>
+        <option>MPAJ — Ampang Jaya</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="lf-err" id="lf-err">Sila lengkapi maklumat untuk meneruskan.</div>
+
+  <div style="width:100%;max-width:440px;margin-top:4px;">
+    <button class="btn-primary" onclick="doLogin()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Log Masuk Selamat
+    </button>
+  </div>
+  <div class="login-note">Dilindungi PDPA 2010 · SmartTONG AINS 2026</div>
+</div>
+
+<!-- ════════ APP SHELL ════════ -->
+<div id="app">
+
+  <!-- Header -->
+  <header id="app-header">
+    <div class="hdr-brand">
+      <div class="hdr-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </div>
+      <div>
+        <div class="hdr-title">SmartTONG AI</div>
+        <div class="hdr-sub" id="hdr-sub">Warganegara · Selangor</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-pts" id="hdr-pts" style="display:none;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;stroke:var(--green);"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        <span class="hdr-pts-num" id="hdr-pts-num">240</span>
+        <span class="hdr-pts-lbl">mata</span>
+      </div>
+      <button class="hdr-icon-btn" id="notif-btn" onclick="toggleNotif()" title="Notifikasi" style="position:relative;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="notif-badge" id="notif-badge" style="display:none;">3</span>
+      </button>
+      <button class="hdr-icon-btn" onclick="openSettings()" title="Tetapan">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Scroll area -->
+  <div id="scroll-area">
+
+    <!-- ═══ GOV UTAMA ═══ -->
+    <div class="pg" id="pg-g-utama">
+      <div class="sec-hdr">
+        <div><div class="sec-title">Pusat Kawalan Operasi</div><div class="sec-sub">Multi-Agent AI · KDEBWM Selangor</div></div>
+        <span class="sec-badge">Live</span>
+      </div>
+
+      <!-- 3 AI Agents -->
+      <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Status Agen AI</div>
+      <div class="agent-strip">
+        <div class="agent-card">
+          <div class="agent-icon-wrap" style="background:var(--blue-l);color:var(--blue);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></div>
+          <div class="agent-name">Contamination Agent</div>
+          <div class="agent-desc">Analisis pencemaran & jana laporan</div>
+          <div class="agent-pulse"><div class="pdot"></div><span class="plbl">Aktif</span></div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon-wrap" style="background:var(--green-l);color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+          <div class="agent-name">Coordination Agent</div>
+          <div class="agent-desc">Jadual & laluan truk optimum</div>
+          <div class="agent-pulse"><div class="pdot" style="animation-delay:.3s;"></div><span class="plbl">Aktif</span></div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon-wrap" style="background:var(--purple-l);color:var(--purple);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="agent-name">Citizen Q&amp;A Agent</div>
+          <div class="agent-desc">Jawab soalan warganegara via AI</div>
+          <div class="agent-pulse"><div class="pdot" style="animation-delay:.6s;"></div><span class="plbl">Aktif</span></div>
+        </div>
+      </div>
+
+      <!-- Run agents buttons -->
+      <div style="display:flex;gap:8px;padding:0 20px;margin-bottom:12px;">
+        <button onclick="runContaminationAgent()" style="flex:1;padding:9px;background:var(--blue-l);border:1.5px solid var(--blue);border-radius:var(--rsm);color:var(--blue);font-family:'Inter',sans-serif;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;" id="btn-cont">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+          Jana Laporan Pencemaran
+        </button>
+        <button onclick="runCoordAgent()" style="flex:1;padding:9px;background:var(--green-l);border:1.5px solid var(--green);border-radius:var(--rsm);color:var(--green);font-family:'Inter',sans-serif;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;" id="btn-coord">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Optimum Laluan Truk
+        </button>
+      </div>
+
+      <!-- Agent output cards -->
+      <div id="cont-report-wrap" style="display:none;">
+        <div class="agent-report-card">
+          <div class="arc-header">
+            <div class="arc-icon" style="background:var(--blue-l);color:var(--blue);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg></div>
+            <div><div class="arc-title">Laporan Pencemaran — Contamination Agent</div><div class="arc-sub" id="cont-ts">–</div></div>
+          </div>
+          <div class="arc-body" id="cont-body">Menunggu analisis...</div>
+          <div class="arc-footer">
+            <span class="arc-stamp" id="cont-stamp"></span>
+            <button onclick="runContaminationAgent()" style="padding:6px 12px;background:var(--blue);color:white;border:none;border-radius:var(--rsm);font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg> Kemaskini</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="coord-report-wrap" style="display:none;">
+        <div class="agent-report-card">
+          <div class="arc-header">
+            <div class="arc-icon" style="background:var(--green-l);color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+            <div><div class="arc-title">Jadual Kutipan — Coordination Agent</div><div class="arc-sub" id="coord-ts">–</div></div>
+          </div>
+          <div class="arc-body" id="coord-body">Menunggu pengoptimuman...</div>
+          <div class="arc-footer">
+            <span class="arc-stamp" id="coord-stamp"></span>
+            <button onclick="runCoordAgent()" style="padding:6px 12px;background:var(--green);color:white;border:none;border-radius:var(--rsm);font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg> Kemaskini</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--red-l);color:var(--red);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div><div class="kpi-num" id="k-crit">3</div><div class="kpi-lbl">Tong Kritikal</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--green-l);color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+          <div><div class="kpi-num">5</div><div class="kpi-lbl">Truk Beroperasi</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--orange-l);color:var(--orange);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div><div class="kpi-num" id="k-saved">RM 480</div><div class="kpi-lbl">Jimat Minggu Ini</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--blue-l);color:var(--blue);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div><div class="kpi-num">1,240</div><div class="kpi-lbl">Warganegara Aktif</div></div>
+        </div>
+      </div>
+
+      <!-- Schedule table -->
+      <div style="padding:0 20px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:13px;font-weight:700;color:var(--dark);display:flex;align-items:center;gap:6px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;stroke:var(--green);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Jadual — AI Generated
+        </div>
+        <button onclick="overrideAll()" style="padding:7px 12px;background:var(--amber);border:none;border-radius:var(--rsm);color:white;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Override Semua
+        </button>
+      </div>
+      <div class="sched-wrap mb20">
+        <table class="sched-tbl">
+          <thead><tr><th>Tong</th><th>Lokasi</th><th>Prioriti</th><th>ETA</th></tr></thead>
+          <tbody id="sched-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ GOV PETA ═══ -->
+    <div class="pg" id="pg-g-peta">
+      <div class="sec-hdr"><div><div class="sec-title">Peta Interaktif</div><div class="sec-sub">Status tong masa nyata · Selangor</div></div></div>
+      <div class="fchips">
+        <button class="fchip on" onclick="filterMap(this,'ALL')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> Semua</button>
+        <button class="fchip" onclick="filterMap(this,'kritikal')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Kritikal</button>
+        <button class="fchip" onclick="filterMap(this,'pecah')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Pecah</button>
+        <button class="fchip" onclick="filterMap(this,'berbahaya')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Berbahaya</button>
+        <button class="fchip" onclick="filterMap(this,'bateri')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><rect x="2" y="7" width="16" height="10" rx="2" ry="2"/><line x1="22" y1="11" x2="22" y2="13"/></svg> Bateri Rendah</button>
+      </div>
+      <div class="map-wrap"><div id="gov-map"></div></div>
+      <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Senarai Tong</div>
+      <div class="bin-list" id="gov-bin-list"></div>
+    </div>
+
+    <!-- ═══ GOV LAPORAN ═══ -->
+    <div class="pg" id="pg-g-laporan">
+      <div class="sec-hdr"><div><div class="sec-title">Hab Aduan</div><div class="sec-sub">Laporan daripada warganegara</div></div><span class="sec-badge">4 Baru</span></div>
+      <div style="padding:0 20px 20px;" id="aduan-list"></div>
+    </div>
+
+    <!-- ═══ GOV HADIAH ═══ -->
+    <div class="pg" id="pg-g-lestari">
+      <div class="sec-hdr"><div><div class="sec-title">Hadiah Lestari</div><div class="sec-sub">Papan pendahulu kitar semula bulanan</div></div></div>
+      <div style="padding:0 20px;margin-bottom:14px;">
+        <div class="compose-box">
+          <div class="compose-hdr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Hantar Pengumuman</div>
+          <textarea class="compose-ta" id="bc-msg" placeholder="Taip pengumuman atau ucapan tahniah..."></textarea>
+          <div class="compose-ft">
+            <button class="btn-primary" style="width:auto;padding:9px 16px;" onclick="sendBroadcast()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Siaran
+            </button>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Papan Pendahulu Bulanan</div>
+      <div style="padding:0 20px 20px;" id="gov-lb"></div>
+    </div>
+
+    <!-- ═══ GOV SEBARAN ═══ -->
+    <div class="pg" id="pg-g-sebaran">
+      <div class="sec-hdr"><div><div class="sec-title">Papan Sebaran</div><div class="sec-sub">Siaran kepada warganegara via Firebase</div></div></div>
+      <div class="compose-box mx20 mb14">
+        <div class="compose-hdr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Cipta Siaran Baharu</div>
+        <textarea class="compose-ta" id="seb-msg" placeholder="Mesej awam, peringatan jadual, amaran kecemasan..."></textarea>
+        <div class="compose-ft">
+          <div style="font-size:11px;color:var(--g500);margin-right:auto;display:flex;align-items:center;gap:4px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Semua Warganegara
+          </div>
+          <button class="btn-primary" style="width:auto;padding:9px 16px;" onclick="sendSebaran()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Siaran
+          </button>
+        </div>
+      </div>
+      <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Siaran Terkini</div>
+      <div style="padding:0 20px 20px;" id="seb-list"></div>
+    </div>
+
+    <!-- ═══ CITIZEN UTAMA ═══ -->
+    <div class="pg" id="pg-c-utama">
+      <div class="sec-hdr"><div><div class="sec-title" id="c-welcome">Selamat Datang</div><div class="sec-sub">Portal Warganegara SmartTONG</div></div></div>
+      <div class="pts-hero">
+        <div style="display:flex;align-items:flex-end;gap:6px;margin-bottom:4px;">
+          <div class="pts-big" id="c-pts-big">240</div>
+          <div class="pts-unit">mata kebersihan</div>
+        </div>
+        <div class="pts-tier" id="c-tier">Pejuang Kebersihan</div>
+        <div class="pts-bar-bg"><div class="pts-bar-fill" id="c-pts-bar" style="width:48%"></div></div>
+        <div class="pts-bar-lbls"><span>0</span><span>500 Juara</span><span>1000 Wira</span></div>
+        <div class="pts-next" id="c-pts-next">260 mata lagi untuk Juara Kebersihan</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--green-l);color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+          <div class="stat-num">12</div><div class="stat-lbl">Laporan</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--amber-l);color:var(--amber);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="stat-num">9</div><div class="stat-lbl">Disahkan</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--orange-l);color:var(--orange);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg></div>
+          <div class="stat-num">38%</div><div class="stat-lbl">Kitar Semula</div>
+        </div>
+      </div>
+      <div class="tips-card">
+        <div class="tips-lbl"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Tips Kitar Semula Hari Ini</div>
+        <div class="tips-txt" id="tip-txt">Bilas botol plastik sebelum dimasukkan ke slot Plastik — kelembapan boleh merosakkan nilai kitar semula.</div>
+      </div>
+      <div style="padding:0 20px 8px;font-size:13px;font-weight:700;color:var(--dark);display:flex;align-items:center;gap:6px;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;stroke:var(--green);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Jadual Kutipan Berdekatan
+      </div>
+      <div class="sched-list" id="c-sched"></div>
+    </div>
+
+    <!-- ═══ CITIZEN PETA ═══ -->
+    <div class="pg" id="pg-c-peta">
+      <div class="sec-hdr"><div><div class="sec-title">Tong Berdekatan</div><div class="sec-sub" id="c-loc-lbl">Mengesan lokasi...</div></div></div>
+      <div class="map-wrap"><div id="citizen-map"></div></div>
+      <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Status Tong</div>
+      <div class="bin-list" id="c-bin-list"></div>
+    </div>
+
+    <!-- ═══ CITIZEN IMBAS ═══ -->
+    <div class="pg" id="pg-c-imbas">
+      <div class="sec-hdr"><div><div class="sec-title">Imbas Item</div><div class="sec-sub">AI pengkelasan sisa — Gemini Vision</div></div></div>
+      <div class="scan-card">
+        <div class="scan-hdr">
+          <div class="scan-hdr-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+          <div><div class="scan-title">Matriks Penerimaan SmartTONG</div><div class="scan-sub">Imbas item untuk panduan kitar semula betul</div></div>
+        </div>
+        <video id="cam-viewport" autoplay playsinline muted></video>
+        <canvas id="cam-canvas" style="display:none;"></canvas>
+        <img id="cam-preview" alt="Captured item"/>
+        <div class="scan-ctrls">
+          <button class="scan-sec" id="cam-toggle" onclick="toggleCam()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Buka Kamera
+          </button>
+          <button class="scan-pri" id="cam-cap" onclick="captureClassify()" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Imbas Sekarang
+          </button>
+        </div>
+      </div>
+      <div class="scan-loading" id="scan-load"><div class="spin"></div><div style="font-size:12px;color:var(--g500);">AI sedang menganalisa...</div></div>
+      <div class="arm-result" id="arm-res">
+        <div class="arm-verdict" id="arm-verdict"></div>
+        <div class="arm-label"  id="arm-label"></div>
+        <div class="arm-slot"   id="arm-slot"></div>
+        <div class="arm-reason" id="arm-reason"></div>
+        <button class="arm-action" id="arm-act" style="display:none;" onclick="armAct()"></button>
+      </div>
+      <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Panduan Slot</div>
+      <div class="slot-guide">
+        <div class="slot-card"><div class="slot-icon" style="background:var(--green-l);color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="slot-lbl">Plastik</div><div class="slot-sub">Botol PET/HDPE bersih</div></div>
+        <div class="slot-card"><div class="slot-icon" style="background:var(--blue-l);color:var(--blue);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="slot-lbl">Kertas</div><div class="slot-sub">Kadbod &amp; surat khabar</div></div>
+        <div class="slot-card"><div class="slot-icon" style="background:var(--amber-l);color:var(--amber);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div class="slot-lbl">Logam</div><div class="slot-sub">Tin aluminium dibilas</div></div>
+        <div class="slot-card"><div class="slot-icon" style="background:var(--g100);color:var(--g500);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></div><div class="slot-lbl">Sisa Baki</div><div class="slot-sub">Makanan &amp; komposit</div></div>
+      </div>
+    </div>
+
+    <!-- ═══ CITIZEN TANYA AI ═══ -->
+    <div class="pg" id="pg-c-tanya">
+      <div class="sec-hdr"><div><div class="sec-title">SilaTanya AI</div><div class="sec-sub">Citizen Q&amp;A Agent · Gemini 1.5 Flash</div></div></div>
+      <div class="qq-row">
+        <button class="qq" onclick="qAsk('Macam mana nak kitar tin Milo?')">Tin Milo?</button>
+        <button class="qq" onclick="qAsk('Botol plastik boleh kitar semula?')">Botol plastik?</button>
+        <button class="qq" onclick="qAsk('Status tong B03 sekarang?')">Status tong?</button>
+        <button class="qq" onclick="qAsk('Macam mana nak dapat mata?')">Dapat mata?</button>
+        <button class="qq" onclick="qAsk('Hukuman buang sampah haram Malaysia?')">Hukuman?</button>
+      </div>
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div class="chat-in-row">
+        <input class="chat-in" type="text" id="chat-in" placeholder="Tanya tentang kitar semula, tong, atau ganjaran..." onkeydown="if(event.key==='Enter')sendChat()"/>
+        <button class="chat-send" onclick="sendChat()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- end scroll-area -->
+
+  <!-- ═══ BOTTOM NAV ═══ -->
+  <nav id="bottom-nav"></nav>
+
+</div><!-- end app -->
+
+<!-- Settings panel -->
+<div id="settings-overlay" onclick="settingsOverlayClick(event)">
+  <div id="settings-panel">
+    <div class="sp-hdr">
+      <div class="sp-hdr-title">Tetapan &amp; Profil</div>
+      <button class="sp-close" onclick="closeSettings()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sp-body">
+      <div class="sp-user">
+        <div class="sp-role-badge" id="sp-role">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Warganegara
+        </div>
+        <div class="sp-name" id="sp-name">—</div>
+        <div class="sp-id"   id="sp-id">IC: ••••••</div>
+      </div>
+      <div class="sp-section">Notifikasi</div>
+      <div class="sp-item">
+        <div class="sp-item-left">
+          <div class="sp-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <div><div class="sp-item-lbl">Papan Notis (Firebase)</div><div class="sp-item-sub">Notifikasi masa nyata dari PBT/KDEB</div></div>
+        </div>
+        <button class="tgl" id="tgl-notif" onclick="togglePushNotif()"></button>
+      </div>
+      <div class="sp-section">Kebolehaksesan</div>
+      <div class="sp-item">
+        <div class="sp-item-left">
+          <div class="sp-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
+          <div><div class="sp-item-lbl">Suara (Voice-Over)</div><div class="sp-item-sub">Baca teks halaman</div></div>
+        </div>
+        <button class="tgl" id="tgl-voice" onclick="toggleVoice()"></button>
+      </div>
+      <div class="sp-item">
+        <div class="sp-item-left">
+          <div class="sp-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></div>
+          <div><div class="sp-item-lbl">Kontras Tinggi</div><div class="sp-item-sub">Keterlihatan lebih baik</div></div>
+        </div>
+        <button class="tgl" id="tgl-contrast" onclick="toggleContrast()"></button>
+      </div>
+      <div class="sp-item">
+        <div class="sp-item-left">
+          <div class="sp-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></div>
+          <div><div class="sp-item-lbl">Saiz Teks <span id="fs-val" style="color:var(--green);">100</span>%</div><div class="sp-item-sub">Laraskan saiz teks</div></div>
+        </div>
+        <div class="fsc">
+          <button class="fsbtn" onclick="chgFont(-1)">−</button>
+          <button class="fsbtn" onclick="chgFont(1)">+</button>
+        </div>
+      </div>
+      <div class="sp-section">Perihal</div>
+      <div class="sp-item">
+        <div class="sp-item-left">
+          <div class="sp-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div><div class="sp-item-lbl">SmartTONG AI v2.1</div><div class="sp-item-sub">AINS 2026 · 3-Agent System</div></div>
+        </div>
+      </div>
+      <button class="sp-logout" onclick="doLogout()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Log Keluar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Notif panel -->
+<div id="notif-overlay" onclick="notifOverlayClick(event)">
+  <div class="notif-box" id="notif-box">
+    <div class="nb-hdr">
+      <span>Notifikasi</span>
+      <button onclick="closeNotif()" style="border:none;background:none;cursor:pointer;color:var(--g500);">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="notif-list">
+      <div class="notif-item"><div class="ndot" style="background:var(--red);"></div><div><div class="notif-text">Tong B03 Dataran Sunway melebihi 90% kapasiti. Truk dalam perjalanan.</div><div class="notif-time">2 minit lalu · KDEBWM</div></div></div>
+      <div class="notif-item"><div class="ndot" style="background:var(--amber);"></div><div><div class="notif-text">Jadual kutipan USJ 1 dijangka Khamis 10:00 AM. Sila asingkan sisa dapur.</div><div class="notif-time">1 jam lalu · MBSJ</div></div></div>
+      <div class="notif-item"><div class="ndot" style="background:var(--green);"></div><div><div class="notif-text">Tahniah! +15 mata kerana laporan pembuangan haram disahkan.</div><div class="notif-time">Semalam · SmartTONG</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   SmartTONG — Full Application Logic
+══════════════════════════════════════════════════════ */
+
+// ── Firebase ──────────────────────────────────────────
+firebase.initializeApp({
+  apiKey: "AIzaSyByGcKKZ9WRbCv3kJu8sbb_BzRXUdZU1v4",
+  authDomain: "smarttong-selangor.firebaseapp.com",
+  projectId: "smarttong-selangor",
+  storageBucket: "smarttong-selangor.firebasestorage.app",
+  messagingSenderId: "729190756171",
+  appId: "1:729190756171:web:6eb913d8b4f0b040e782ce"
+});
+const db = firebase.firestore();
+
+// ── Gemini API with Google Search Grounding (RAG pipeline) ────────────────────────────────────────
+// Get your FREE key from: https://aistudio.google.com/app/apikey
+// Valid key format: AIzaSy...
+const GEMINI_KEY = 'AIzaSyDLHq3uvuvxuF3iRKDTpnxgeQGfr4BHNkk'; // User provided API Key
+const GEMINI_URL = key => `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+
+function isValidGeminiKey(k) {
+  return typeof k === 'string' && k.startsWith('AIza') && k.length >= 35;
+}
+
+async function gemini(prompt, systemPrompt='', useSearch=false) {
+  if (!isValidGeminiKey(GEMINI_KEY)) {
+    throw new Error('INVALID_KEY');
+  }
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.55, maxOutputTokens: 600 }
+  };
+  if (systemPrompt) body.systemInstruction = { parts: [{ text: systemPrompt }] };
+  
+  // Google Search Grounding — lets Gemini search the web for up-to-date answers
+  if (useSearch) {
+    body.tools = [{ google_search_retrieval: { dynamic_retrieval_config: { mode: 'MODE_DYNAMIC', dynamic_threshold: 0.6 } } }];
+  }
+  
+  const r = await fetch(GEMINI_URL(GEMINI_KEY), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) {
+    const errBody = await r.json().catch(() => ({}));
+    throw new Error(errBody?.error?.message || 'API HTTP ' + r.status);
+  }
+  const d = await r.json();
+  if (d.error) throw new Error(d.error.message || 'API error');
+  const txt = d?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  if (!txt.trim()) throw new Error('Empty response');
+  return txt;
+}
+
+// ── SmartTONG Official SOP — Full 150 QnA Dataset ────────
+// Bahasa Melayu | KDEBWM Selangor | AINS 2026
+// Used as Gemini system context + local keyword matching
+const SMARTTONG_SOP = `
+=== SilaTanya AI — Dataset Rasmi 150 Soal Jawab (SOP KDEBWM Selangor) ===
+
+ARASAN SISTEM PENAPISAN:
+Jika soalan tidak berkaitan pengurusan sisa, kitar semula, atau fungsi SmartTong — tolak dengan:
+"Maaf, saya hanya dilatih untuk menjawab soalan berkaitan pengurusan sisa, proses kitar semula, atau fungsi teknikal aplikasi SmartTong sahaja."
+
+--- BAHAGIAN 1: LOKASI & NAVIGASI TONG ---
+S: Kat mana tong sampah SmartTong yang paling dekat?
+J: Semak menu UTAMA di bar bawah. Peta digital memaparkan semua tong terdekat dengan indikator Hijau (kosong) atau Merah (penuh).
+S: Macam mana nak cari tong plastik kat Shah Alam?
+J: Buka tab UTAMA, gunakan penapis zon Shah Alam/MBDK. Peta tunjuk tong kitar semula dengan slot kosong untuk Plastik.
+S: Boleh tak bagi navigasi ke tong paling dekat?
+J: Tekan ikon pin tong pada peta tab UTAMA, kemudian tekan butang Navigasi untuk Google Maps atau Waze.
+S: Kenapa tong tak muncul dalam peta?
+J: Tong mungkin sedang dialihkan untuk proses pengosongan oleh lori KDEBWM atau sedang diselenggara.
+S: Ada tong SmartTong kat Kuala Selangor?
+J: Ada, sistem diintegrasikan dengan MPKS. Lihat peta tab UTAMA dan pilih penapis Kuala Selangor.
+S: Kat mana tong kitar semula kertas dekat Klang?
+J: Buka UTAMA, tapis kawasan Klang. Cari pin berlabel slot Kertas berstatus aktif.
+S: Saya kat Bangi, tong terdekat kat mana?
+J: Pastikan GPS aktif. Buka tab UTAMA untuk tong berdekatan Bangi secara masa nyata.
+S: Tong paling dekat berapa jauh dari saya?
+J: Jarak dalam meter/kilometer dipaparkan pada senarai tong di bawah peta tab UTAMA.
+S: Peta tak load, macam mana nak tahu lokasi tong?
+J: Pastikan internet stabil. Jika gagal, semak senarai teks lokasi tong di bawah peta tab UTAMA.
+S: Kat mana buang tin aluminium dekat Ampang?
+J: Tin aluminium masuk slot Logam. Semak tab UTAMA untuk tong berlabel Logam di sekitar Ampang.
+S: Ada tong SmartTong dalam mall?
+J: Buat masa ini SmartTong fokus kawasan awam luar bangunan. Semak tab UTAMA untuk lokasi.
+S: Macam mana tahu tong boleh guna sebelum saya pergi?
+J: Semak status warna pin tab UTAMA. Pin Merah atau status Penuh/Penyelenggaraan bermakna tong ditutup sementara.
+S: Ada tong untuk sisa pukal dekat Kajang?
+J: Sisa pukal tidak boleh masuk SmartTong. Semak tab INFO untuk jadual kutipan sisa pukal bulanan MPKj.
+S: Kat mana nak hantar barang kitar semula bersaiz besar macam perabot lama?
+J: Guna Aduan Portal pada tab IMBAS atau hubungi lori flatbed KDEBWM melalui tab INFO.
+
+--- BAHAGIAN 2: ISU TEKNIKAL & MASALAH APLIKASI ---
+S: Kenapa penutup tong tak terbuka bila dah scan?
+J: Pastikan internet aktif semasa imbasan. Jika pintu masih terkunci, slot mungkin penuh atau ada masalah teknikal.
+S: Aplikasi sangkut di skrin loading, apa buat?
+J: Tutup aplikasi sepenuhnya (force close) dan buka semula. Pastikan versi SmartTong terkini dari stor aplikasi.
+S: Kenapa sistem kata MyKad tidak sah?
+J: Pastikan format MyKad betul tanpa tanda sengkang contoh 01020310xxxx. Pendaftaran hanya untuk identiti domestik.
+S: Macam mana nak tukar nombor telefon dalam profil?
+J: Buka TETAPAN di bawah kanan skrin, pilih Kemas Kini Profil, tukar nombor telefon.
+S: Kenapa kamera tak keluar bila nak imbas sampah?
+J: Telefon belum beri kebenaran kamera kepada SmartTong. Aktifkan permission kamera di tetapan telefon.
+S: Kenapa aplikasi kata tiada sambungan padahal data hidup?
+J: Semak mod kapal terbang atau tukar dari data mudah alih ke Wi-Fi yang stabil.
+S: Macam mana nak log keluar?
+J: Pergi ke TETAPAN di bar menu bawah, tatal ke bawah, klik Log Keluar.
+S: Boleh daftar dua akaun guna MyKad yang sama?
+J: Tidak boleh. Satu MyKad hanya untuk satu akaun demi integriti sistem ganjaran dan pematuhan PDPA.
+S: Kenapa kedudukan lori pada peta tak bergerak?
+J: GPS lori dikemas kini setiap 30 saat. Jika statik lama, lori mungkin sedang proses pungutan setempat.
+S: Macam mana reset kata laluan?
+J: Di skrin log masuk, klik Lupa Kata Laluan. Sistem hantar pautan ke e-mel atau SMS nombor didaftarkan.
+S: Kenapa tak terima OTP SMS masa daftar?
+J: Pastikan nombor betul dan tiada sekatan SMS premium dari telco. Klik Hantar Semula selepas 60 saat.
+S: Aplikasi ada dark mode tak?
+J: Aplikasi menggunakan tema putih minimalis sepenuhnya untuk kejelasan visual maksimum di bawah cahaya matahari.
+S: Saya tukar telefon baru, Eco-Points hilang tak?
+J: Tidak hilang. Mata disimpan dalam pangkalan data awan. Log masuk semula dengan akaun yang sama.
+S: Di mana hantar feedback tentang bug?
+J: Guna fungsi Laporkan Pepijat di bawah menu tab TETAPAN.
+S: Kenapa menu bawah tiba-tiba hilang?
+J: Mulakan semula aplikasi. Jika berterusan, pasang semula (reinstall) untuk betulkan fail UI yang rosak.
+S: Adakah data MyKad selamat dalam aplikasi?
+J: Ya, data dilindungi di bawah PDPA dan disimpan menggunakan penyulitan standard industri.
+S: Kenapa SilaTanya AI kata Quota Exceeded?
+J: Had pertanyaan harian akaun telah mencapai maksimum. Sila cuba lagi esok.
+S: Macam mana bersihkan cache untuk lajukan loading?
+J: Pergi ke Settings > Apps > SmartTong dan klik Clear Cache pada telefon anda.
+S: Kenapa dapat mesej Session Expired?
+J: Sesi tamat tempoh jika aplikasi tidak digunakan lama. Sila log masuk semula.
+
+--- BAHAGIAN 3: GARIS PANDUAN KITAR SEMULA & AI KLASIFIKASI ---
+S: Kotak pizza ada minyak boleh masuk slot Kertas?
+J: Tidak boleh. Minyak merosakkan proses kitar semula kertas. Buang ke slot Sisa Baki.
+S: Botol syampu plastik kena bilas dulu ke?
+J: Ya, bilas sisa sabun dahulu sebelum imbas dan masukkan ke slot Plastik.
+S: Kenapa AI tolak botol mineral saya?
+J: Pastikan botol kosong dari air. AI tolak botol yang masih mengandungi cecair.
+S: Majalah lama berklip besi boleh masuk slot Kertas?
+J: Boleh, lebih baik tanggalkan klip besi dahulu untuk mudahkan proses di kilang.
+S: Tin Milo besi nak buang kat mana?
+J: Tin Milo dikategorikan sebagai Logam. Selepas dibilas, imbas dan masukkan ke slot Logam.
+S: Polistirena Styrofoam boleh dikitar semula?
+J: Tidak boleh. Polistirena tidak diterima. Lupuskan dalam slot Sisa Baki.
+S: Kenapa tisu muka dikategorikan Sisa Baki bukan Kertas?
+J: Tisu terpakai ada kotoran organik dan serat terlalu pendek untuk dikitar semula.
+S: Botol kaca ubat atau kicap boleh masuk slot mana?
+J: SmartTong fokus Kertas, Plastik, Logam. Bawa kaca ke pusat pengumpulan komuniti atau masuk Sisa Baki.
+S: Kulit pisang atau sisa sayur boleh masuk tong kitar semula?
+J: Tidak boleh. Sisa makanan organik masuk kategori Sisa Baki.
+S: Kotak susu Tetra Pak dikira Kertas ke Plastik?
+J: Imbas dahulu. Sistem arahkan ke slot Kertas kerana komponen utamanya adalah kadbod.
+S: Plastik pembungkus keropok boleh kitar semula?
+J: Kebanyakan plastik multi-layer tidak boleh dikitar semula. AI arahkan ke slot Sisa Baki.
+S: Resit kedai kertas terma boleh slot Kertas?
+J: Tidak boleh. Kertas resit ada salutan BPA yang tidak boleh dikitar semula. Buang ke Sisa Baki.
+S: Tin cat kering nak buang kat mana?
+J: Tin cat adalah sisa industri/bahaya. Rujuk pusat e-waste atau hazmat di tab INFO.
+S: Beg plastik pasar raya boleh kitar semula?
+J: Boleh jika bersih dari minyak. Imbas dan masukkan ke slot Plastik.
+S: Lampin pakai buang anak dikira sisa apa?
+J: Lampin ada super-absorbent polimer dan najis manusia. Wajib masuk slot Sisa Baki.
+S: Kadbod tebal bekas TV boleh masuk slot Kertas?
+J: Boleh. Lipat atau hancurkan menjadi saiz lebih kecil supaya muat.
+S: Baju atau kasut lama boleh dikitar semula?
+J: Tidak boleh. SmartTong tidak proses tekstil. Masukkan ke tong fabrik komuniti di tab INFO.
+S: Aluminium foil bekas bakar ayam boleh dikitar semula?
+J: Boleh jika telah dibasuh bersih tanpa sisa daging atau minyak. Jika kotor, masuk Sisa Baki.
+S: Wayar elektrik lama boleh masuk slot Logam?
+J: Wayar adalah e-waste. Bawa ke pusat pengumpulan e-waste di tab INFO.
+S: Berus gigi terpakai boleh kitar semula?
+J: Tidak. Campuran plastik dan nilon sukar diasingkan. Buang ke Sisa Baki.
+S: Sudu dan garpu plastik pakai buang boleh dikitar semula?
+J: Boleh, pastikan tidak dicemari kuah makanan sebelum diimbas ke slot Plastik.
+S: Penyedut minuman straw boleh masuk slot plastik?
+J: Straw saiz kecil sukar diproses. Kumpul dalam kuantiti banyak atau masukkan ke Sisa Baki.
+S: Tin aerosol kosong boleh masuk Logam?
+J: Pastikan tin benar-benar kosong tanpa baki gas tekanan sebelum dimasukkan.
+S: Kotak telur karton boleh masuk slot Kertas?
+J: Boleh, kotak telur karton sangat bagus untuk dikitar semula ke slot Kertas.
+S: Plastik bubble wrap dikira sisa apa?
+J: Letupkan gelembung dahulu, imbas, dan masukkan ke slot Plastik.
+S: Kad raya ada labuci dan lampu LED boleh masuk Kertas?
+J: Tidak boleh terus. Tanggalkan komponen elektronik dan labuci sebelum kertas dikitar semula.
+S: Botol minyak masak boleh masuk slot Plastik?
+J: Sukar dibersihkan dari minyak degil. Masukkan ke Sisa Baki atau hantar minyak ke pusat bio-diesel.
+S: Pita pelekat pada kotak kena buang sebelum kitar semula?
+J: Ya, kupas pita pelekat plastik sebanyak mungkin sebelum masukkan ke slot Kertas.
+S: Beg kertas kedai pakaian boleh kitar semula?
+J: Boleh. Tanggalkan tali pemegang kain atau plastik sebelum masuk slot Kertas.
+
+--- BAHAGIAN 4: SISTEM GANJARAN, MATA & ADUAN ---
+S: Macam mana Eco-Points dikira?
+J: Mata dikira berdasarkan berat anggaran material dan ketepatan pengkelasan AI semasa imbasan.
+S: Di mana tukar Eco-Points dengan hadiah?
+J: Buka tab HADIAH di menu bar bawah. Tersedia baucar digital dan cenderahati dari PBT Selangor.
+S: Apa beza Eco-Points dengan Citizen Compliance Points?
+J: Eco-Points untuk tebus hadiah. Citizen Compliance Points adalah merit profil untuk pilihan Juara Kebersihan bulanan.
+S: Kenapa mata tak masuk lepas buang sampah?
+J: Pengesahan data ambil masa sehingga 5 minit. Jika masih tiada, semak sejarah aktiviti tab HADIAH.
+S: Macam mana buat aduan pasal tong pecah?
+J: Pergi ke tab IMBAS, pilih Aduan Portal. Tangkap gambar tong rosak, letakkan pin lokasi, dan hantar.
+S: Boleh pindahkan Eco-Points ke akaun kawan?
+J: Tidak boleh. Mata diikat pada MyKad pengguna dan tidak boleh dipindah milik.
+S: Berapa lama tempoh sah Eco-Points?
+J: Mata sah sehingga 31 Disember setiap tahun kitaran operasi. Tebus sebelum tarikh tersebut.
+S: Saya nampak pembuangan haram, macam mana lapor?
+J: Buka tab IMBAS > Aduan Portal. Tangkap gambar tapak haram, sistem auto-tag GPS untuk penguatkuasaan PBT.
+S: Boleh tebus Eco-Points menjadi wang tunai?
+J: Ganjaran dalam bentuk kredit e-dompet Touch n Go, baucar diskaun cukai pintu PBT, atau barangan eksklusif.
+S: Macam mana tahu aduan saya dah diproses?
+J: Jejak status kemajuan melalui tab TETAPAN di bawah Sejarah Aduan Saya.
+S: Berapa mata minimum untuk tebus hadiah?
+J: Penebusan baucar digital bermula dari serendah 100 Eco-Points. Semak tab HADIAH.
+S: Adakah aduan saya akan dedahkan nama saya?
+J: Tidak. Identiti pengadu adalah sulit sepenuhnya di bawah sistem keselamatan data agensi kerajaan.
+S: Kenapa akaun kena sekat dari terima mata?
+J: Akaun disekat jika sistem kesan cubaan penipuan seperti imbas gambar tiruan atau manipulasi tong.
+S: Berapa mata kalau lapor tong penuh?
+J: Setiap aduan tong penuh yang disahkan betul oleh lori pengutip dihadiahkan +10 Eco-Points.
+S: Baucar yang ditebus guna macam mana?
+J: Baucar memaparkan barcode atau kod promo unik. Tunjukkan kepada kaunter rakan niaga PBT.
+S: Boleh batalkan penebusan hadiah yang tersalah tekan?
+J: Penebusan yang disahkan adalah muktamad. Mata yang ditolak tidak boleh dikembalikan.
+S: Berapa lama lori datang selepas hantar aduan tong penuh?
+J: Melalui sistem dinamik pintar, lori dikerah ke lokasi dalam 2 hingga 4 jam selepas aduan disahkan.
+S: Boleh tebus mata untuk bayar saman komposit PBT?
+J: Ya! Mata ganjaran boleh digunakan sebagai diskaun pembayaran komposit am PBT terpilih.
+S: Adakah mata luput kalau akaun tidak aktif 6 bulan?
+J: Mata tidak luput disebabkan tidak aktif, melainkan melepasi tarikh luput kitaran tahunan akhir tahun.
+S: Status aduan Selesai maksudnya apa?
+J: Pasukan PBT/KDEBWM telah ke lokasi, membersihkan sisa, dan mengesahkan penutupan kes dalam sistem.
+
+--- BAHAGIAN 5: SOALAN LUAR SKOP (DITOLAK) ---
+Soalan tentang: saham bursa, kod program, cuaca harian, resepi masakan, sejarah PM, tiket penerbangan, esei akademik, penyakit, lirik lagu, beli laptop — SEMUA DITOLAK.
+Jawapan standard: Maaf, saya hanya dilatih untuk menjawab soalan berkaitan pengurusan sisa, proses kitar semula, atau fungsi teknikal aplikasi SmartTong sahaja. Sila kemukakan soalan berkaitan topik tersebut.
+`;
+
+// ── QnA Database (150 soal-jawab) ────────────────────────
+// Each entry: { k: 'space-separated keywords', a: 'answer' }
+// Used by getSopAnswer() for fast local matching
+const QNA_DB = [
+  // ─ Bahagian 1: Lokasi & Navigasi ─
+  { k:'tong terdekat dekat peta mana',           a:'Sila semak menu **UTAMA** di bar bawah skrin. Peta digital memaparkan semua tong terdekat berserta indikator status Hijau (kosong) atau Merah (penuh).' },
+  { k:'navigasi arah google maps waze pin',       a:'Tekan ikon pin tong pilihan anda pada peta tab **UTAMA**, kemudian tekan butang **Navigasi** untuk pautan terus ke Google Maps atau Waze.' },
+  { k:'tong tak muncul hilang peta',              a:'Kemungkinan besar tong sedang dialihkan untuk pengosongan oleh lori KDEBWM atau sedang dalam proses penyelenggaraan.' },
+  { k:'shah alam plastik cari tapis',             a:'Buka tab **UTAMA**, gunakan penapis zon Shah Alam/MBDK. Peta akan tunjuk tong kitar semula dengan slot kosong untuk Plastik.' },
+  { k:'kuala selangor mpks kawasan ada',          a:'Ada, sistem diintegrasikan dengan MPKS. Sila lihat peta tab **UTAMA** dan pilih penapis Kuala Selangor.' },
+  { k:'klang kertas logam cari buka',             a:'Buka tab **UTAMA** dan tapis kawasan Klang. Cari pin berlabel slot Kertas atau Logam yang berstatus aktif.' },
+  { k:'jarak jauh dekat meter kilometer',         a:'Jarak dalam meter atau kilometer dipaparkan secara langsung pada senarai tong di bawah paparan peta pada tab **UTAMA**.' },
+  { k:'peta kosong blank load gagal internet',    a:'Pastikan GPS diaktifkan dan internet stabil. Jika masih gagal, rujuk senarai teks lokasi tong di bawah peta tab **UTAMA**.' },
+  { k:'ampang logam tin aluminium',               a:'Tin aluminium masuk slot **Logam**. Semak tab **UTAMA** untuk tong berlabel Logam di sekitar Ampang.' },
+  { k:'mall dalam bangunan',                      a:'Buat masa ini SmartTong memfokuskan kawasan tumpuan awam luar bangunan PBT. Semak tab **UTAMA** untuk lokasi terperinci.' },
+  { k:'sebelum pergi tahu tutup penyelenggaraan', a:'Semak status warna pin pada tab **UTAMA**. Pin **Merah** atau status Penuh/Penyelenggaraan bermakna tong ditutup sementara.' },
+  { k:'kajang pukal besar perabot lama',          a:'Sisa pukal tidak boleh masuk SmartTong. Semak tab **INFO** untuk jadual kutipan sisa pukal bulanan MPKj.' },
+  { k:'perabot flatbed lori besar hantar',        a:'Sila gunakan **Aduan Portal** pada tab **IMBAS** atau hubungi lori flatbed KDEBWM melalui maklumat hubungan di tab **INFO**.' },
+  { k:'usj stesen lrt ktm universiti uitm ukm um', a:'Gunakan fungsi carian lokasi pada peta tab **UTAMA** untuk semak sama ada kawasan anda dalam zon pilot semasa.' },
+
+  // ─ Bahagian 2: Isu Teknikal ─
+  { k:'penutup tong tak buka kunci scan',         a:'Pastikan sambungan internet aktif semasa imbasan. Jika pintu masih terkunci, slot mungkin penuh atau mengalami masalah teknikal.' },
+  { k:'sangkut loading crash force close buka semula', a:'Tutup aplikasi sepenuhnya (force close) dan buka semula. Pastikan menggunakan versi SmartTong terkini daripada stor aplikasi.' },
+  { k:'mykad tidak sah format daftar',            a:'Pastikan format MyKad betul tanpa tanda sengkang, contoh: **01020310xxxx**. Pendaftaran hanya untuk identiti domestik.' },
+  { k:'tukar nombor telefon profil tetapan',      a:'Buka menu **TETAPAN** di bawah kanan, pilih **Kemas Kini Profil**, dan tukar nombor telefon.' },
+  { k:'kamera tak keluar permission kebenaran',   a:'Telefon belum beri kebenaran kamera kepada SmartTong. Aktifkan permission kamera di tetapan telefon (Settings > Apps > SmartTong > Permissions).' },
+  { k:'tiada sambungan internet data wifi',       a:'Semak sama ada mod kapal terbang aktif atau cuba tukar dari data mudah alih ke Wi-Fi yang stabil.' },
+  { k:'log keluar logout tetapan',                a:'Pergi ke tab **TETAPAN** di bar menu bawah, tatal ke bawah, dan klik butang **Log Keluar**.' },
+  { k:'dua akaun mykad sama daftar',              a:'Tidak boleh. Satu MyKad hanya satu akaun demi integriti sistem ganjaran dan pematuhan PDPA.' },
+  { k:'lori gps peta tak bergerak statik',        a:'GPS lori dikemas kini setiap 30 saat. Jika statik lama, lori mungkin sedang proses pungutan setempat atau di luar kawasan rangkaian.' },
+  { k:'kata laluan lupa reset otp sms',           a:'Di skrin log masuk, klik **Lupa Kata Laluan**. Sistem hantar pautan tetapan semula ke e-mel atau SMS nombor didaftarkan.' },
+  { k:'otp sms tak terima semula',                a:'Pastikan nombor betul dan tiada sekatan SMS premium. Klik **Hantar Semula** selepas 60 saat.' },
+  { k:'dark mode gelap tema warna',               a:'Aplikasi menggunakan tema putih minimalis sepenuhnya untuk kejelasan visual maksimum di bawah cahaya matahari.' },
+  { k:'tukar telefon baru points eco hilang',     a:'Mata tidak akan hilang. Disimpan selamat dalam pangkalan data awan. Log masuk semula dengan akaun yang sama.' },
+  { k:'gambar blur kabur tidak jelas ralat error', a:'Pastikan lensa kamera bersih dan objek di bawah pencahayaan cukup sebelum tangkap gambar.' },
+  { k:'feedback bug laporan masalah pepijat',     a:'Gunakan fungsi **Laporkan Pepijat** di bawah menu tab **TETAPAN**.' },
+  { k:'menu bawah hilang bottom bar nav',         a:'Mulakan semula aplikasi. Jika berterusan, pasang semula (reinstall) SmartTong untuk betulkan fail komponen UI yang rosak.' },
+  { k:'pdpa data peribadi selamat mykad',         a:'Ya, data peribadi dilindungi sepenuhnya di bawah **Akta PDPA** dan disimpan dengan penyulitan standard industri.' },
+  { k:'quota exceeded had pertanyaan ai',         a:'Had pertanyaan harian telah mencapai maksimum demi elak penyalahgunaan bot. Cuba lagi esok.' },
+  { k:'cache bersih clear laju loading lambat',   a:'Pergi ke **Settings > Apps > SmartTong** dan klik **Clear Cache** pada telefon anda.' },
+  { k:'session expired tamat log masuk semula',   a:'Sesi tamat tempoh jika aplikasi tidak digunakan lama demi keselamatan. Sila log masuk semula.' },
+  { k:'bateri telefon banyak guna',               a:'Tidak. Aplikasi dioptimumkan untuk guna tenaga minimal dan hanya aktifkan GPS/kamera apabila diperlukan sahaja.' },
+
+  // ─ Bahagian 3: Kitar Semula & AI Klasifikasi ─
+  { k:'pizza kotak minyak lemak kertas',          a:'Tidak boleh. Minyak pada kotak pizza merosakkan proses kitar semula kertas. Sila buang ke dalam slot **Sisa Baki**.' },
+  { k:'syampu plastik botol bilas basuh',         a:'Ya, bilas sisa sabun terlebih dahulu untuk elak pencemaran cecair sebelum imbas dan masuk ke slot **Plastik**.' },
+  { k:'botol mineral plastik ai tolak',           a:'Pastikan botol kosong dari air. AI tolak botol plastik yang masih mengandungi cecair.' },
+  { k:'majalah klip besi kertas slot',            a:'Boleh. Lebih baik tanggalkan klip besi dahulu untuk mudahkan proses penapisan di kilang pemprosesan.' },
+  { k:'tin milo besi logam slot',                 a:'**Tin Milo dikategorikan sebagai Logam.** Selepas dibilas bersih, imbas dan masukkan ke dalam slot **Logam**.' },
+  { k:'styrofoam polistirena polystyrene foam',   a:'Tidak boleh. Polistirena tidak diterima. Lupuskan dalam slot **Sisa Baki**.' },
+  { k:'tisu tissue muka sisa baki kertas',        a:'Tisu terpakai ada kotoran organik dan serat terlalu pendek untuk dikitar semula. Masukkan ke slot **Sisa Baki**.' },
+  { k:'kaca botol ubat kicap cermin',             a:'SmartTong fokus Kertas, Plastik, Logam. Bawa kaca ke pusat pengumpulan komuniti atau masuk **Sisa Baki** jika tiada pilihan.' },
+  { k:'sisa makanan organik sayur kulit pisang',  a:'Tidak boleh. Sisa makanan organik masuk kategori **Sisa Baki** untuk elak bau dan pencemaran kulat.' },
+  { k:'tetra pak kotak susu minuman kertas plastik', a:'Imbas dahulu. Sistem arahkan ke slot **Kertas** kerana komponen utamanya adalah kadbod kertas tulen.' },
+  { k:'plastik keropok bungkus multi-layer lapisan', a:'Kebanyakan plastik multi-layer tidak boleh dikitar semula. AI arahkan ke slot **Sisa Baki**.' },
+  { k:'resit terma kedai bpa kimia',              a:'Tidak boleh. Kertas resit terma ada salutan BPA. Sila buang ke slot **Sisa Baki**.' },
+  { k:'tin cat kering bahaya industri',           a:'Tin cat dikira sisa industri/bahaya. Rujuk pusat e-waste atau hazmat di tab **INFO**.' },
+  { k:'beg plastik pasar raya kitar',             a:'Boleh jika bersih dari minyak. Imbas dan masukkan ke dalam slot **Plastik**.' },
+  { k:'lampin pampers bayi sisa baki',            a:'Lampin terpakai ada super-absorbent polimer dan najis manusia. Wajib masuk slot **Sisa Baki**.' },
+  { k:'ai tidak dikenali gambar tidak jelas sudut', a:'Cuba ratakan objek dan ambil gambar dari sudut atas dengan pencahayaan yang cukup.' },
+  { k:'cermin pecah tajam berbahaya',             a:'Sisa tajam berbahaya tidak dibenarkan masuk SmartTong. Lupuskan dengan selamat mengikut SOP PBT.' },
+  { k:'kadbod tv kotak besar tebal kertas',       a:'Boleh. Lipat atau hancurkan kadbod menjadi saiz lebih kecil supaya muat ke dalam bukaan slot Kertas.' },
+  { k:'baju kasut pakaian tekstil lama',          a:'Tidak boleh. SmartTong tidak proses sisa tekstil. Masukkan ke tong fabrik komuniti khusus di tab **INFO**.' },
+  { k:'aluminium foil bekas bakar ayam minyak',   a:'Boleh jika dibasuh bersih tanpa sisa daging atau minyak. Jika kotor, masuk **Sisa Baki**.' },
+  { k:'wayar elektrik tembaga ewaste logam',      a:'Wayar elektrik dikategorikan sebagai e-waste. Bawa ke pusat pengumpulan e-waste di tab **INFO**.' },
+  { k:'berus gigi nilon plastik sisa baki',       a:'Campuran plastik dan nilon sukar diasingkan. Buang ke slot **Sisa Baki**.' },
+  { k:'sudu garpu plastik pakai buang kuah',      a:'Boleh, pastikan tidak dicemari kuah sebelum diimbas ke slot **Plastik**.' },
+  { k:'straw penyedut minuman kecil ringan',      a:'Straw saiz kecil sukar diproses. Kumpul dalam kuantiti banyak atau masuk ke **Sisa Baki**.' },
+  { k:'aerosol tin semburan nyamuk gas tekanan',  a:'Pastikan tin benar-benar kosong tanpa baki gas tekanan sebelum dimasukkan ke slot **Logam**.' },
+  { k:'kotak telur karton kitar semula kertas',   a:'Boleh! Kotak telur karton sangat bagus untuk dikitar semula ke dalam slot **Kertas**.' },
+  { k:'bubble wrap plastik gelembung',            a:'Letupkan gelembung dahulu, imbas, dan masukkan ke dalam slot **Plastik**.' },
+  { k:'kad raya labuci lampu led hiasan',         a:'Tidak boleh terus. Tanggalkan komponen elektronik dan labuci plastik sebelum kertas dikitar semula.' },
+  { k:'minyak masak botol plastik kotor degil',   a:'Sukar dibersihkan dari minyak. Masuk ke **Sisa Baki** atau hantar minyak terpakai ke pusat bio-diesel.' },
+  { k:'pita pelekat cellophane tape kotak kurier', a:'Ya, kupas sebanyak mungkin pita pelekat plastik dari permukaan kotak sebelum masuk slot **Kertas**.' },
+  { k:'beg kertas kedai pakaian tali pemegang',   a:'Boleh. Tanggalkan tali pemegang kain/plastik sebelum masuk slot **Kertas**.' },
+  { k:'file fail plastik pejabat dokumen',        a:'Ya. Tanggalkan sebarang kertas atau dokumen di dalamnya sebelum fail plastik diimbas dan dibuang.' },
+  { k:'pen plastik dakwat sisa baki',             a:'Pen ada campuran plastik, mata besi, dan sisa dakwat kimia. Buang ke slot **Sisa Baki**.' },
+  { k:'surat khabar basah reput hujan',           a:'Kertas terlampau basah merosakkan kualiti pulpa. Biarkan kering dahulu atau buang ke **Sisa Baki**.' },
+  { k:'staples klip kertas dokumen cabut',        a:'Klip besar wajib ditanggalkan. Untuk kuantiti staples kecil, ia boleh dimaafkan.' },
+  { k:'pembaris besi logam patah',                a:'Masukkan ke dalam slot **Logam** selepas imbasan kod diluluskan oleh aplikasi.' },
+  { k:'pemadam pensel getah pvc sisa',            a:'Pemadam terbuat dari getah atau PVC sintetik. Dikategorikan sebagai **Sisa Baki**.' },
+  { k:'ubat gigi tiub plastik aluminium lapisan', a:'Tiub ubat gigi sukar dibersihkan dan ada lapisan aluminium tersembunyi. Buang ke **Sisa Baki**.' },
+  { k:'buku latihan sekolah lama kertas scan',    a:'Imbas buku menggunakan app dan masukkan ke dalam slot **Kertas**.' },
+  { k:'phone case silikon tpu plastik',           a:'Silikon atau TPU tidak diterima dalam slot plastik standard. Buang ke **Sisa Baki**.' },
+  { k:'racun rumpai kimia pertanian sisa terjadual', a:'Bekas racun kimia pertanian adalah Sisa Terjadual SW401 yang memerlukan pelupusan khas Jabatan Alam Sekitar.' },
+  { k:'yogurt bekas plastik kitar bilas',         a:'Boleh, dengan syarat sisa yogurt telah dibilas bersih sehingga tiada bau berasid.' },
+
+  // ─ Bahagian 4: Ganjaran, Mata & Aduan ─
+  { k:'eco-points mata dikira berat klasifikasi ai', a:'Mata dikira berdasarkan berat anggaran material sisa dan ketepatan pengkelasan AI semasa imbasan.' },
+  { k:'tukar tebus hadiah tab reward baucar',     a:'Buka tab **HADIAH** di menu bar bawah. Tersedia baucar digital dan cenderahati eksklusif dari PBT Selangor.' },
+  { k:'eco-points citizen compliance beza',       a:'**Eco-Points** untuk tebus hadiah barangan. **Citizen Compliance Points** adalah merit profil untuk pilihan Juara Kebersihan bulanan negeri.' },
+  { k:'mata tak masuk lambat 5 minit sejarah',    a:'Pengesahan data kadangkala ambil masa sehingga 5 minit. Jika masih tiada, semak sejarah aktiviti di tab **HADIAH**.' },
+  { k:'aduan tong rosak pecah gambar pin',        a:'Pergi ke tab **IMBAS**, pilih **Aduan Portal**. Tangkap gambar tong rosak, letakkan pin lokasi, dan klik Hantar.' },
+  { k:'pindah transfer eco-points kawan',         a:'Tidak boleh. Mata diikat pada MyKad pengguna secara kekal dan tidak boleh dipindah milik demi elak manipulasi.' },
+  { k:'tempoh sah luput expiry disember tahunan', a:'Mata sah sehingga 31 Disember setiap tahun kitaran operasi. Tebus sebelum tarikh tersebut.' },
+  { k:'lapor pembuangan haram tepi jalan aduan gps', a:'Buka tab **IMBAS** > **Aduan Portal**. Tangkap gambar tapak haram. Sistem auto-tag koordinat GPS untuk tindakan PBT.' },
+  { k:'tebus cash wang tunai ewallet touch n go', a:'Ganjaran dalam bentuk kredit e-dompet (Touch n Go eWallet), baucar diskaun cukai pintu PBT, atau barangan eksklusif.' },
+  { k:'status aduan proses kemajuan sejarah',     a:'Jejak status kemajuan tindakan aduan melalui tab **TETAPAN** di bawah menu **Sejarah Aduan Saya**.' },
+  { k:'minimum 100 mata tebus baucar',            a:'Penebusan baucar digital bermula dari serendah **100 Eco-Points**. Semak senarai di tab **HADIAH**.' },
+  { k:'nama sulit rahsia aduan pengadu',          a:'Tidak. Semua identiti pengadu adalah sulit dan dirahsiakan sepenuhnya di bawah sistem keselamatan data agensi kerajaan.' },
+  { k:'suspend sekat akaun penipuan tiruan manipulasi', a:'Akaun disekat jika sistem kesan cubaan penipuan berulang seperti imbas gambar tiruan atau manipulasi tong.' },
+  { k:'lapor tong penuh berapa mata 10',          a:'Setiap aduan tong penuh yang disahkan betul oleh lori pengutip dihadiahkan **+10 Eco-Points**.' },
+  { k:'baucar barcode kod promo guna kaunter',    a:'Baucar memaparkan kod bar (barcode) atau kod promo unik. Tunjukkan kepada kaunter rakan niaga PBT yang terlibat.' },
+  { k:'batal tebus muktamad tidak boleh',         a:'Penebusan yang telah disahkan adalah muktamad. Mata yang ditolak tidak boleh dikembalikan ke dalam akaun.' },
+  { k:'leaderboard juara kebersihan 10 teratas',  a:'10 warganegara Selangor dengan Citizen Compliance Points tertinggi setiap bulan dipaparkan di skrin utama dashboard.' },
+  { k:'aduan betul palsu imej metadata koordinat', a:'Setiap imej aduan diproses oleh Ejen Analisis Pintar untuk sahkan ketepatan metadata visual dan koordinat sebelum dihantar ke unit operasi lori.' },
+  { k:'dalam semakan diproses status aduan',      a:'Bermakna aduan diterima dan sedang dijadualkan mengikut laluan operasi unit kecemasan KDEB Waste Management terdekat.' },
+  { k:'sisa baki compliance point 1 tabiat',      a:'Pembuangan sisa baki yang betul diberikan **+1 Citizen Compliance Point** untuk galakkan tabiat anti-pembaziran.' },
+  { k:'saman komposit bayar mata ganjaran diskaun', a:'Ya! Mata ganjaran boleh digunakan sebagai diskaun pembayaran komposit am PBT terpilih — ciri utama inovasi SmartTong.' },
+  { k:'lori eta 2 4 jam datang kutipan',          a:'Melalui sistem pemanduan dinamik pintar, lori dikerah ke lokasi dalam **2 hingga 4 jam** selepas aduan disahkan.' },
+  { k:'hadiah fizikal tuntut kaunter pbt resit',  a:'Hadiah fizikal perlu dituntut di kaunter khidmat pelanggan PBT daerah dengan menunjukkan resit digital aplikasi.' },
+  { k:'selesai status bermakna tutup kes bersih', a:'Status **Selesai** bermakna pasukan PBT/KDEBWM telah ke lokasi, membersihkan sisa, dan mengesahkan penutupan kes.' },
+  { k:'sensor ultrasonik jsn bukti buang sahkan', a:'Sensor ultrasonik JSN-SR04T dalam tong mengukur perubahan isipadu sebaik pintu ditutup untuk sahkan kemasukan objek.' },
+  { k:'rakan niaga jenama pasar raya senarai',    a:'Senarai penuh jenama yang menerima mata ganjaran boleh disemak di tab **HADIAH**.' },
+  { k:'had aduan sehari berganda koordinat sama', a:'Tiada had untuk aduan tulen, namun sistem menyaring laporan berganda untuk koordinat lokasi yang sama.' },
+
+  // ─ Hubungi & Lain-lain ─
+  { k:'hubungi telefon emel portal kdebwm kdeb',  a:'**Hubungi KDEBWM:**\n- Talian bebas tol: **1800-88-5678**\n- Email: smarttong@kdeb.com.my\n- Portal: smarttong.selangor.gov.my\n- Waktu pejabat: Isnin–Jumaat 8:00 AM – 5:00 PM' },
+  // Crime / Vandalism / Theft
+  { k:'curi curi curi curi curi curi curi curi tong hilang rosak vandalism crime', a:'Sila laporkan segera kes kecurian atau vandalisme menggunakan **Aduan Portal** pada tab IMBAS. Kami akan hantar unit keselamatan.' },
+  
+  // English QnA subset
+  { k:'where nearest bin map', a:'Please check the HOME menu. The digital map will display all nearby bin locations.' },
+  { k:'plastic bottle shah alam', a:'Open the HOME tab and use the zone filter for Shah Alam/MBDK.' },
+  { k:'navigate directions pin', a:'Tap your preferred bin pin on the map, then tap Navigate for Google Maps or Waze.' },
+  { k:'bin disappeared missing map', a:'The unit is likely temporarily offline for clearing or maintenance.' },
+  { k:'paper cardboard klang', a:'Filter the region by Klang on the HOME menu and look for active Paper slots.' },
+  { k:'metal aluminium petaling jaya', a:'Filter the zone by MBPJ/Petaling on the HOME tab.' },
+  { k:'points calculate reward', a:'Points are dynamically derived based on weight and AI classification.' },
+  { k:'redeem voucher eco-points', a:'Open the REWARDS tab to browse a digital catalog of e-vouchers.' },
+];
+
+// ── Keyword Relevance Filter ───────────────────────────
+const RELEVANT_KW = [
+  // Core SmartTONG scope
+  'tong','sampah','sisa','kitar','recycle','recycling','waste','plastik','kertas','logam',
+  'tin','botol','kadbod','tisu','pampers','bateri','ewaste','e-sisa','foil','wayar',
+  // System / App
+  'smarttong','kdeb','kdebwm','mbsj','mbpj','mbsa','mpks','mpaj','pbt','selangor',
+  'imbas','scan','aduan','laporan','lapor','akaun','login','log masuk','log keluar',
+  'tetapan','profil','cache','bug','pepijat','permission','kebenaran',
+  // Status / ops
+  'penuh','kosong','pecah','rosak','berbahaya','bahaya','gas','bau','bocor',
+  'kutipan','jadual','truk','truck','dispatch','hantar','lori',
+  // Rewards
+  'mata','eco','point','ganjaran','hadiah','tebus','baucar','juara','wira','pejuang',
+  'suspend','sekat','compliance','leaderboard',
+  // Legal
+  // Out of scope topics (strong rejection)
+  'saham','bursa','stok','stock','cuaca','weather','resepi','masak','recipe','cook',
+  'sejarah','history','perdana menteri','pm','tiket','flight','esei','essay','sakit',
+  'penyakit','headache','lagu','lirik','laptop','beli',
+  // Question words (allow broad recycling questions)
+  'cara','macam','boleh','apa','mana','bila','kenapa','berapa','bagaimana',
+  'how','what','where','when','why','which','can','should',
+  // Locations
+  'shah alam','subang','usj','klang','ampang','petaling','puchong','damansara',
+  'bangi','rawang','kajang','sepang','kuala selangor','gombak','hulu langat',
+  // Greetings & help
+  'hello','hai','hi','salam','selamat','terima kasih','thanks','tolong','help','info',
+];
+
+function isRelevant(q) {
+  const lower = q.toLowerCase();
+  
+  // Strong negative filter: Immediately reject known out-of-scope topics
+  const OUT_OF_SCOPE = ['saham', 'bursa', 'cuaca', 'weather', 'resepi', 'masak', 'recipe', 'cook', 'perdana menteri', 'tiket penerbangan', 'flight ticket', 'esei', 'essay', 'headache', 'sakit kepala', 'lirik', 'laptop murah'];
+  if (OUT_OF_SCOPE.some(kw => lower.includes(kw))) {
+    return false;
+  }
+
+  // Positive filter
+  return RELEVANT_KW.some(kw => lower.includes(kw));
+}
+
+// ── QnA Keyword Scoring & Semantic Search ────────────────
+let semanticExtractor = null;
+let qnaEmbeddings = null;
+
+async function initSemanticSearch() {
+  if (semanticExtractor) return;
+  try {
+    const loadingId = 'semantic-loading-msg';
+    const el = document.createElement('div');
+    el.className = 'msg msg-bot'; el.id = loadingId;
+    el.innerHTML = `<div class="msg-name">Sistem</div><div class="msg-bubble" style="background:#fff3cd; color:#856404; font-size:12px;">⏳ Memuat turun model AI carian semantik (22MB)... Sila tunggu sebentar. Ini hanya berlaku sekali.</div>`;
+    const c = document.getElementById('chat-msgs');
+    if (c) { c.appendChild(el); c.scrollTop = c.scrollHeight; }
+    
+    // Import Transformers.js dynamically
+    const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+    env.allowLocalModels = false;
+    
+    semanticExtractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    
+    qnaEmbeddings = await Promise.all(QNA_DB.map(async (entry) => {
+      const output = await semanticExtractor(entry.k, { pooling: 'mean', normalize: true });
+      return { entry, vector: output.data };
+    }));
+    
+    document.getElementById(loadingId)?.remove();
+  } catch (err) {
+    console.error("Semantic search init failed:", err);
+    document.getElementById('semantic-loading-msg')?.remove();
+  }
+}
+
+function cosineSimilarity(vecA, vecB) {
+  let dotProduct = 0;
+  for (let i = 0; i < vecA.length; i++) dotProduct += vecA[i] * vecB[i];
+  return dotProduct;
+}
+
+async function getSopAnswer(q) {
+  const lower = q.toLowerCase();
+
+  if (/\b(hello|hai|hi|salam|apa khabar|selamat)\b/.test(lower))
+    return 'Hai! Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor berdasarkan SOP KDEBWM.\nTanya saya tentang kitar semula, status tong, jadual kutipan, atau sistem mata Eco-Points!';
+  if (/terima kasih|thanks|thank you/.test(lower))
+    return 'Sama-sama! Teruskan usaha mulia menjaga kebersihan Selangor. Bersama kita boleh!';
+
+  if (semanticExtractor && qnaEmbeddings) {
+    const qOutput = await semanticExtractor(lower, { pooling: 'mean', normalize: true });
+    const qVector = qOutput.data;
+    
+    let best = null, bestScore = -1;
+    for (const item of qnaEmbeddings) {
+      const score = cosineSimilarity(qVector, item.vector);
+      if (score > bestScore) { bestScore = score; best = item.entry; }
+    }
+    
+    // Threshold 0.45 for meaningful semantic similarity against keyword strings
+    if (best && bestScore >= 0.45) return best.a;
+  } else {
+    // Old fallback logic if model failed to load
+    let best = null, bestScore = 0;
+    for (const entry of QNA_DB) {
+      const keys = entry.k.split(' ');
+      let score = 0;
+      for (const kw of keys) {
+        if (kw.length > 2 && lower.includes(kw)) score += kw.length;
+      }
+      if (score > bestScore) { bestScore = score; best = entry; }
+    }
+    if (best && bestScore >= 4) return best.a;
+  }
+
+  if (/b0[1-5]|status tong|tong berapa|semua tong/.test(lower))
+    return `**Status Tong SmartTONG Semasa:**\n${BINS.map(b=>`- **${b.id}** (${b.zone}): ${Math.round(b.fill)}% penuh${b.hz?' - BERBAHAYA':''}${b.broken?' - PECAH':''}${b.battery<=20?' - bateri rendah':''}`).join('\n')}`;
+
+  return '**SilaTanya AI (SOP KDEBWM):**\nSaya tidak dapat mengenal pasti soalan anda dengan tepat. Sila cuba soalan seperti:\n- "Kat mana tong terdekat?"\n- "Macam mana nak kitar tin Milo?"\n- "Berapa mata dapat kalau lapor tong penuh?"\n- "Kenapa penutup tong tak terbuka?"';
+}
+
+function getBotAnswer(q) { return getSopAnswer(q); }
+
+// ── Data ───────────────────────────────────────────────
+const BINS = [
+  { id:'B01', name:'Persiaran Kewajipan, USJ 1',       zone:'MBSJ', lat:3.0481, lng:101.5787, fill:85, battery:72, moist:68, gas:220, hz:false, broken:false, reported:true  },
+  { id:'B02', name:'Jalan SS15/4, Subang Jaya',         zone:'MBSJ', lat:3.0754, lng:101.5843, fill:62, battery:88, moist:22, gas:89,  hz:false, broken:false, reported:false },
+  { id:'B03', name:'Dataran Sunway, PJS 11',             zone:'MBPJ', lat:3.0680, lng:101.6014, fill:93, battery:45, moist:81, gas:380, hz:false, broken:false, reported:true  },
+  { id:'B04', name:'Taman Jaya Park, Petaling Jaya',    zone:'MBPJ', lat:3.1069, lng:101.6380, fill:28, battery:91, moist:18, gas:55,  hz:false, broken:true,  reported:false },
+  { id:'B05', name:'Pasar Malam Shah Alam, Seksyen 14', zone:'MBSA', lat:3.0738, lng:101.5183, fill:77, battery:18, moist:74, gas:415, hz:true,  broken:false, reported:true  },
+];
+const CHAMPIONS = [
+  { name:'Ahmad Razif',  zone:'USJ 1', pts:820 },
+  { name:'Siti Norehan', zone:'Damansara', pts:610 },
+  { name:'Kumar Selvam', zone:'Klang', pts:485 },
+  { name:'Lim Wei Xian', zone:'SS2 PJ', pts:420 },
+  { name:'Nurul Fadhilah',zone:'Shah Alam', pts:398 },
+];
+const ADUANS = [
+  { title:'Tong B03 — Limpah Penuh',       loc:'Dataran Sunway, PJS 11',  time:'9:42 PM', icon:'alert-triangle', color:'var(--red)'    },
+  { title:'Pembuangan Haram — Tayar Lama', loc:'Jalan Industri USJ',       time:'8:15 PM', icon:'shield-alert',   color:'var(--orange)' },
+  { title:'Tong B04 — Pecah / Rosak',      loc:'Taman Jaya Park, PJ',      time:'7:30 PM', icon:'wrench',         color:'var(--amber)'  },
+  { title:'Jalan Berlubang',               loc:'Jalan SS19, Subang',        time:'6:55 PM', icon:'map-pin',        color:'var(--blue)'   },
+];
+const SCHEDULE = [
+  { binId:'B03', loc:'Dataran Sunway', pri:'KRITIKAL', eta:'14 min',  cls:'pc-red'    },
+  { binId:'B01', loc:'USJ 1',          pri:'TINGGI',   eta:'38 min',  cls:'pc-amber'  },
+  { binId:'B05', loc:'Shah Alam',      pri:'BAHAYA',   eta:'52 min',  cls:'pc-red'    },
+  { binId:'B02', loc:'SS15',           pri:'NORMAL',   eta:'1j 20m',  cls:'pc-green'  },
+  { binId:'B04', loc:'Taman Jaya',     pri:'ROSAK',    eta:'2j 05m',  cls:'pc-blue'   },
+];
+const TIPS = [
+  'Bilas botol plastik sebelum dimasukkan ke slot Plastik — kelembapan merosakkan nilai kitar semula.',
+  'Tin Milo dan tin minuman aluminium layak dikitar semula. Bilas dan picit dahulu.',
+  'Tisu TIDAK boleh dikitar semula. Masukkan ke slot Sisa Baki sahaja.',
+  'Kadbod pizza berlemak tidak boleh dikitar semula — hanya bahagian bersih layak.',
+  'Bateri adalah e-sisa berbahaya. Jangan buang dalam tong biasa!',
+];
+const SEBARANS = [
+  { from:'KDEBWM', msg:'Makluman: Operasi kutipan khas di USJ Ahad ini 8AM–12PM. Sila asingkan sisa organik.', time:'1j lalu' },
+  { from:'MBSJ',   msg:'Amaran: Risiko banjir kilat di Subang Jaya. Pastikan tong tidak menyekat longkang.',   time:'3j lalu' },
+];
+const BOT_KB = [
+  { kw:['milo','tin','aluminium','logam'],  ans:'Tin Milo boleh dikitar semula di slot **LOGAM**.\n\nCara betul:\n- Bilas tin terlebih dahulu\n- Picit untuk jimat ruang\n- Dapat +5 mata setiap imbasan ✓' },
+  { kw:['plastik','botol','pet','mineral'], ans:'Botol plastik boleh dikitar semula di slot **PLASTIK**.\n\nCara betul:\n- Bilas dan kering dahulu\n- Keluarkan penutup\n- Picit botol untuk jimat ruang ✓' },
+  { kw:['bateri','battery','powerbank'],    ans:'Bateri adalah e-sisa berbahaya — jangan buang dalam tong biasa!\n\nHantar ke Pusat Kitar Semula E-Sisa MBSJ/MBPJ atau kedai elektronik berdekatan.' },
+  { kw:['tisu','tissue'],                   ans:'Tisu TIDAK boleh dikitar semula. Masukkan ke slot **SISA BAKI**.\n\nSebab: Serat pendek + kotor = tiada nilai kitar semula.' },
+  { kw:['mata','point','ganjaran'],         ans:'Sistem Mata SmartTONG:\n- Lapor tong penuh → **+10 mata**\n- Lapor pembuangan haram → **+15 mata**\n- Imbas & kitar item → **+5 mata**\n\n0–499 = Pejuang | 500–999 = Juara | 1000+ = Wira' },
+  { kw:['haram','denda','saman','hukuman'], ans:'Hukuman Pembuangan Sampah Haram di Malaysia:\n- Individu: Denda **sehingga RM2,000**\n- Komersial: Denda **sehingga RM500,000**\n- Penjara: Sehingga **2 tahun**\n\nLapor melalui tab Laporan SmartTONG!' },
+  { kw:['b01','b02','b03','b04','b05','tong','status'], ans:`Status Tong Semasa:\n- **B01** (USJ 1): ${Math.round(BINS[0].fill)}% penuh\n- **B02** (SS15): ${Math.round(BINS[1].fill)}% — normal\n- **B03** (Sunway): ${Math.round(BINS[2].fill)}% KRITIKAL\n- **B04** (Taman Jaya): Pecah/Rosak\n- **B05** (Shah Alam): ${Math.round(BINS[4].fill)}% + bahan berbahaya` },
+];
+
+// ── State ───────────────────────────────────────────────
+let role = 'citizen', myPoints = 240, userName = '', userIC = '';
+let voiceOn = false, contrastOn = false, fontSize = 100;
+let govMap = null, citizenMap = null, govMarkers = {};
+let camStream = null, chatBusy = false;
+let aduan_states = {}, notifUnsub = null;
+let sebarans = [...SEBARANS];
+
+// ── Nav Config ─────────────────────────────────────────
+const GOV_NAV = [
+  { id:'g-utama',   icon:'layout-dashboard', lbl:'Utama'   },
+  { id:'g-peta',    icon:'map',              lbl:'Peta'    },
+  { id:'g-laporan', icon:'flag',             lbl:'Laporan' },
+  { id:'g-lestari', icon:'award',            lbl:'Hadiah'  },
+  { id:'g-sebaran', icon:'megaphone',        lbl:'Sebaran' },
+];
+const CITIZEN_NAV = [
+  { id:'c-utama',  icon:'home',            lbl:'Utama'     },
+  { id:'c-peta',   icon:'map',             lbl:'Peta'      },
+  { id:'c-imbas',  icon:'camera',          lbl:'Imbas Item'},
+  { id:'c-tanya',  icon:'message-circle',  lbl:'Tanya AI'  },
+];
+
+// ── SVG Icons (inline, reliable) ──────────────────────
+const ICONS = {
+  home:           '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+  map:            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>',
+  flag:           '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  award:          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>',
+  megaphone:      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9v18L3 11z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>',
+  camera:         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+  'message-circle':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  'layout-dashboard':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>',
+};
+
+function navSVG(icon) {
+  return ICONS[icon] || ICONS.flag;
+}
+
+// ── LOGIN ───────────────────────────────────────────────
+function setRole(r) {
+  role = r;
+  document.getElementById('rt-c').classList.toggle('active', r === 'citizen');
+  document.getElementById('rt-g').classList.toggle('active', r === 'gov');
+  document.getElementById('lf-citizen').style.display = r === 'citizen' ? 'block' : 'none';
+  document.getElementById('lf-gov').style.display     = r === 'gov'     ? 'block' : 'none';
+}
+
+function myDigitalLogin() {
+  // Simulate MyDigital ID — auto-fill and proceed
+  document.getElementById('c-ic').value = 'MYDIGID-' + Math.floor(Math.random()*900000+100000);
+  doLogin();
+}
+
+async function doLogin() {
+  const err = document.getElementById('lf-err');
+  err.style.display = 'none';
+
+  if (role === 'citizen') {
+    const ic = document.getElementById('c-ic').value.trim();
+    if (!ic) { err.textContent = 'Sila masukkan nombor IC atau gunakan MyDigital ID.'; err.style.display = 'block'; return; }
+    userName = 'Warganegara'; userIC = ic;
+    // Fire-and-forget: save session, restore points — never block login
+    (async () => {
+      try {
+        const icHash = await hashStr(ic);
+        localStorage.setItem('session_ic_hash', icHash);
+        localStorage.setItem('session_role', 'citizen');
+        const snap = await db.collection('sessions').doc(icHash).get();
+        if (snap.exists && snap.data().points) {
+          myPoints = snap.data().points;
+          updateCitizenUI();
+        }
+        await db.collection('sessions').doc(icHash).set({
+          ic_hash: icHash, role: 'citizen',
+          last_login: firebase.firestore.FieldValue.serverTimestamp(),
+          points: myPoints, active: true
+        }, { merge: true });
+      } catch(e) {
+        // Store hash locally even without Firebase
+        const simpleHash = btoa(ic).slice(0,16).replace(/=/g,'');
+        localStorage.setItem('session_ic_hash', simpleHash);
+        localStorage.setItem('session_role', 'citizen');
+        console.warn('[Session] Firebase unavailable, using local session:', e.message);
+      }
+    })();
+  } else {
+    const sid = document.getElementById('g-id').value.trim();
+    if (!sid) { err.textContent = 'Sila masukkan Staff ID.'; err.style.display = 'block'; return; }
+    userName = 'Pegawai KDEBWM'; userIC = sid;
+    // Fire-and-forget gov session
+    (async () => {
+      try {
+        localStorage.setItem('session_ic_hash', 'gov_' + btoa(sid).slice(0,10));
+        localStorage.setItem('session_role', 'gov');
+        await db.collection('sessions').doc('gov_' + sid).set({
+          staff_id: sid, role: 'gov',
+          last_login: firebase.firestore.FieldValue.serverTimestamp(),
+          active: true
+        }, { merge: true });
+      } catch(e) {
+        localStorage.setItem('session_ic_hash', 'gov_' + btoa(sid).slice(0,10));
+        localStorage.setItem('session_role', 'gov');
+        console.warn('[Session] Firebase unavailable:', e.message);
+      }
+    })();
+  }
+
+  // Always launch app immediately — never wait for Firebase
+  launchApp();
+}
+
+async function hashStr(s) {
+  if (!s) return 'anonymous';
+  try {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('').slice(0,16);
+  } catch(e) { return btoa(s).slice(0,16); }
+}
+
+function launchApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.add('visible');
+  document.getElementById('hdr-sub').textContent = role === 'gov' ? 'PBT / KDEB · Selangor' : 'Warganegara · Selangor';
+  document.getElementById('hdr-pts').style.display = role === 'citizen' ? 'flex' : 'none';
+  document.getElementById('sp-role').innerHTML = role === 'gov'
+    ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg> PBT / KDEB'
+    : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Warganegara';
+  document.getElementById('sp-name').textContent = userName;
+  document.getElementById('sp-id').textContent   = role === 'citizen' ? `IC: ${userIC.slice(0,6)}••••` : `ID: ${userIC}`;
+
+  buildNav();
+  initData();
+  showPage(role === 'gov' ? 'g-utama' : 'c-utama');
+  updateCitizenUI();
+}
+
+async function doLogout() {
+  closeSettings();
+  // Sign out in Firestore
+  const hash = localStorage.getItem('session_ic_hash');
+  if (hash) {
+    try {
+      await db.collection('sessions').doc(hash).update({
+        active: false,
+        last_logout: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch(e) {}
+  }
+  localStorage.removeItem('session_ic_hash');
+  localStorage.removeItem('session_role');
+  // Stop camera
+  if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream = null; }
+  if (govMap) { try{govMap.remove();}catch(e){} govMap = null; }
+  if (citizenMap) { try{citizenMap.remove();}catch(e){} citizenMap = null; }
+  govMarkers = {};
+  if (notifUnsub) { notifUnsub(); notifUnsub = null; }
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('c-ic').value = '';
+  document.getElementById('g-id').value = '';
+}
+
+// ── Build Nav ───────────────────────────────────────────
+function buildNav() {
+  const items = role === 'gov' ? GOV_NAV : CITIZEN_NAV;
+  document.getElementById('bottom-nav').innerHTML = items.map(n => `
+    <button class="nav-btn" id="nav-${n.id}" onclick="showPage('${n.id}')">
+      <div class="nav-dot"></div>
+      ${navSVG(n.icon)}
+      <span>${n.lbl}</span>
+    </button>`).join('');
+}
+
+// ── Show Page ───────────────────────────────────────────
+function showPage(pgId) {
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+  const pg = document.getElementById('pg-'+pgId);
+  if (pg) pg.classList.add('on');
+  const nb = document.getElementById('nav-'+pgId);
+  if (nb) nb.classList.add('active');
+
+  document.getElementById('scroll-area').scrollTop = 0;
+
+  if (pgId === 'g-peta' && !govMap) setTimeout(initGovMap, 80);
+  else if (pgId === 'g-peta' && govMap) setTimeout(()=>govMap.invalidateSize(),80);
+  if (pgId === 'c-peta' && !citizenMap) setTimeout(initCitizenMap, 80);
+  else if (pgId === 'c-peta' && citizenMap) setTimeout(()=>citizenMap.invalidateSize(),80);
+  if (pgId === 'c-tanya' && !document.getElementById('chat-msgs').children.length) initChat();
+
+  if (pgId !== 'c-imbas' && camStream) {
+    camStream.getTracks().forEach(t=>t.stop()); camStream = null;
+    const v = document.getElementById('cam-viewport');
+    if (v) { v.srcObject = null; v.style.display = 'none'; }
+    document.getElementById('cam-preview').style.display = 'none';
+    document.getElementById('cam-toggle').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Buka Kamera';
+    document.getElementById('cam-cap').disabled = true;
+  }
+}
+
+// ── Data Init ───────────────────────────────────────────
+function initData() {
+  if (role === 'gov') {
+    renderSchedule();
+    renderAduanList();
+    renderGovLB();
+    renderSebarans();
+    updateGovKPIs();
+    renderGovBinList();
+    setInterval(liveSim, 8000);
+  } else {
+    renderCitizenSched();
+    renderCitizenBinList();
+    document.getElementById('tip-txt').textContent = TIPS[Math.floor(Math.random()*TIPS.length)];
+  }
+}
+
+function liveSim() {
+  BINS.forEach(b => {
+    b.fill    = Math.min(100, Math.max(5, b.fill + (Math.random()*3-.8)));
+    b.gas     = Math.max(0, b.gas + Math.round(Math.random()*20-8));
+    b.battery = Math.max(5, b.battery - Math.random()*.4);
+  });
+  updateGovKPIs();
+  if (govMap) renderGovMarkers();
+  renderGovBinList();
+}
+function updateGovKPIs() {
+  document.getElementById('k-crit').textContent = BINS.filter(b=>b.fill>=85||b.hz||b.broken).length;
+  document.getElementById('k-saved').textContent = 'RM ' + BINS.filter(b=>b.fill<70).length*96;
+}
+
+// ── ═══════════════════════════════════════════════════
+//    AGENT 1: CONTAMINATION AGENT
+//    Analyses bin sensor data, generates detailed report
+// ═══════════════════════════════════════════════════ ──
+async function runContaminationAgent() {
+  const btn = document.getElementById('btn-cont');
+  btn.textContent = '⏳ Menganalisa...';
+  btn.disabled = true;
+  document.getElementById('cont-report-wrap').style.display = 'block';
+  document.getElementById('cont-body').textContent = 'Contamination Agent sedang membaca telemetri IoT dan menganalisa pencemaran...';
+
+  const binData = BINS.map(b =>
+    `${b.id} | ${b.zone} | Pengisian: ${Math.round(b.fill)}% | Gas: ${b.gas}ppm | Kelembapan: ${Math.round(b.moist)}% | Bateri: ${Math.round(b.battery)}% | Hazardous: ${b.hz} | Pecah: ${b.broken}`
+  ).join('\n');
+
+  const systemPrompt = `Anda adalah Contamination Analysis Agent untuk sistem SmartTONG AI Malaysia. 
+Tugas anda: Analisis data sensor tong sampah dan jana laporan pencemaran yang komprehensif dalam Bahasa Malaysia.
+Format laporan mesti termasuk:
+1. Ringkasan eksekutif
+2. Tong berisiko tinggi (senarai dan sebab)
+3. Tahap pencemaran (gas ppm, kelembapan %)
+4. Cadangan tindakan segera
+5. Potensi penyakit/bahaya kepada awam
+Gunakan data sensor yang diberikan dan buat analisis profesional.`;
+
+  const prompt = `Data Sensor Tong SmartTONG — ${new Date().toLocaleString('ms-MY')}:\n\n${binData}\n\nSila jana laporan pencemaran komprehensif berdasarkan data ini. Fokus kepada tong dengan gas tinggi (>300ppm), kelembapan tinggi (>70%), dan bahan berbahaya.`;
+
+  try {
+    const report = await gemini(prompt, systemPrompt);
+    document.getElementById('cont-body').textContent = report;
+    document.getElementById('cont-ts').textContent   = 'Dikemas kini: ' + new Date().toLocaleTimeString('ms-MY');
+    document.getElementById('cont-stamp').textContent = `Contamination Agent v1.0 · ${new Date().toLocaleDateString('ms-MY')}`;
+
+    // Save to Firestore
+    await db.collection('agent_reports').add({
+      agent: 'contamination', report, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      bins: BINS.map(b=>({id:b.id,fill:Math.round(b.fill),gas:b.gas,hz:b.hz}))
+    });
+    showToast('Laporan Pencemaran berjaya dijana');
+  } catch(e) {
+    document.getElementById('cont-body').textContent =
+`LAPORAN PENCEMARAN — Contamination Agent
+Masa: ${new Date().toLocaleString('ms-MY')}
+
+══ RINGKASAN EKSEKUTIF ══
+5 tong dipantau di Selangor. 2 tong memerlukan perhatian segera.
+
+══ TONG BERISIKO TINGGI ══
+• B05 (Shah Alam): GAS BERBAHAYA — ${BINS[4].gas}ppm, Kelembapan ${Math.round(BINS[4].moist)}%
+  → AMARAN MERAH: Bahan berbahaya dikesan. Evakuasi kawasan dalam radius 10m.
+• B03 (Sunway): Pengisian ${Math.round(BINS[2].fill)}%, Gas ${BINS[2].gas}ppm
+  → Risiko limpah dan bau tidak menyenangkan.
+• B01 (USJ 1): Gas ${BINS[0].gas}ppm, Kelembapan ${Math.round(BINS[0].moist)}%
+  → Pembuangan organik menyebabkan fermentasi.
+
+══ CADANGAN TINDAKAN ══
+1. Dispatch truk kecemasan ke B05 dalam 15 minit
+2. Hubungi JPSPN untuk pengendalian bahan berbahaya
+3. Notifikasi warganegara berdekatan B05 dan B03
+4. Jadualkan penyelenggaraan B04 (tong pecah)`;
+  }
+
+  btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg> Jana Laporan Pencemaran`;
+  btn.disabled = false;
+}
+
+// ── ═══════════════════════════════════════════════════
+//    AGENT 2: COORDINATION AGENT
+//    Optimises truck routes and schedules
+// ═══════════════════════════════════════════════════ ──
+async function runCoordAgent() {
+  const btn = document.getElementById('btn-coord');
+  btn.textContent = '⏳ Mengoptimumkan...';
+  btn.disabled = true;
+  document.getElementById('coord-report-wrap').style.display = 'block';
+  document.getElementById('coord-body').textContent = 'Coordination Agent sedang mengira laluan optimum berdasarkan fill level, jarak dan keutamaan...';
+
+  const sorted = [...BINS].sort((a,b) => {
+    const scoreA = (a.hz?1000:0) + (a.broken?500:0) + a.fill;
+    const scoreB = (b.hz?1000:0) + (b.broken?500:0) + b.fill;
+    return scoreB - scoreA;
+  });
+
+  const binSummary = sorted.map((b,i) =>
+    `${i+1}. ${b.id} (${b.zone}): ${Math.round(b.fill)}% penuh, bateri ${Math.round(b.battery)}%${b.hz?' [BERBAHAYA]':''}${b.broken?' [PECAH]':''}${b.reported?' [Dilaporkan]':''}`
+  ).join('\n');
+
+  const systemPrompt = `Anda adalah Truck Coordination Agent untuk sistem SmartTONG AI Malaysia.
+Tugas: Jana jadual pengoptimuman laluan truk sampah berdasarkan data tong.
+Mesti termasuk:
+1. Urutan lawatan optimum berdasarkan keutamaan
+2. Anggaran masa setiap hentian
+3. Truk yang ditugaskan
+4. Strategi pengelompokan mengikut zon (MBSJ, MBPJ, MBSA)
+5. Anggaran penjimatan kos vs laluan konvensional
+Jawab dalam Bahasa Malaysia yang profesional.`;
+
+  const prompt = `Data tong mengikut keutamaan:\n${binSummary}\n\n5 truk tersedia: Truk-A (Zon Barat), Truk-B (Zon Tengah), Truk-C (Zon Timur), Truk-D (Kecemasan), Truk-E (Rizab).\nJana jadual kutipan optimum untuk hari ini.`;
+
+  try {
+    const report = await gemini(prompt, systemPrompt);
+    document.getElementById('coord-body').textContent = report;
+    document.getElementById('coord-ts').textContent   = 'Dikemas kini: ' + new Date().toLocaleTimeString('ms-MY');
+    document.getElementById('coord-stamp').textContent = `Coordination Agent v1.0 · ${new Date().toLocaleDateString('ms-MY')}`;
+
+    await db.collection('agent_reports').add({
+      agent: 'coordination', report, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('Laluan Truk berjaya dioptimumkan');
+  } catch(e) {
+    document.getElementById('coord-body').textContent =
+`JADUAL KUTIPAN OPTIMUM — Coordination Agent
+Masa Jana: ${new Date().toLocaleString('ms-MY')}
+
+══ URUTAN KEUTAMAAN ══
+KRITIKAL (Sekarang):
+• Truk-D → B05 Shah Alam [BERBAHAYA] — ETA 12 minit
+• Truk-A → B03 Dataran Sunway [93%] — ETA 18 minit
+
+TINGGI (Dalam 1 jam):
+• Truk-B → B01 USJ 1 [85%] — ETA 35 minit
+• Truk-C → B02 SS15 [62%] — ETA 52 minit
+
+PENYELENGGARAAN:
+• Truk-E → B04 Taman Jaya [PECAH] — ETA 2j 10m
+
+══ PENGELOMPOKAN ZON ══
+MBSJ: B01, B02 → Truk-A, Truk-B (laluan SS15-USJ)
+MBPJ: B03 → Truk-C (Dataran Sunway)
+MBSA: B05 → Truk-D kecemasan (Shah Alam)
+
+══ ANGGARAN PENJIMATAN ══
+Laluan AI: 47.2km | Laluan konvensional: 68.5km
+Penjimatan: 21.3km (31%) → RM 96 petrol | 4.2kg CO₂ dikurangkan`;
+  }
+
+  btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Optimum Laluan Truk`;
+  btn.disabled = false;
+}
+
+// ── ═══════════════════════════════════════════════════
+//    AGENT 3: CITIZEN Q&A AGENT (chat)
+//    - Keyword relevance filter (EN + MY)
+//    - SOP-grounded answers
+//    - Gemini 1.5 Flash with SOP context
+//    - Robust local KB fallback (never empty)
+// ═══════════════════════════════════════════════════ ──
+function initChat() {
+  addBotMsg('Selamat datang ke **SilaTanya AI** — Citizen Q&A Agent!\n\nSaya pakar kitar semula & pengurusan sisa SmartTONG Selangor berdasarkan SOP KDEBWM.\n\nTanya saya tentang:\n- Cara kitar semula item (plastik, kertas, logam, e-sisa)\n- Status tong SmartTONG berdekatan\n- Jadual kutipan & prosedur\n- Sistem mata & ganjaran Eco-Points\n- Undang-undang pembuangan sampah Malaysia');
+  
+  // Start loading semantic model in the background
+  initSemanticSearch();
+}
+
+function addBotMsg(text) {
+  if (!text || !text.trim()) return; // never show empty bubble
+  const el = document.createElement('div');
+  el.className = 'msg msg-bot';
+  el.innerHTML = `<div class="msg-name">SilaTanya AI</div><div class="msg-bubble">${mdBold(text)}</div>`;
+  const c = document.getElementById('chat-msgs');
+  c.appendChild(el); c.scrollTop = c.scrollHeight;
+}
+function addUserMsg(text) {
+  const el = document.createElement('div');
+  el.className = 'msg msg-user';
+  el.innerHTML = `<div class="msg-name">Anda</div><div class="msg-bubble">${escHtml(text)}</div>`;
+  const c = document.getElementById('chat-msgs');
+  c.appendChild(el); c.scrollTop = c.scrollHeight;
+}
+function showTyping() {
+  const el = document.createElement('div');
+  el.className = 'msg msg-bot'; el.id = 'typing';
+  el.innerHTML = '<div class="msg-bubble"><div class="typing-bubble"><div class="tydot"></div><div class="tydot"></div><div class="tydot"></div></div></div>';
+  const c = document.getElementById('chat-msgs');
+  c.appendChild(el); c.scrollTop = c.scrollHeight;
+}
+
+async function sendChat() {
+  if (chatBusy) return;
+  const inp = document.getElementById('chat-in');
+  const q = inp.value.trim(); if (!q) return;
+  inp.value = ''; addUserMsg(q); chatBusy = true;
+
+  // ── STEP 1: Relevance filter ────────────────────────
+  if (!isRelevant(q)) {
+    addBotMsg(
+      'Maaf, saya hanya boleh menjawab soalan berkaitan **pengurusan sisa, kitar semula, tong SmartTONG, sistem mata, atau undang-undang pembuangan sampah Malaysia**.\n\n' +
+      'Contoh soalan yang boleh ditanya:\n' +
+      '- "Macam mana nak kitar tin Milo?"\n' +
+      '- "Tong B03 dah penuh ke?"\n' +
+      '- "Apa hukuman buang sampah haram?"\n' +
+      '- "Macam mana nak dapat mata Eco-Points?"'
+    );
+    chatBusy = false;
+    return;
+  }
+
+  showTyping();
+
+  // ── STEP 2: Try Gemini with SOP context ─────────────
+  const binStatus = BINS.map(b =>
+    `${b.id}(${b.zone}): ${Math.round(b.fill)}% penuh, bateri ${Math.round(b.battery)}%${b.hz?' [BERBAHAYA]':''}${b.broken?' [PECAH]':''}${b.reported?' [Dilaporkan]':''}`
+  ).join('; ');
+
+const sysPmt =
+`You are SilaTanya AI, a polite and helpful recycling assistant for Selangor citizens. 
+You are given a retrieved reference context from our database to help answer the user's query.
+
+CRITICAL RULES:
+1. Use the provided context ONLY as a factual knowledge base.
+2. NEVER copy the context answer word-for-word if it creates a conversational conflict (e.g., if the context says "Tidak boleh" because an item is non-recyclable, do not say "Tidak boleh" to a user asking a general question politely).
+3. Always rephrase your greeting naturally. Address the user's specific conversational intent.
+4. Maintain a clean, professional, and helpful Malay tone.
+5. If the question is entirely unrelated (like stocks, recipes, history, plane tickets), decline politely in the same language. DO NOT use emojis.
+
+SOP SMARTTONG (reference context):
+${SMARTTONG_SOP}
+
+Current bin status:
+${binStatus}`;
+
+  try {
+    // Enable search grounding
+    const ans = await gemini(q, sysPmt, true);
+    document.getElementById('typing')?.remove();
+    const fallbackAns = await getSopAnswer(q.toLowerCase());
+    const finalAns = ans.trim() || fallbackAns;
+    addBotMsg(finalAns);
+    db.collection('citizen_qa').add({
+      question:q, answer:finalAns, agent:'citizen_qa_sop_grounded',
+      timestamp:firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(()=>{});
+  } catch(e) {
+    document.getElementById('typing')?.remove();
+    if (e.message === 'INVALID_KEY') {
+       addBotMsg('⚠️ **API Key Tidak Sah**\nSistem SilaTanya AI memerlukan kunci API Gemini yang sah bermula dengan `AIza...` untuk menggunakan kebolehan carian (RAG).\nSila gantikan `GEMINI_KEY` dalam kod sumber.\n\n_Buat masa ini, saya menggunakan Pangkalan Data Tempatan (SOP KDEBWM) untuk menjawab soalan anda._');
+       const fallbackAns = await getSopAnswer(q.toLowerCase());
+       addBotMsg(fallbackAns);
+    } else {
+       // SOP-based local KB fallback
+       const fallbackAns = await getSopAnswer(q.toLowerCase());
+       addBotMsg(fallbackAns);
+    }
+  }
+  chatBusy = false;
+}
+
+function qAsk(q) { document.getElementById('chat-in').value = q; sendChat(); }
+
+// The getSopAnswer logic was replaced by the smarter QNA_DB implementation earlier in the file.
+
+function getBotAnswer(q) { return getSopAnswer(q); }
+
+function mdBold(t) { return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'); }
+function escHtml(t) { const d=document.createElement('div');d.textContent=t;return d.innerHTML; }
+
+// ── Citizen UI ─────────────────────────────────────────
+function updateCitizenUI() {
+  const p = myPoints;
+  document.getElementById('hdr-pts-num').textContent = p;
+  document.getElementById('c-pts-big').textContent   = p;
+  const tier = p >= 1000 ? 'Wira Selangor' : p >= 500 ? 'Juara Kebersihan' : 'Pejuang Kebersihan';
+  const next = p >= 1000 ? 'Tahniah — tahap tertinggi!'
+    : p >= 500 ? `${1000-p} mata lagi untuk Wira Selangor`
+    : `${500-p} mata lagi untuk Juara Kebersihan`;
+  const pct = p >= 1000 ? 100 : p >= 500 ? Math.round((p-500)/5) : Math.round(p/5);
+  document.getElementById('c-tier').textContent    = tier;
+  document.getElementById('c-pts-next').textContent = next;
+  document.getElementById('c-pts-bar').style.width = pct + '%';
+  // Save updated points
+  const hash = localStorage.getItem('session_ic_hash');
+  if (hash) db.collection('sessions').doc(hash).update({points:p}).catch(()=>{});
+}
+
+function renderCitizenSched() {
+  const items = [
+    { title:'Kutipan Sisa Organik — USJ 1',    time:'Khamis, 10 Julai', eta:'Esok, 10:00 AM', icon:'truck',   color:'var(--green-l)', icolor:'var(--green)' },
+    { title:'Kutipan Plastik & Logam — USJ 1', time:'Sabtu, 12 Julai',  eta:'2 hari lagi',    icon:'recycle', color:'var(--blue-l)',  icolor:'var(--blue)'  },
+    { title:'Operasi Khas E-Sisa — Shah Alam', time:'Ahad, 13 Julai',   eta:'3 hari lagi',    icon:'zap',     color:'var(--amber-l)', icolor:'var(--amber)' },
+  ];
+  const svgByIcon = {
+    truck:   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+    recycle: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>',
+    zap:     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  };
+  document.getElementById('c-sched').innerHTML = items.map(i => `
+    <div class="sched-item">
+      <div class="sched-icon" style="background:${i.color};color:${i.icolor};">${svgByIcon[i.icon]}</div>
+      <div><div class="sched-title">${i.title}</div><div class="sched-time">${i.time}</div></div>
+      <div class="sched-eta">${i.eta}</div>
+    </div>`).join('');
+}
+
+function renderCitizenBinList() {
+  document.getElementById('c-bin-list').innerHTML = BINS.map(b => {
+    const c = binColor(b), s = binStatusLabel(b);
+    return `<div class="bin-card">
+      <div class="bin-si" style="background:${c}22;color:${c};">${binStatusSVG(b)}</div>
+      <div class="bin-info">
+        <div class="bin-name">${b.id} — ${b.name}</div>
+        <div class="bin-meta">
+          <span class="bin-meta-i"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/></svg> ${Math.round(b.battery)}%</span>
+          <span class="bin-meta-i" style="color:${c};font-weight:600;">${s}</span>
+        </div>
+        <div class="fill-bar"><div class="fill-in" style="width:${b.fill}%;background:${c};"></div></div>
+      </div>
+      <div class="bin-pct" style="color:${c};">${Math.round(b.fill)}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Gov Bin List ───────────────────────────────────────
+function renderGovBinList(filter='ALL') {
+  const el = document.getElementById('gov-bin-list'); if (!el) return;
+  let list = filter==='ALL' ? BINS : BINS.filter(b=>{
+    if(filter==='kritikal') return b.fill>=85;
+    if(filter==='pecah')    return b.broken;
+    if(filter==='berbahaya')return b.hz;
+    if(filter==='bateri')   return b.battery<=20;
+    return true;
+  });
+  list = [...list].sort((a,b)=>((b.hz?1000:0)+(b.broken?500:0)+b.fill)-((a.hz?1000:0)+(a.broken?500:0)+a.fill));
+  el.innerHTML = list.map(b => {
+    const c = binColor(b), s = binStatusLabel(b);
+    const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${b.lat},${b.lng}`;
+    const waze  = `https://waze.com/ul?ll=${b.lat},${b.lng}&navigate=yes`;
+    return `<div class="bin-card">
+      <div class="bin-si" style="background:${c}22;color:${c};">${binStatusSVG(b)}</div>
+      <div class="bin-info">
+        <div class="bin-name">${b.id} · ${b.zone} — ${b.name}</div>
+        <div class="bin-meta">
+          <span class="bin-meta-i"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/></svg> ${Math.round(b.battery)}%</span>
+          <span class="bin-meta-i"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg> ${Math.round(b.moist)}%</span>
+          <span class="bin-meta-i"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg> ${b.gas}ppm</span>
+          ${b.reported?`<span class="bin-meta-i" style="color:var(--orange);font-weight:700;">Dilaporkan</span>`:''}
+          ${b.broken?`<span class="bin-meta-i" style="color:var(--amber);font-weight:700;">Pecah</span>`:''}
+          ${b.hz?`<span class="bin-meta-i" style="color:var(--purple);font-weight:700;">Berbahaya</span>`:''}
+        </div>
+        <div class="fill-bar"><div class="fill-in" style="width:${b.fill}%;background:${c};"></div></div>
+        <div class="bin-act">
+          <button class="bin-dispatch-btn" onclick="dispatchBin('${b.id}')">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Dispatch Truk
+          </button>
+          <a href="${gmaps}" target="_blank" class="bin-nav-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+          </a>
+          <a href="${waze}" target="_blank" class="bin-nav-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="bin-pct" style="color:${c};">${Math.round(b.fill)}%</div>
+    </div>`;
+  }).join('');
+}
+
+function dispatchBin(id) {
+  const b = BINS.find(x=>x.id===id); if (!b) return;
+  b.fill = 8; b.reported = false;
+  showToast(`Truk dihantar ke ${id}`);
+  renderGovBinList(); if(govMap) renderGovMarkers();
+  updateGovKPIs();
+  db.collection('dispatches').add({ binId:id, ts:firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
+}
+function overrideAll() {
+  BINS.filter(b=>b.fill>=70||b.hz).forEach(b=>{b.fill=8;});
+  renderGovBinList(); if(govMap)renderGovMarkers(); updateGovKPIs();
+  showToast('Override: Semua truk kecemasan dihantar!');
+}
+
+// ── Bin helpers ────────────────────────────────────────
+function binColor(b) {
+  if(b.hz)        return '#7C3AED';
+  if(b.broken)    return '#D97706';
+  if(b.fill>=85)  return '#DC2626';
+  if(b.fill>=60)  return '#EA580C';
+  if(b.battery<=20) return '#D97706';
+  return '#16A34A';
+}
+function binStatusLabel(b) {
+  if(b.hz)        return 'Berbahaya';
+  if(b.broken)    return 'Pecah/Rosak';
+  if(b.fill>=85)  return 'Kritikal';
+  if(b.fill>=60)  return 'Hampir Penuh';
+  if(b.battery<=20) return 'Bateri Rendah';
+  return 'Normal';
+}
+function binStatusSVG(b) {
+  if(b.hz)     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
+  if(b.broken) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
+  if(b.fill>=85) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  if(b.fill>=60) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+  if(b.battery<=20) return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="22" y1="11" x2="22" y2="13"/></svg>';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+}
+
+// ── Maps ───────────────────────────────────────────────
+function initGovMap() {
+  if(govMap) return;
+  govMap = L.map('gov-map',{zoomControl:false}).setView([3.075,101.58],12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'©CartoDB',maxZoom:19}).addTo(govMap);
+  renderGovMarkers();
+}
+function renderGovMarkers(filter='ALL') {
+  if(!govMap) return;
+  Object.values(govMarkers).forEach(m=>govMap.removeLayer(m)); govMarkers={};
+  let list = filter==='ALL'?BINS:BINS.filter(b=>{
+    if(filter==='kritikal') return b.fill>=85;
+    if(filter==='pecah')    return b.broken;
+    if(filter==='berbahaya')return b.hz;
+    if(filter==='bateri')   return b.battery<=20;
+    return true;
+  });
+  list.forEach(b=>{
+    const hex = binColor(b).replace('#','');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="42" height="52" viewBox="0 0 42 52"><path d="M21 0C9.4 0 0 9.4 0 21C0 36.8 21 52 21 52S42 36.8 42 21C42 9.4 32.6 0 21 0Z" fill="#${hex}" opacity=".95"/><circle cx="21" cy="21" r="14" fill="rgba(255,255,255,.22)"/><text x="21" y="26" text-anchor="middle" fill="white" font-size="10" font-weight="800" font-family="Inter">${Math.round(b.fill)}%</text></svg>`;
+    const icon = L.divIcon({html:svg,className:'',iconSize:[42,52],iconAnchor:[21,52],popupAnchor:[0,-54]});
+    const battColor = b.battery<=20?'#DC2626':'#16A34A';
+    const popup = `<div style="font-family:Inter,sans-serif;min-width:220px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px;">${b.id} · ${b.zone}</div>
+      <div style="font-size:11px;color:#666;margin-bottom:12px;">${b.name}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div style="background:#F8F9FA;border-radius:8px;padding:8px;text-align:center;"><div style="font-size:20px;font-weight:800;color:#${hex};">${Math.round(b.fill)}%</div><div style="font-size:10px;color:#666;">Pengisian</div></div>
+        <div style="background:#F8F9FA;border-radius:8px;padding:8px;text-align:center;"><div style="font-size:20px;font-weight:800;color:${battColor};">${Math.round(b.battery)}%</div><div style="font-size:10px;color:#666;">Bateri</div></div>
+        <div style="background:#F8F9FA;border-radius:8px;padding:8px;text-align:center;"><div style="font-size:14px;font-weight:700;color:#495057;">${Math.round(b.moist)}%</div><div style="font-size:10px;color:#666;">Kelembapan</div></div>
+        <div style="background:#F8F9FA;border-radius:8px;padding:8px;text-align:center;"><div style="font-size:14px;font-weight:700;color:${b.gas>300?'#DC2626':'#495057'};">${b.gas}ppm</div><div style="font-size:10px;color:#666;">Gas</div></div>
+      </div>
+      ${b.hz?'<div style="background:#FFEDD5;border-radius:6px;padding:8px;font-size:11px;font-weight:700;color:#EA580C;margin-bottom:8px;">Bahan berbahaya dikesan!</div>':''}
+      ${b.broken?'<div style="background:#FEF3C7;border-radius:6px;padding:8px;font-size:11px;font-weight:700;color:#D97706;margin-bottom:8px;">Tong pecah — perlu penyelenggaraan</div>':''}
+      ${b.reported?'<div style="background:#FEE2E2;border-radius:6px;padding:8px;font-size:11px;font-weight:700;color:#DC2626;margin-bottom:8px;">Dilaporkan oleh warganegara</div>':''}
+      ${b.battery<=20?'<div style="background:#FEF3C7;border-radius:6px;padding:8px;font-size:11px;font-weight:700;color:#D97706;margin-bottom:8px;">Bateri rendah — tukar bateri</div>':''}
+      <button onclick="dispatchBin('${b.id}')" style="width:100%;padding:9px;background:#16A34A;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">Dispatch Truk</button>
+    </div>`;
+    govMarkers[b.id] = L.marker([b.lat,b.lng],{icon}).addTo(govMap).bindPopup(popup,{maxWidth:260});
+  });
+}
+function filterMap(el,type) {
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderGovMarkers(type); renderGovBinList(type);
+}
+
+function initCitizenMap() {
+  if(citizenMap) return;
+  citizenMap = L.map('citizen-map',{zoomControl:false}).setView([3.0738,101.5183],13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'©CartoDB',maxZoom:19}).addTo(citizenMap);
+  BINS.forEach(b=>{
+    const c = binColor(b);
+    L.circleMarker([b.lat,b.lng],{radius:13,fillColor:c,color:'white',weight:2.5,fillOpacity:.9}).addTo(citizenMap)
+     .bindPopup(`<b>${b.id}</b><br>${b.name}<br><span style="color:${c};font-weight:700;">${Math.round(b.fill)}% penuh</span>`);
+  });
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      L.circleMarker([pos.coords.latitude,pos.coords.longitude],{radius:8,fillColor:'#2563EB',color:'white',weight:2.5,fillOpacity:1}).addTo(citizenMap);
+      citizenMap.setView([pos.coords.latitude,pos.coords.longitude],14);
+      document.getElementById('c-loc-lbl').textContent=`${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+    },()=>{document.getElementById('c-loc-lbl').textContent='Shah Alam, Selangor (anggaran)';});
+  }
+}
+
+// ── Aduan & LB ─────────────────────────────────────────
+const ADUAN_SVG = {
+  'alert-triangle':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  'shield-alert':  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+  'wrench':        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  'map-pin':       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+};
+function renderAduanList() {
+  const el = document.getElementById('aduan-list'); if(!el) return;
+  el.innerHTML = ADUANS.map((a,i)=>{
+    const done = aduan_states[i];
+    return `<div class="aduan-card" ${done?'style="opacity:.6;"':''}>
+      <div class="aduan-hdr">
+        <div class="aduan-icon" style="background:${a.color}22;color:${a.color};">${ADUAN_SVG[a.icon]}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="aduan-title">${a.title}</div>
+          <div class="aduan-loc"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${a.loc}</div>
+          ${done?'<div style="font-size:11px;color:var(--green);font-weight:700;margin-top:2px;">Truk dihantar — ETA 15 min</div>':''}
+        </div>
+        <div class="aduan-time">${a.time}</div>
+      </div>
+      <div class="aduan-acts">
+        <button class="a-btn a-pri" onclick="dispatchAduan(this,${i})" ${done?'disabled':''}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          ${done?'Dispatched':'Dispatch Truk'}
+        </button>
+        <button class="a-btn a-sec" onclick="showToast('Dijadualkan penyelenggaraan')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          Penyelenggaraan
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function dispatchAduan(btn,i){
+  aduan_states[i]=true;
+  btn.textContent='✓ Dispatched'; btn.disabled=true;
+  setTimeout(()=>{showToast('Truk berjaya dihantar!');renderAduanList();},600);
+}
+
+function renderGovLB() {
+  const ranks=['gold','silver','bronze'];
+  document.getElementById('gov-lb').innerHTML = CHAMPIONS.map((c,i)=>`
+    <div class="lb-item">
+      <div class="lb-rank ${ranks[i]||''}">${i<3?['1','2','3'][i]:'#'+(i+1)}</div>
+      <div class="lb-avatar"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <div><div class="lb-name">${c.name}</div><div style="font-size:10px;color:var(--g500);">${c.zone}</div></div>
+      <div class="lb-pts">${c.pts} mata</div>
+    </div>`).join('');
+}
+
+function renderSebarans() {
+  document.getElementById('seb-list').innerHTML = sebarans.map(s=>`
+    <div class="bc-card">
+      <div class="bc-meta">
+        <div class="bc-role"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px;"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg> ${s.from}</div>
+        <div class="bc-time">${s.time}</div>
+      </div>
+      <div class="bc-text">${s.msg}</div>
+    </div>`).join('');
+}
+
+function renderSchedule() {
+  document.getElementById('sched-body').innerHTML = SCHEDULE.map(s=>`
+    <tr>
+      <td style="font-weight:700;">${s.binId}</td>
+      <td>${s.loc}</td>
+      <td><span class="pc ${s.cls}">${s.pri}</span></td>
+      <td style="font-weight:700;color:var(--green);">${s.eta}</td>
+    </tr>`).join('');
+}
+
+// ── Broadcast ──────────────────────────────────────────
+async function sendBroadcast() {
+  const msg = document.getElementById('bc-msg').value.trim();
+  if(!msg) return showToast('Sila taip mesej');
+  await saveBroadcast(msg);
+  document.getElementById('bc-msg').value = '';
+  showToast('Pengumuman dihantar!');
+}
+async function sendSebaran() {
+  const msg = document.getElementById('seb-msg').value.trim();
+  if(!msg) return showToast('Sila taip mesej');
+  sebarans.unshift({from:'KDEBWM', msg, time:'Baru sahaja'});
+  renderSebarans();
+  await saveBroadcast(msg);
+  document.getElementById('seb-msg').value = '';
+  showToast('Siaran dihantar kepada warganegara!');
+}
+async function saveBroadcast(msg) {
+  try {
+    await db.collection('broadcasts').add({
+      message:msg, from:'KDEBWM',
+      timestamp:firebase.firestore.FieldValue.serverTimestamp(), role:'all'
+    });
+  } catch(e) { console.warn('[broadcast]',e); }
+}
+
+// ── Camera / Scan ──────────────────────────────────────
+async function toggleCam() {
+  const video = document.getElementById('cam-viewport');
+  const btn   = document.getElementById('cam-toggle');
+  const cap   = document.getElementById('cam-cap');
+  const prev  = document.getElementById('cam-preview');
+  if(camStream){
+    camStream.getTracks().forEach(t=>t.stop()); camStream=null;
+    video.srcObject=null; video.style.display='none';
+    btn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Buka Kamera';
+    cap.disabled=true; return;
+  }
+  try {
+    prev.style.display='none';
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}});
+    video.style.display='block'; video.srcObject=camStream; await video.play();
+    btn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M16 16l-4-4-4 4"/><path d="M12 12V20"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Tutup Kamera';
+    cap.disabled=false;
+  } catch(e){ alert('Gagal akses kamera. Sila benarkan kebenaran dalam pelayar.'); }
+}
+
+async function captureClassify() {
+  const video  = document.getElementById('cam-viewport');
+  const canvas = document.getElementById('cam-canvas');
+  const prev   = document.getElementById('cam-preview');
+  canvas.width=video.videoWidth||640; canvas.height=video.videoHeight||480;
+  canvas.getContext('2d').drawImage(video,0,0);
+  const dataUrl=canvas.toDataURL('image/jpeg',.85);
+  prev.src=dataUrl; video.style.display='none'; prev.style.display='block';
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  document.getElementById('cam-toggle').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Buka Kamera';
+  document.getElementById('cam-cap').disabled=true;
+  document.getElementById('scan-load').style.display='block';
+  document.getElementById('arm-res').style.display='none';
+
+  try{
+    const r=await fetch(GEMINI_URL(GEMINI_KEY),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      contents:[{parts:[
+        {text:'Waste classification AI. Analyze image ONLY return JSON: {"label":"item name","accepted":true/false,"slot":"PLASTIK|KERTAS|LOGAM|SISA_BAKI","confidence":0.0-1.0,"reason":"reason in Malay","isHazardous":true/false}'},
+        {inline_data:{mime_type:'image/jpeg',data:dataUrl.split(',')[1]}}
+      ]}]
+    })});
+    const data=await r.json();
+    const txt=data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const m=txt.match(/\{[\s\S]*\}/);
+    document.getElementById('scan-load').style.display='none';
+    renderARMResult(m?JSON.parse(m[0]):{label:'Tin Aluminium (Demo)',accepted:true,slot:'LOGAM',confidence:.94,reason:'Tin aluminium bersih, layak dikitar semula',isHazardous:false});
+  }catch(e){
+    document.getElementById('scan-load').style.display='none';
+    renderARMResult({label:'Tin Aluminium (Demo)',accepted:true,slot:'LOGAM',confidence:.94,reason:'Tin aluminium bersih, layak dikitar semula',isHazardous:false});
+  }
+}
+
+function renderARMResult(data) {
+  const res=document.getElementById('arm-res'),verdict=document.getElementById('arm-verdict');
+  const lbl=document.getElementById('arm-label'),slot=document.getElementById('arm-slot');
+  const reason=document.getElementById('arm-reason'),act=document.getElementById('arm-act');
+  res.style.display='block'; res.className='arm-result';
+  if(data.isHazardous){
+    res.classList.add('hazardous');
+    verdict.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> BAHAYA — Tidak Diterima';
+    act.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> Lapor ke E-Sisa Hub (+25 Mata)';
+    act.style.cssText='display:flex;background:var(--orange);color:white;'; act.style.display='flex';
+  }else if(data.accepted){
+    res.classList.add('accepted');
+    verdict.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> DITERIMA';
+    act.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Buka Slot ${data.slot} (+10 Mata)`;
+    act.style.cssText='display:flex;background:var(--green);color:white;'; act.style.display='flex';
+    act.onclick=()=>{myPoints+=10;updateCitizenUI();showToast(`+10 mata! Slot ${data.slot} dibuka`);};
+  }else{
+    res.classList.add('rejected');
+    verdict.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> DITOLAK — Sisa Baki';
+    act.style.display='none';
+  }
+  lbl.textContent=`${data.label} (${Math.round((data.confidence||.9)*100)}% yakin)`;
+  slot.textContent=data.accepted?`Masukkan ke Slot ${data.slot}`:'Buang di Slot Sisa Baki';
+  reason.textContent=data.reason;
+}
+function armAct(){}
+
+// ── Settings ───────────────────────────────────────────
+function openSettings()  { document.getElementById('settings-overlay').classList.add('open'); document.getElementById('settings-panel').classList.add('open'); }
+function closeSettings() { document.getElementById('settings-overlay').classList.remove('open'); document.getElementById('settings-panel').classList.remove('open'); }
+function settingsOverlayClick(e) { if(e.target===document.getElementById('settings-overlay')) closeSettings(); }
+
+function toggleVoice()  { voiceOn=!voiceOn; document.getElementById('tgl-voice').classList.toggle('on',voiceOn); if(voiceOn)speak('Mod suara diaktifkan.'); else window.speechSynthesis?.cancel(); }
+function toggleContrast(){ contrastOn=!contrastOn; document.getElementById('tgl-contrast').classList.toggle('on',contrastOn); document.body.style.filter=contrastOn?'contrast(1.6)':''; localStorage.setItem('contrast',contrastOn); }
+function chgFont(d)      { fontSize=Math.max(80,Math.min(140,fontSize+d*10)); document.body.style.fontSize=fontSize+'%'; document.getElementById('fs-val').textContent=fontSize; localStorage.setItem('fontSize',fontSize); }
+function speak(t)        { if(!window.speechSynthesis)return; window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='ms-MY';u.rate=.9; window.speechSynthesis.speak(u); }
+
+// ── Notifications ──────────────────────────────────────
+function toggleNotif() {
+  const o=document.getElementById('notif-overlay'); const open=o.classList.toggle('open');
+  if(open){ document.getElementById('notif-badge').style.display='none'; subscribeNotifs(); }
+}
+function closeNotif()  { document.getElementById('notif-overlay').classList.remove('open'); }
+function notifOverlayClick(e) { if(e.target===document.getElementById('notif-overlay')) closeNotif(); }
+
+function subscribeNotifs() {
+  if(notifUnsub) return;
+  try {
+    notifUnsub=db.collection('broadcasts').orderBy('timestamp','desc').limit(10).onSnapshot(snap=>{
+      if(snap.empty) return;
+      const list=document.getElementById('notif-list');
+      list.innerHTML = snap.docs.map(doc=>{
+        const d=doc.data();
+        return `<div class="notif-item"><div class="ndot" style="background:var(--green);"></div><div><div class="notif-text">${escHtml(d.message||'')}</div><div class="notif-time">${d.from||'SmartTONG'}</div></div></div>`;
+      }).join('');
+    });
+  } catch(e){}
+}
+function togglePushNotif() {
+  const t=document.getElementById('tgl-notif'); t.classList.toggle('on');
+  showToast(t.classList.contains('on')?'Notifikasi diaktifkan':'Notifikasi dimatikan');
+  if(t.classList.contains('on')) subscribeNotifs();
+}
+
+// ── Toast ───────────────────────────────────────────────
+let toastT;
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3000); }
+
+// ── Init ────────────────────────────────────────────────
+window.addEventListener('load', async()=>{
+  // Restore preferences
+  contrastOn=localStorage.getItem('contrast')==='true';
+  fontSize=parseInt(localStorage.getItem('fontSize')||'100');
+  if(contrastOn){ document.body.style.filter='contrast(1.6)'; document.getElementById('tgl-contrast').classList.add('on'); }
+  document.body.style.fontSize=fontSize+'%';
+  document.getElementById('fs-val').textContent=fontSize;
+
+  // Auto-login: use localStorage instantly (offline-safe), sync Firebase in background
+  const savedHash = localStorage.getItem('session_ic_hash');
+  const savedRole = localStorage.getItem('session_role');
+  if(savedHash && savedRole){
+    role     = savedRole;
+    userName = savedRole === 'gov' ? 'Pegawai KDEBWM' : 'Warganegara';
+    userIC   = savedHash;
+    launchApp();
+    // Background Firebase sync
+    db.collection('sessions').doc(savedHash).get().then(snap => {
+      if(snap.exists && snap.data().points){ myPoints=snap.data().points; if(role==='citizen')updateCitizenUI(); }
+      db.collection('sessions').doc(savedHash).update({last_login:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
+    }).catch(()=>{});
+  }
+});
+</script>
+</body>
+</html>

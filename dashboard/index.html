@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+  <title>SmartTong — Sistem Pemantauan Sisa Pintar Selangor</title>
+  <meta name="description" content="SmartTong — Smart waste monitoring, AI sorting, citizen engagement and PBT route optimization for Selangor."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ══════════════════════════════════════════════════════════
+   SmartTong · Design System · Light Mode
+   Green #2E7D32 · Yellow #FBC02D · White #FFFFFF
+   ══════════════════════════════════════════════════════════ */
+:root{
+  --green:#2E7D32;--green-l:#4CAF50;--green-xl:#81C784;
+  --green-pale:#E8F5E9;--green-mid:#C8E6C9;--green-dark:#1B5E20;
+  --yellow:#FBC02D;--yellow-pale:#FFF8E1;--yellow-dark:#F57F17;
+  --red:#D32F2F;--red-pale:#FFEBEE;--red-mid:#EF9A9A;
+  --blue:#1565C0;--blue-pale:#E3F2FD;
+  --purple:#6A1B9A;--purple-pale:#F3E5F5;
+  --orange:#E65100;--orange-pale:#FBE9E7;
+  --bg:#F4F6F8;--surface:#FFFFFF;--surface-2:#F8F9FA;
+  --border:#E0E4E8;--border-mid:#CDD2D8;
+  --text:#1A2027;--text-mid:#4A5568;--text-muted:#8A9BB0;
+  --shadow-xs:0 1px 3px rgba(0,0,0,0.07);
+  --shadow-sm:0 2px 8px rgba(0,0,0,0.09);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.11);
+  --shadow-lg:0 8px 32px rgba(0,0,0,0.13);
+  --shadow-nav:0 -2px 12px rgba(0,0,0,0.08);
+  --r:14px;--r-sm:10px;--r-xs:6px;
+  --nav-h:68px;--hdr-h:60px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden;}
+
+/* ── SCROLLABLE CONTENT ── */
+.scroll{position:fixed;top:var(--hdr-h);left:0;right:0;bottom:var(--nav-h);overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--bg);}
+.scroll-noheader{position:fixed;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--border-mid);border-radius:2px;}
+
+/* ══ LOGIN SCREEN ════════════════════════════════════════ */
+#scr-login{
+  position:fixed;inset:0;z-index:300;
+  background:linear-gradient(155deg,#E8F5E9 0%,#FFFFFF 55%,#FFF8E1 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;overflow-y:auto;
+}
+#scr-login.gone{display:none;}
+.l-logo{width:76px;height:76px;background:linear-gradient(135deg,var(--green),var(--green-l));border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:0 8px 24px rgba(46,125,50,.3);margin-bottom:18px;}
+.l-brand{font-size:30px;font-weight:900;color:var(--green);letter-spacing:-1px;margin-bottom:3px;}
+.l-tagline{font-size:13px;color:var(--text-muted);margin-bottom:32px;text-align:center;line-height:1.5;}
+
+.role-tabs{display:flex;gap:0;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:4px;width:100%;max-width:360px;margin-bottom:24px;}
+.role-tab{flex:1;padding:10px 8px;border:none;background:transparent;border-radius:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.role-tab.active{background:var(--green);color:white;box-shadow:0 2px 8px rgba(46,125,50,.25);}
+
+.login-form{width:100%;max-width:360px;}
+.lf-group{margin-bottom:14px;}
+.lf-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:block;}
+.lf-input{width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;font-size:14px;font-family:'Inter',sans-serif;color:var(--text);background:var(--surface);outline:none;transition:border-color .2s;}
+.lf-input:focus{border-color:var(--green);}
+.lf-hint{font-size:11px;color:var(--text-muted);margin-top:5px;display:flex;align-items:center;gap:4px;}
+.lf-ic{font-family:'JetBrains Mono',monospace;font-size:16px;letter-spacing:3px;text-align:center;}
+
+.login-btn{width:100%;background:linear-gradient(135deg,var(--green),var(--green-l));color:white;border:none;border-radius:var(--r-sm);padding:15px;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;box-shadow:0 4px 16px rgba(46,125,50,.35);transition:all .2s;margin-top:8px;}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(46,125,50,.4);}
+.lf-err{font-size:12px;color:var(--red);margin-top:8px;display:none;text-align:center;}
+.lf-pdpa{font-size:10px;color:var(--text-muted);text-align:center;margin-top:12px;line-height:1.5;}
+.lf-pdpa strong{color:var(--green);}
+
+/* ══ APP SHELL ═══════════════════════════════════════════ */
+#app{display:none;position:fixed;inset:0;}
+#app.on{display:block;}
+
+/* ── Header ── */
+.hdr{position:fixed;top:0;left:0;right:0;height:var(--hdr-h);background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow-xs);display:flex;align-items:center;justify-content:space-between;padding:0 18px;z-index:100;}
+.hdr-brand{display:flex;align-items:center;gap:9px;}
+.hdr-logo{width:34px;height:34px;background:linear-gradient(135deg,var(--green),var(--green-l));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.hdr-title{font-size:17px;font-weight:800;color:var(--green);letter-spacing:-.4px;}
+.hdr-right{display:flex;align-items:center;gap:8px;}
+.rbadge{display:flex;align-items:center;gap:5px;background:var(--green-pale);border:1px solid var(--green-mid);color:var(--green);padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.hdr-btn{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text-muted);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.hdr-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* ── Bottom Nav ── */
+.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--surface);border-top:1px solid var(--border);box-shadow:var(--shadow-nav);display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding:0 4px 6px;z-index:100;}
+.nb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 4px;background:none;border:none;color:var(--text-muted);font-family:'Inter',sans-serif;font-size:10px;font-weight:600;cursor:pointer;border-radius:var(--r-sm);transition:color .2s;text-transform:uppercase;letter-spacing:.3px;}
+.nb .ni{font-size:21px;transition:transform .2s;}
+.nb:active .ni{transform:scale(.85);}
+.nb.on{color:var(--green);}
+.nb-pip{width:4px;height:4px;border-radius:2px;background:var(--green);display:none;}
+.nb.on .nb-pip{display:block;}
+
+/* ── Tab pages ── */
+.pg{display:none;min-height:100%;}
+.pg.on{display:block;}
+
+/* ══ SHARED COMPONENTS ════════════════════════════════════ */
+.ph{padding:18px 18px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.ph-title{font-size:19px;font-weight:800;color:var(--text);letter-spacing:-.4px;}
+.ph-sub{font-size:12px;color:var(--text-muted);margin-top:3px;}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-xs);overflow:hidden;}
+.ch{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.ct{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;}
+.cb{padding:16px;}
+
+.krow{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 14px 14px;}
+.kc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;box-shadow:var(--shadow-xs);}
+.ki{font-size:20px;margin-bottom:7px;}
+.kn{font-size:24px;font-weight:900;letter-spacing:-1px;margin-bottom:2px;}
+.kl{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+.ks{font-size:11px;color:var(--text-muted);margin-top:2px;}
+
+.chip{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:capitalize;}
+.cg{background:var(--green-pale);color:var(--green);border:1px solid var(--green-mid);}
+.cy{background:var(--yellow-pale);color:var(--yellow-dark);border:1px solid #FFE082;}
+.cr{background:var(--red-pale);color:var(--red);border:1px solid var(--red-mid);}
+.cp{background:var(--purple-pale);color:var(--purple);border:1px solid #CE93D8;}
+.cb2{background:var(--blue-pale);color:var(--blue);border:1px solid #90CAF9;}
+
+.tg{color:var(--green);}
+.ty{color:var(--yellow-dark);}
+.tr{color:var(--red);}
+.tb{color:var(--blue);}
+.tp{color:var(--purple);}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:all .2s;}
+.bg{background:var(--green);color:white;box-shadow:0 2px 8px rgba(46,125,50,.25);}
+.bg:hover{background:var(--green-dark);}
+.by{background:var(--yellow);color:#1A2027;box-shadow:0 2px 8px rgba(251,192,45,.3);}
+.br{background:var(--red);color:white;}
+.bo{background:transparent;border:1.5px solid var(--border);color:var(--text-mid);}
+.bo:hover{border-color:var(--green);color:var(--green);}
+.bfull{width:100%;}
+.bsm{padding:6px 13px;font-size:11px;}
+
+.fb{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.fbi{height:100%;border-radius:4px;transition:width .6s ease;}
+
+.sl{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;padding:14px 18px 8px;}
+
+.fl{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:block;}
+.fi,.fse,.fta{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.fi:focus,.fse:focus,.fta:focus{border-color:var(--green);}
+.fse{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A9BB0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px;}
+.fta{resize:none;min-height:80px;line-height:1.5;}
+.fg{margin-bottom:14px;}
+
+.tgl{width:48px;height:26px;background:var(--border-mid);border-radius:13px;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0;}
+.tgl.on{background:var(--green);}
+.tgl::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .3s;}
+.tgl.on::after{transform:translateX(22px);}
+
+.toast{position:fixed;bottom:calc(var(--nav-h)+16px);left:50%;transform:translateX(-50%) translateY(16px);background:var(--text);color:white;padding:11px 22px;border-radius:22px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;transition:all .3s;z-index:500;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.tg{background:var(--green);}
+.toast.ty{background:var(--yellow-dark);}
+.toast.tr{background:var(--red);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.au{animation:fadeUp .3s ease both;}
+.d1{animation-delay:.05s;}.d2{animation-delay:.1s;}.d3{animation-delay:.15s;}.d4{animation-delay:.2s;}
+
+/* ═══ MAP ════════════════════════════════════════════════ */
+#map{height:270px;}
+.leaflet-popup-content-wrapper{border-radius:12px!important;font-family:'Inter',sans-serif!important;box-shadow:var(--shadow-lg)!important;}
+.leaflet-popup-content{margin:13px 15px!important;}
+.pu-id{font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-bottom:3px;}
+.pu-name{font-size:13px;font-weight:700;margin-bottom:10px;}
+.pu-row{display:flex;justify-content:space-between;align-items:center;margin:4px 0;font-size:12px;}
+.pu-l{color:var(--text-muted);}
+.pu-v{font-weight:700;}
+
+/* ═══ GOV: DISPATCH GRID ═════════════════════════════════ */
+.crit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow-xs);transition:box-shadow .2s;}
+.crit-card:hover{box-shadow:var(--shadow-md);}
+.crit-card.critical{border-left:4px solid var(--red);}
+.crit-card.warning {border-left:4px solid var(--yellow-dark);}
+.crit-card.normal  {border-left:4px solid var(--green);}
+.crit-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.crit-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:3px;}
+.crit-name{font-size:13px;font-weight:700;}
+.crit-body{padding:10px 14px 12px;border-top:1px solid var(--border);background:var(--bg);}
+.sensor-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px;}
+.sensor-row:last-child{margin-bottom:0;}
+.sensor-icon{font-size:14px;width:20px;text-align:center;}
+.sensor-label{color:var(--text-muted);min-width:80px;}
+.sensor-val{font-weight:700;}
+.dispatch-actions{display:flex;gap:8px;margin-top:12px;}
+
+/* ═══ DISTRICT FILTER ════════════════════════════════════ */
+.dist-filter{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;scrollbar-width:none;}
+.dist-filter::-webkit-scrollbar{display:none;}
+.dchip{flex-shrink:0;padding:6px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:var(--surface);color:var(--text-muted);}
+.dchip.on{background:var(--green-pale);border-color:var(--green-mid);color:var(--green);}
+
+/* ═══ ADUAN HUB ══════════════════════════════════════════ */
+.aduan-item{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;}
+.aduan-img{width:60px;height:60px;border-radius:8px;object-fit:cover;background:var(--bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:26px;border:1px solid var(--border);}
+.aduan-content{flex:1;min-width:0;}
+.aduan-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+.aduan-loc{font-size:11px;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;gap:4px;}
+.aduan-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.aduan-time{font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-top:5px;}
+
+/* ═══ CHATBOT ════════════════════════════════════════════ */
+.chat-wrap{display:flex;flex-direction:column;height:100%;}
+.chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.msg{max-width:82%;animation:fadeUp .25s ease;}
+.msg-bot{align-self:flex-start;}
+.msg-user{align-self:flex-end;}
+.msg-bubble{padding:11px 14px;border-radius:16px;font-size:13px;line-height:1.55;}
+.msg-bot .msg-bubble{background:var(--surface);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px;box-shadow:var(--shadow-xs);}
+.msg-user .msg-bubble{background:var(--green);color:white;border-bottom-right-radius:4px;}
+.msg-name{font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:4px;padding:0 4px;}
+.msg-user .msg-name{text-align:right;color:var(--green);}
+.chat-input-row{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);background:var(--surface);}
+.chat-in{flex:1;border:1.5px solid var(--border);border-radius:22px;padding:10px 15px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color .2s;}
+.chat-in:focus{border-color:var(--green);}
+.chat-send{width:40px;height:40px;background:var(--green);border:none;border-radius:50%;color:white;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+.chat-send:hover{background:var(--green-dark);}
+.quick-chips{display:flex;gap:6px;overflow-x:auto;padding:8px 14px 0;scrollbar-width:none;}
+.quick-chips::-webkit-scrollbar{display:none;}
+.qchip{flex-shrink:0;padding:6px 12px;background:var(--green-pale);border:1px solid var(--green-mid);border-radius:16px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;white-space:nowrap;transition:all .2s;}
+.qchip:hover{background:var(--green-mid);}
+.bot-typing{display:flex;gap:4px;align-items:center;padding:12px 14px;}
+.dot-l{width:7px;height:7px;border-radius:50%;background:var(--border-mid);animation:dl .9s infinite both;}
+.dot-l:nth-child(2){animation-delay:.15s;}
+.dot-l:nth-child(3){animation-delay:.3s;}
+@keyframes dl{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);background:var(--green-xl);}}
+
+/* ═══ LESTARI / INFO HUB ════════════════════════════════ */
+.tip-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow-xs);}
+.tip-header{padding:13px 15px;display:flex;align-items:center;gap:10px;}
+.tip-icon{font-size:28px;}
+.tip-title{font-size:13px;font-weight:700;}
+.tip-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.tip-body{padding:0 15px 14px;}
+.tip-item{font-size:12px;color:var(--text-mid);padding:5px 0;border-bottom:1px solid var(--border);line-height:1.5;}
+.tip-item:last-child{border-bottom:none;}
+
+.annc-card{background:linear-gradient(135deg,var(--green-pale),#DCEDC8);border:1px solid var(--green-mid);border-radius:var(--r);padding:15px;margin-bottom:10px;box-shadow:var(--shadow-xs);}
+.annc-date{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--green-dark);margin-bottom:4px;}
+.annc-title{font-size:13px;font-weight:700;color:var(--green-dark);margin-bottom:5px;}
+.annc-body{font-size:12px;color:var(--text-mid);line-height:1.5;}
+
+/* ═══ CITIZEN HOME ═══════════════════════════════════════ */
+.eco-hero{background:linear-gradient(135deg,var(--green),#388E3C);color:white;margin:14px;border-radius:var(--r);padding:20px;box-shadow:0 4px 16px rgba(46,125,50,.3);}
+.eco-lbl{font-size:11px;font-weight:700;opacity:.8;text-transform:uppercase;letter-spacing:1px;}
+.eco-pts{font-size:42px;font-weight:900;letter-spacing:-2px;line-height:1;}
+.eco-tier{font-size:14px;font-weight:700;margin-top:4px;}
+.eco-bar-bg{height:7px;background:rgba(255,255,255,.25);border-radius:4px;margin:14px 0 5px;}
+.eco-bar{height:100%;background:var(--yellow);border-radius:4px;transition:width 1s ease;}
+.eco-range{display:flex;justify-content:space-between;font-size:10px;opacity:.7;font-weight:600;}
+.eco-next{font-size:11px;opacity:.75;margin-top:8px;}
+
+/* ═══ GOV REWARDS BROADCAST ══════════════════════════════ */
+.champ-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);}
+.champ-item:last-child{border-bottom:none;}
+.champ-rank{font-size:18px;font-weight:900;min-width:32px;text-align:center;}
+.champ-ava{width:38px;height:38px;border-radius:50%;background:var(--green-pale);display:flex;align-items:center;justify-content:center;font-size:20px;}
+.champ-info{flex:1;}
+.champ-name{font-size:13px;font-weight:700;}
+.champ-sub{font-size:11px;color:var(--text-muted);}
+.champ-pts{font-size:13px;font-weight:800;color:var(--green);}
+
+/* ═══ OKU SETTINGS ═══════════════════════════════════════ */
+.set-row{display:flex;align-items:center;gap:13px;padding:15px 16px;border-bottom:1px solid var(--border);}
+.set-row:last-child{border-bottom:none;}
+.set-icon{font-size:22px;flex-shrink:0;}
+.set-text{flex:1;}
+.set-title{font-size:13px;font-weight:700;margin-bottom:2px;}
+.set-sub{font-size:11px;color:var(--text-muted);line-height:1.4;}
+.oku-play{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;}
+.oku-play:last-child{border-bottom:none;}
+.oku-play:hover{background:var(--bg);}
+.oku-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.oku-txt{flex:1;font-size:12px;color:var(--text-mid);}
+.oku-play-btn{font-size:17px;}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     SECURE LOGIN
+════════════════════════════════════════════════════════ -->
+<div id="scr-login">
+  <div class="l-logo">🗑️</div>
+  <div class="l-brand">SmartTong</div>
+  <div class="l-tagline">Sistem Pemantauan Sisa Pintar Selangor<br>Dilindungi PDPA · Bersepadu KDEB</div>
+
+  <!-- Role selector tabs -->
+  <div class="role-tabs">
+    <button class="role-tab active" id="rt-citizen" onclick="setRole('citizen')">👤 Warganegara</button>
+    <button class="role-tab" id="rt-gov" onclick="setRole('gov')">🏛️ Kerajaan / PBT</button>
+  </div>
+
+  <!-- Citizen form -->
+  <div class="login-form" id="lf-citizen">
+    <div class="lf-group">
+      <label class="lf-label" for="citizen-name">Nama Penuh (Full Name)</label>
+      <input class="lf-input" type="text" id="citizen-name" placeholder="Ahmad Bin Ali" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="lf-group">
+      <label class="lf-label" for="ic-input">Nombor MyKad (No. IC)</label>
+      <input class="lf-input lf-ic" type="tel" id="ic-input" placeholder="950101-14-1234" maxlength="14" oninput="fmtIC(this)" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div class="lf-hint">💡 Demo: taip sebarang 12 digit — cth. 900101121234</div>
+    </div>
+    <div class="lf-group">
+      <label class="lf-label" for="hp-input">Nombor Telefon</label>
+      <input class="lf-input" type="tel" id="hp-input" placeholder="01X-XXXXXXX" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="lf-group">
+      <label class="lf-label" for="addr-input">Alamat Kediaman (Housing Address)</label>
+      <input class="lf-input" type="text" id="addr-input" placeholder="No 12, Jalan SS15/4, Subang Jaya" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="lf-group" style="display:flex;align-items:center;gap:8px;">
+      <input type="checkbox" id="pdpa-consent" style="transform:scale(1.2);cursor:pointer;"/>
+      <label class="lf-label" for="pdpa-consent" style="margin-bottom:0;cursor:pointer;text-transform:none;letter-spacing:0;">Saya setuju maklumat diproses di bawah Akta PDPA 2010.</label>
+    </div>
+  </div>
+
+  <!-- Gov form -->
+  <div class="login-form" id="lf-gov" style="display:none;">
+    <div class="lf-group">
+      <label class="lf-label" for="staff-input">KDEB / PBT Staff ID</label>
+      <input class="lf-input lf-ic" type="text" id="staff-input" placeholder="KDEB-XXXX / MPKS-XXXX" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div class="lf-hint">💡 Demo: taip sebarang ID — cth. KDEB-1234 atau MPKS-9876</div>
+    </div>
+    <div class="lf-group">
+      <label class="lf-label" for="dept-sel">Jabatan / Daerah</label>
+      <select class="fi fse" id="dept-sel">
+        <option value="">Pilih Jabatan...</option>
+        <option>KDEBWM — Bahagian Operasi</option>
+        <option>MPKS — Klang</option>
+        <option>MBSJ — Subang Jaya</option>
+        <option>MBPJ — Petaling Jaya</option>
+        <option>MBSA — Shah Alam</option>
+        <option>MPAJ — Ampang Jaya</option>
+        <option>MPKj — Kajang</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="login-form">
+    <div class="lf-err" id="lf-err">⚠️ Sila lengkapkan semua maklumat.</div>
+    <button class="login-btn" onclick="doLogin()">Log Masuk Selamat →</button>
+    <div class="lf-pdpa">🔒 Maklumat anda dilindungi di bawah <strong>Akta PDPA 2010</strong>.<br>Data hanya digunakan untuk perkhidmatan SmartTong Selangor.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     APP SHELL
+════════════════════════════════════════════════════════ -->
+<div id="app">
+  <!-- Header -->
+  <header class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-logo">🗑️</div>
+      <span class="hdr-title">SmartTong</span>
+    </div>
+    <div class="hdr-right">
+      <div class="rbadge"><div class="live-dot"></div><span id="rl">PBT</span></div>
+      <button class="hdr-btn" onclick="doLogout()" title="Log keluar" aria-label="Log keluar">↩</button>
+    </div>
+  </header>
+
+  <!-- SCROLL AREA -->
+  <div class="scroll" id="scroll">
+
+    <!-- ─── GOV: TAB 1 — AI DISPATCH ──────────────────── -->
+    <div class="pg on" id="pg-home">
+      <div class="ph">
+        <div>
+          <div class="ph-title" id="home-title">AI Logistik Dispatch</div>
+          <div class="ph-sub" id="home-sub">Penjadualan automatik KDEBWM · Selangor</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn by bsm" id="sim-tick-btn" onclick="triggerSimTick()">⏱️ Simulasikan Timbul (+1 Tick)</button>
+          <button class="btn br bsm" id="override-btn" onclick="overrideDispatch()">⚡ Override</button>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div class="krow">
+        <div class="kc au d1">
+          <div class="ki">🚨</div>
+          <div class="kn tr" id="k-crit">2</div>
+          <div class="kl">Tong Kritikal</div>
+          <div class="ks">≥85% penuh</div>
+        </div>
+        <div class="kc au d2">
+          <div class="ki">🚛</div>
+          <div class="kn tb" id="k-trucks">3</div>
+          <div class="kl">Truk Aktif</div>
+          <div class="ks">En route</div>
+        </div>
+        <div class="kc au d3">
+          <div class="ki">💰</div>
+          <div class="kn tg" id="k-saved">RM 336</div>
+          <div class="kl">Bahan Api Jimat</div>
+          <div class="ks">Minggu ini</div>
+        </div>
+        <div class="kc au d4">
+          <div class="ki">♻️</div>
+          <div class="kn tb" id="k-recycle">38.1%</div>
+          <div class="kl">Kadar Kitar Semula</div>
+          <div class="ks">vs 31% baseline</div>
+        </div>
+      </div>
+
+      <!-- Dispatch grid -->
+      <div class="sl">Tong Mengikut Keutamaan</div>
+      <div id="dispatch-grid" style="margin:0 14px 20px;"></div>
+    </div>
+
+    <!-- ─── TAB 2: MAP ──────────────────────────────────── -->
+    <div class="pg" id="pg-map">
+      <!-- District filter -->
+      <div class="dist-filter" id="dist-filter">
+        <div class="dchip on" onclick="filterDistrict(this,'ALL')">Semua Daerah</div>
+        <div class="dchip" onclick="filterDistrict(this,'Petaling')">Petaling</div>
+        <div class="dchip" onclick="filterDistrict(this,'Klang')">Klang</div>
+        <div class="dchip" onclick="filterDistrict(this,'Gombak')">Gombak</div>
+        <div class="dchip" onclick="filterDistrict(this,'Hulu Langat')">Hulu Langat</div>
+        <div class="dchip" onclick="filterDistrict(this,'Kuala Selangor')">Kuala Selangor</div>
+      </div>
+      <div id="map"></div>
+      <div class="sl" style="margin-top:8px;">Senarai Tong (Kritikal → Normal)</div>
+      <div id="map-bin-list" style="margin:0 14px 20px;display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- ─── TAB 3: ADUAN ────────────────────────────────── -->
+    <div class="pg" id="pg-aduan">
+      <div class="ph">
+        <div><div class="ph-title">Hab Aduan</div><div class="ph-sub">Laporan warga · geo-tagged</div></div>
+        <span class="chip cr" id="aduan-count">4 Aktif</span>
+      </div>
+      <div style="margin:0 14px 20px;" class="card">
+        <div id="aduan-list"></div>
+      </div>
+    </div>
+
+    <!-- ─── TAB 4: LESTARI REWARDS (GOV) ──────────────── -->
+    <div class="pg" id="pg-lestari">
+      <div class="ph">
+        <div><div class="ph-title">Pengurus Ganjaran Lestari</div><div class="ph-sub">Juara kitar semula bulanan</div></div>
+        <button class="btn by bsm" onclick="broadcastMsg()">📡 Siaran</button>
+      </div>
+      <div class="sl">Top 10 Juara Bulanan</div>
+      <div style="margin:0 14px 20px;" class="card">
+        <div id="champ-list"></div>
+      </div>
+      <div class="sl">Siaran Terkini</div>
+      <div style="margin:0 14px 20px;">
+        <div class="annc-card au">
+          <div class="annc-date">28 Jun 2026</div>
+          <div class="annc-title">🏆 Tahniah Juara Jun 2026!</div>
+          <div class="annc-body">Ahmad Razif dari USJ 1 memenangi hadiah RM50 baucar Mydin atas pengumpulan 820 mata kitar semula. Syabas dan teruskan usaha mulia!</div>
+        </div>
+        <div class="annc-card au d1">
+          <div class="annc-date">15 Jun 2026</div>
+          <div class="annc-title">📅 Hari Kutipan E-Sisa</div>
+          <div class="annc-body">Program kutipan e-sisa (bateri, elektronik lama) akan diadakan pada 20 Julai 2026 di semua pusat kitar semula MBSJ dan MBPJ.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CITIZEN TAB 1: HOME / GANJARAN ────────────── -->
+    <!-- (same pg-home div reused — content swapped by JS) -->
+
+    <!-- ─── CITIZEN TAB 2: SILATAANYA AI CHATBOT ──────── -->
+    <div class="pg" id="pg-chat" style="height:100%;">
+      <div class="chat-wrap" style="position:absolute;top:0;left:0;right:0;bottom:0;">
+        <div style="padding:12px 14px 6px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--green),var(--green-l));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;">🤖</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">SilaTanya AI</div>
+            <div style="font-size:11px;color:var(--green);font-weight:600;">● Dalam talian</div>
+          </div>
+          <div style="margin-left:auto;font-size:10px;color:var(--text-muted);">Dikuasakan Gemini</div>
+        </div>
+        <div class="quick-chips" id="quick-chips">
+          <div class="qchip" onclick="quickAsk('Macam mana nak kitar semula tin Milo?')">🥫 Tin Milo</div>
+          <div class="qchip" onclick="quickAsk('Kotak tapau boleh recycle tak?')">📦 Kotak tapau</div>
+          <div class="qchip" onclick="filterDistrict2('Botol plastik perlu dibasuh dulu?')">🧴 Botol plastik</div>
+          <div class="qchip" onclick="quickAsk('Bateri handphone macam mana?')">🔋 Bateri</div>
+          <div class="qchip" onclick="quickAsk('Saya buang sampah haram, apa hukumannya?')">⚠️ Pembuangan haram</div>
+          <div class="qchip" onclick="quickAsk('Tong B03 dah penuh, bila truck datang?')">🚛 Tong penuh</div>
+        </div>
+        <div class="chat-messages" id="chat-msgs"></div>
+        <div class="chat-input-row">
+          <input class="chat-in" id="chat-in" type="text" placeholder="Tanya soal sampah & kitar semula..." onkeydown="if(event.key==='Enter')sendChat()"/>
+          <button class="chat-send" onclick="sendChat()" aria-label="Hantar">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CITIZEN TAB 3: ADUAN RAKYAT ───────────────── -->
+    <div class="pg" id="pg-report">
+      <div class="ph">
+        <div><div class="ph-title">Aduan Rakyat</div><div class="ph-sub">Lapor tong penuh atau pembuangan haram</div></div>
+      </div>
+      <div style="margin:0 14px 12px;">
+        <div class="card">
+          <div style="padding:18px;text-align:center;">
+            <div style="font-size:44px;margin-bottom:10px;">📷</div>
+            <div style="font-weight:700;font-size:14px;margin-bottom:6px;">Imbas QR Tong</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Imbas kod QR pada tong untuk mendapatkan ID & lokasi automatik</div>
+            <button class="btn bg bfull" onclick="mockQR()">📷 Buka Pengimbas QR</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin:0 14px 12px;">
+        <div class="card">
+          <div class="ch"><span class="ct">📝 Borang Laporan</span></div>
+          <div class="cb">
+            <div class="fg">
+              <label class="fl">ID Tong</label>
+              <input class="fi" id="r-binid" type="text" placeholder="cth: B01 (imbas QR atau taip manual)"/>
+            </div>
+            <div class="fg">
+              <label class="fl">Jenis Masalah</label>
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;" id="rtype-grid">
+                <div class="tip-card" style="cursor:pointer;border:2px solid var(--green);background:var(--green-pale);" data-type="overflow" onclick="selRType(this)">
+                  <div class="tip-header" style="padding:10px 12px;"><div class="tip-icon" style="font-size:22px;">🗑️</div><div><div class="tip-title" style="font-size:12px;">Tong Penuh</div></div></div>
+                </div>
+                <div class="tip-card" style="cursor:pointer;" data-type="illegal" onclick="selRType(this)">
+                  <div class="tip-header" style="padding:10px 12px;"><div class="tip-icon" style="font-size:22px;">🚫</div><div><div class="tip-title" style="font-size:12px;">Buang Haram</div></div></div>
+                </div>
+                <div class="tip-card" style="cursor:pointer;" data-type="broken" onclick="selRType(this)">
+                  <div class="tip-header" style="padding:10px 12px;"><div class="tip-icon" style="font-size:22px;">🔧</div><div><div class="tip-title" style="font-size:12px;">Tong Rosak</div></div></div>
+                </div>
+                <div class="tip-card" style="cursor:pointer;" data-type="pothole" onclick="selRType(this)">
+                  <div class="tip-header" style="padding:10px 12px;"><div class="tip-icon" style="font-size:22px;">🕳️</div><div><div class="tip-title" style="font-size:12px;">Jalan Berlubang</div></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl">Keterangan</label>
+              <textarea class="fta" id="r-desc" placeholder="Nyatakan masalah dengan lebih terperinci..."></textarea>
+            </div>
+            <div class="fg">
+              <label class="fl">Foto Bukti (Pilihan)</label>
+              <div style="border:2px dashed var(--green-mid);border-radius:var(--r-sm);padding:18px;text-align:center;cursor:pointer;background:var(--green-pale);" onclick="document.getElementById('r-photo').click()">
+                <div style="font-size:26px;margin-bottom:5px;">📷</div>
+                <div style="font-size:12px;color:var(--text-muted);">Tekan untuk ambil/pilih foto</div>
+              </div>
+              <input type="file" id="r-photo" accept="image/*" capture="environment" style="display:none" onchange="prevPhoto(this)"/>
+              <div id="r-prev"></div>
+            </div>
+            <button class="btn bg bfull" style="padding:13px;font-size:14px;" onclick="submitRep()">Hantar Laporan (+10 Mata) →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pothole bonus -->
+      <div style="margin:0 14px 24px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--yellow-pale);border:1.5px solid #FFE082;border-radius:var(--r-sm);cursor:pointer;" onclick="selRType2('pothole')">
+          <span style="font-size:28px;">🕳️</span>
+          <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:var(--yellow-dark);">Nampak Jalan Berlubang Berdekatan?</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Lapor sekarang — +10 mata bonus untuk bantu Selangor!</div></div>
+          <span style="font-size:18px;color:var(--yellow-dark);">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CITIZEN TAB 4: LESTARI INFO HUB ───────────── -->
+    <div class="pg" id="pg-lestari-c">
+      <div class="ph"><div><div class="ph-title">Lestari Info Hub</div><div class="ph-sub">Panduan kitar semula & pengumuman kerajaan</div></div></div>
+
+      <div class="sl">Panduan Mengasingkan Sisa</div>
+      <div style="margin:0 14px 10px;">
+        <div class="tip-card">
+          <div class="tip-header"><div class="tip-icon">🟢</div><div><div class="tip-title">Plastik — Boleh Kitar Semula</div><div class="tip-sub">Letak di Slot PLASTIK</div></div></div>
+          <div class="tip-body">
+            <div class="tip-item">✅ Botol air plastik (PET/HDPE) — perlu dibasuh dulu</div>
+            <div class="tip-item">✅ Beg plastik bersih (PP)</div>
+            <div class="tip-item">✅ Bekas makanan plastik keras — bersih & kering</div>
+            <div class="tip-item">❌ Straw / penyedut minuman</div>
+            <div class="tip-item">❌ Plastik berlapis (pembungkus gula-gula)</div>
+          </div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-header"><div class="tip-icon">🔵</div><div><div class="tip-title">Kertas — Boleh Kitar Semula</div><div class="tip-sub">Letak di Slot KERTAS</div></div></div>
+          <div class="tip-body">
+            <div class="tip-item">✅ Surat khabar, majalah, buku lama</div>
+            <div class="tip-item">✅ Kotak kadbod kering</div>
+            <div class="tip-item">✅ Kertas pejabat & sampul surat</div>
+            <div class="tip-item">❌ Kotak tapau berlemak / kotak pizza</div>
+            <div class="tip-item">❌ Tisu & serbet — TIDAK boleh dikitar semula</div>
+          </div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-header"><div class="tip-icon">🔴</div><div><div class="tip-title">Logam — Boleh Kitar Semula</div><div class="tip-sub">Letak di Slot LOGAM</div></div></div>
+          <div class="tip-body">
+            <div class="tip-item">✅ Tin minuman aluminium (Milo, 100Plus, Coca-Cola)</div>
+            <div class="tip-item">✅ Tin sardin & makanan kaleng — bilas dulu</div>
+            <div class="tip-item">✅ Foil aluminium bersih</div>
+            <div class="tip-item">❌ Bateri — hantar ke pusat e-sisa</div>
+          </div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-header"><div class="tip-icon">⚫</div><div><div class="tip-title">Sisa Baki — Tidak Boleh Kitar Semula</div><div class="tip-sub">Letak di Slot SISA BAKI</div></div></div>
+          <div class="tip-body">
+            <div class="tip-item">⚠️ Sisa makanan / bahan organik</div>
+            <div class="tip-item">⚠️ Lampin pakai buang</div>
+            <div class="tip-item">⚠️ Barangan bercampur (komposit)</div>
+            <div class="tip-item">⚠️ Kaca pecah — bungkus sebelum buang</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sl">Pengumuman Kerajaan Selangor</div>
+      <div style="margin:0 14px 24px;">
+        <div class="annc-card au">
+          <div class="annc-date">01 Jul 2026</div>
+          <div class="annc-title">📅 Program Kutipan E-Sisa Julai 2026</div>
+          <div class="annc-body">Kutipan bateri, komputer lama & elektronik akan diadakan 20 Julai di semua pusat kitar semula MBSJ, MBPJ & MBSA. Bawa MyKad untuk log mata kitar semula anda!</div>
+        </div>
+        <div class="annc-card au d1">
+          <div class="annc-date">25 Jun 2026</div>
+          <div class="annc-title">🏆 Juara Kebersihan Jun 2026</div>
+          <div class="annc-body">Tahniah kepada Ahmad Razif (USJ 1) — Juara Kebersihan Jun dengan 820 mata! Hadiah baucar RM50 telah dikreditkan ke akaun SmartTong anda.</div>
+        </div>
+        <div class="annc-card au d2">
+          <div class="annc-date">10 Jun 2026</div>
+          <div class="annc-title">🌿 SmartTong Kini di 5 Zon Baru</div>
+          <div class="annc-body">SmartTong telah dikembangkan ke kawasan Puchong, Rawang, Sepang, Hulu Langat dan Semenyih. Cari tong pintar berdekatan anda melalui tab Peta.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── OKU / SETTINGS (shared) ───────────────────── -->
+    <div class="pg" id="pg-oku">
+      <div class="ph"><div><div class="ph-title">Kebolehaksesan OKU</div><div class="ph-sub">Tetapan untuk pengguna istimewa</div></div></div>
+      <div style="margin:0 14px 16px;" class="card">
+        <div class="ch"><span class="ct">♿ Mod Kebolehaksesan</span></div>
+        <div class="set-row"><div class="set-icon">🔊</div><div class="set-text"><div class="set-title">Suara (Voice-Over)</div><div class="set-sub">Baca teks halaman & butang untuk pengguna OKU penglihatan menggunakan Web Speech API</div></div><div class="tgl" id="tgl-v" onclick="tglVoice()" role="switch" aria-label="Voice over"></div></div>
+        <div class="set-row"><div class="set-icon">🔆</div><div class="set-text"><div class="set-title">Kontras Tinggi</div><div class="set-sub">Tingkatkan kontras untuk keterlihatan lebih baik</div></div><div class="tgl" id="tgl-c" onclick="tglContrast()" role="switch" aria-label="High contrast"></div></div>
+        <div class="set-row"><div class="set-icon">🔑</div><div class="set-text"><div class="set-title">Kunci API Gemini</div><div class="set-sub">Masukkan Kunci API Gemini untuk sembang kecerdasan buatan live</div></div>
+          <input type="password" id="gemini-key-input" placeholder="AIzaSy..." style="width:140px;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:11px;" onchange="saveGeminiKey(this.value)"/>
+        </div>
+        <div class="set-row"><div class="set-icon">🔡</div><div class="set-text"><div class="set-title">Saiz Teks <span id="fs-val" style="color:var(--green);">100%</span></div><div class="set-sub">Laraskan saiz teks keseluruhan aplikasi</div></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button onclick="chgFont(-1)" style="width:30px;height:30px;border:1px solid var(--border);border-radius:7px;background:var(--bg);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;">−</button>
+            <button onclick="chgFont(1)"  style="width:30px;height:30px;border:1px solid var(--border);border-radius:7px;background:var(--bg);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sl">Demo Audio OKU (klik untuk dengar)</div>
+      <div style="margin:0 14px 16px;" class="card">
+        <div class="oku-play" onclick="playOKU('ok')"><div class="oku-dot" style="background:var(--green);"></div><div class="oku-txt"><strong>Tong Lega</strong> — "Terima kasih. Tong masih lega."</div><div class="oku-play-btn">▶️</div></div>
+        <div class="oku-play" onclick="playOKU('half')"><div class="oku-dot" style="background:var(--yellow-dark);"></div><div class="oku-txt"><strong>Hampir Penuh</strong> — "Tong hampir penuh. Sila gunakan tong berdekatan."</div><div class="oku-play-btn">▶️</div></div>
+        <div class="oku-play" onclick="playOKU('full')"><div class="oku-dot" style="background:var(--red);"></div><div class="oku-txt"><strong>Tong Penuh</strong> — "Tong penuh. Tong terdekat dalam 20 meter."</div><div class="oku-play-btn">▶️</div></div>
+        <div class="oku-play" onclick="playOKU('hazard')"><div class="oku-dot" style="background:var(--purple);"></div><div class="oku-txt"><strong>Bahan Berbahaya</strong> — "Amaran! Bahan berbahaya dikesan. Hubungi pihak berkuasa."</div><div class="oku-play-btn">▶️</div></div>
+        <div class="oku-play" onclick="playOKU('sort')"><div class="oku-dot" style="background:var(--blue);"></div><div class="oku-txt"><strong>Pengisihan AI</strong> — "Item dikesan: Tin aluminium. Sedang diproses…"</div><div class="oku-play-btn">▶️</div></div>
+      </div>
+
+      <div class="sl">Tentang SmartTong</div>
+      <div style="margin:0 14px 24px;" class="card">
+        <div class="cb" style="font-size:12px;color:var(--text-mid);line-height:1.7;">
+          <strong style="color:var(--text);">SmartTong AI</strong> · Versi 2.0 · AINS 2026<br>
+          Kesejahteraan Negeri Selangor<br><br>
+          <span style="color:var(--green);font-weight:600;">Malaysia's first OKU-accessible, edge-AI automated smart bin ecosystem.</span><br><br>
+          Sistem ini menggabungkan tong pintar berkamera AI, pengisihan sisa automatik, pemantauan masa nyata, dan pengoptimuman laluan truk — menjimatkan sehingga 30% kos operasi PBT sambil mendorong budaya kitar semula komuniti.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end scroll -->
+
+  <!-- Bottom Nav -->
+  <nav class="bnav" id="bnav">
+    <button class="nb on" id="nb-home"    onclick="swTab('home')"   aria-label="Home"><span class="ni">🏠</span><span id="nbl-home">Utama</span><span class="nb-pip"></span></button>
+    <button class="nb"    id="nb-tab2"   onclick="swTab('tab2')"  aria-label="Tab 2"><span class="ni" id="ni-tab2">🗺️</span><span id="nbl-tab2">Peta</span><span class="nb-pip"></span></button>
+    <button class="nb"    id="nb-tab3"   onclick="swTab('tab3')"  aria-label="Tab 3"><span class="ni" id="ni-tab3">📋</span><span id="nbl-tab3">Aduan</span><span class="nb-pip"></span></button>
+    <button class="nb"    id="nb-tab4"   onclick="swTab('tab4')"  aria-label="Tab 4"><span class="ni" id="ni-tab4">🏆</span><span id="nbl-tab4">Lestari</span><span class="nb-pip"></span></button>
+  </nav>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════ -->
+<script>
+/* ── Data ─────────────────────────────────────────────── */
+const BINS = [
+  { id:'B01', name:'Persiaran Kewajipan, USJ 1',       zone:'MBSJ', dist:'Petaling', lat:3.0481, lng:101.5787, fill:85, wtype:'Organik',    gas:220, moist:68, weight:14.2, hz:false, hrsLeft:3.2  },
+  { id:'B02', name:'Jalan SS15/4, Subang Jaya',         zone:'MBSJ', dist:'Petaling', lat:3.0754, lng:101.5843, fill:62, wtype:'Plastik',     gas:89,  moist:22, weight:8.1,  hz:false, hrsLeft:9.5  },
+  { id:'B03', name:'Dataran Sunway, PJS 11',             zone:'MBPJ', dist:'Petaling', lat:3.0680, lng:101.6014, fill:93, wtype:'Organik',    gas:380, moist:81, weight:18.7, hz:false, hrsLeft:0.8  },
+  { id:'B04', name:'Taman Jaya Park, Petaling Jaya',    zone:'MBPJ', dist:'Petaling', lat:3.1069, lng:101.6380, fill:28, wtype:'Kertas',     gas:55,  moist:18, weight:4.2,  hz:false, hrsLeft:null },
+  { id:'B05', name:'Pasar Malam Shah Alam, Seksyen 14', zone:'MBSA', dist:'Petaling', lat:3.0738, lng:101.5183, fill:77, wtype:'Berbahaya',  gas:415, moist:74, weight:11.9, hz:true,  hrsLeft:4.1  },
+];
+const CHAMPIONS = [
+  { name:'Ahmad Razif',    zone:'USJ 1, Subang Jaya', pts:820, emoji:'🌟' },
+  { name:'Siti Norehan',   zone:'Damansara Utama, PJ',pts:610, emoji:'🌺' },
+  { name:'Kumar Selvam',   zone:'Klang Sentral',       pts:485, emoji:'🎯' },
+  { name:'Lim Wei Xian',   zone:'SS2, PJ',             pts:420, emoji:'🌿' },
+  { name:'Nurul Fadhilah', zone:'Seksyen 7, Shah Alam',pts:398, emoji:'💚' },
+  { name:'Haziq Raziman',  zone:'Ampang Jaya',         pts:351, emoji:'🔋' },
+  { name:'Priya Kumari',   zone:'Puchong Jaya',        pts:294, emoji:'🌱' },
+  { name:'Lee Sze Ling',   zone:'Kepong',               pts:248, emoji:'🎗️' },
+  { name:'Anda (Demo)',     zone:'USJ 8, Subang Jaya',  pts:240, emoji:'😊', me:true },
+  { name:'Zulkifli Daud',  zone:'Gombak',               pts:185, emoji:'🌾' },
+];
+const ADUANS = [
+  { title:'Tong B03 — Limpah Penuh', loc:'Dataran Sunway, PJS 11', time:'9:42 PM', type:'critical', emoji:'🔴' },
+  { title:'Pembuangan Haram — Tayar Lama', loc:'Jalan Industri USJ', time:'8:15 PM', type:'high', emoji:'🚫' },
+  { title:'Tong B01 — Rosak (Penutup Patah)', loc:'Persiaran Kewajipan', time:'7:30 PM', type:'medium', emoji:'🔧' },
+  { title:'Jalan Berlubang — Depan Sekolah', loc:'Jalan SS19, Subang', time:'6:55 PM', type:'medium', emoji:'🕳️' },
+];
+
+/* ── State ─────────────────────────────────────────────── */
+let role='gov', voiceOn=false, contrastOn=false, fontSize=100;
+let myPts=240, rType='overflow', activeTab='home';
+let appMap=null, mapMkrs={}, chatBusy=false;
+let bins = JSON.parse(JSON.stringify(BINS));
+
+/* ── Login ─────────────────────────────────────────────── */
+function setRole(r){
+  role=r;
+  document.getElementById('rt-citizen').classList.toggle('active',r==='citizen');
+  document.getElementById('rt-gov').classList.toggle('active',r==='gov');
+  document.getElementById('lf-citizen').style.display=r==='citizen'?'block':'none';
+  document.getElementById('lf-gov').style.display=r==='gov'?'block':'none';
+}
+
+function fmtIC(el){
+  let v=el.value.replace(/\D/g,'');
+  if(v.length>6&&v.length<=8) el.value=v.slice(0,6)+'-'+v.slice(6);
+  else if(v.length>8) el.value=v.slice(0,6)+'-'+v.slice(6,8)+'-'+v.slice(8,12);
+  else el.value=v;
+}
+
+/* ── Hash function for IC (client-side SHA-256) ────────── */
+async function hashIC(icStr) {
+  const msgBuffer = new TextEncoder().encode(icStr);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function saveGeminiKey(val) {
+  localStorage.setItem('gemini_api_key', val);
+  showToast('🔑 API Key disimpan secara selamat.');
+}
+
+async function doLogin(){
+  const err=document.getElementById('lf-err');
+  if(role==='citizen'){
+    const name=document.getElementById('citizen-name').value.trim();
+    const ic=document.getElementById('ic-input').value.replace(/\D/g,'');
+    const hp=document.getElementById('hp-input').value.trim();
+    const addr=document.getElementById('addr-input').value.trim();
+    const consent=document.getElementById('pdpa-consent').checked;
+    if(!name||ic.length<6||!hp||!addr||!consent){
+      err.textContent = '⚠️ Sila lengkapi semua maklumat dan bersetuju dengan PDPA.';
+      err.style.display='block';
+      return;
+    }
+    // Perform hashing client-side
+    const icHash = await hashIC(ic);
+    console.log('[Onboarding] Hashed IC:', icHash);
+    localStorage.setItem('user_ic_hash', icHash);
+    localStorage.setItem('user_name', name);
+  } else {
+    const sid=document.getElementById('staff-input').value.trim();
+    if(!sid){
+      err.textContent = '⚠️ Sila lengkapkan maklumat Staff ID.';
+      err.style.display='block';
+      return;
+    }
+  }
+  err.style.display='none';
+  document.getElementById('scr-login').classList.add('gone');
+  document.getElementById('app').classList.add('on');
+  document.getElementById('rl').textContent=role==='gov'?'PBT / KDEB':'Warganegara';
+  setupNavForRole();
+  initApp();
+}
+
+function doLogout(){
+  document.getElementById('scr-login').classList.remove('gone');
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('ic-input').value='';
+  document.getElementById('hp-input').value='';
+  document.getElementById('staff-input').value='';
+  swTab('home',true);
+}
+
+/* ── Nav setup per role ─────────────────────────────────── */
+function setupNavForRole(){
+  if(role==='gov'){
+    document.getElementById('ni-tab2').textContent='🗺️';
+    document.getElementById('nbl-tab2').textContent='Peta';
+    document.getElementById('ni-tab3').textContent='📋';
+    document.getElementById('nbl-tab3').textContent='Aduan';
+    document.getElementById('ni-tab4').textContent='🏆';
+    document.getElementById('nbl-tab4').textContent='Lestari';
+    document.getElementById('nbl-home').textContent='Dispatch';
+    document.getElementById('override-btn').style.display='flex';
+  } else {
+    document.getElementById('ni-tab2').textContent='🤖';
+    document.getElementById('nbl-tab2').textContent='SilaTanya';
+    document.getElementById('ni-tab3').textContent='📢';
+    document.getElementById('nbl-tab3').textContent='Aduan';
+    document.getElementById('ni-tab4').textContent='♿';
+    document.getElementById('nbl-tab4').textContent='OKU';
+    document.getElementById('nbl-home').textContent='Utama';
+    document.getElementById('override-btn').style.display='none';
+    renderCitizenHome();
+  }
+}
+
+/* ── Tab switching ──────────────────────────────────────── */
+const TAB_MAP_GOV     =['home','map','aduan','lestari'];
+const TAB_MAP_CITIZEN =['home','chat','report','lestari-c'];
+const OKU_TAB         ='oku';
+
+function swTab(slot,force){
+  // slot = 'home','tab2','tab3','tab4'
+  const idx={'home':0,'tab2':1,'tab3':2,'tab4':3}[slot]??0;
+  let pgId;
+  if(role==='gov') pgId='pg-'+TAB_MAP_GOV[idx];
+  else pgId='pg-'+TAB_MAP_CITIZEN[idx];
+
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById(pgId).classList.add('on');
+  document.getElementById('nb-'+slot).classList.add('on');
+  activeTab=slot;
+  document.getElementById('scroll').scrollTop=0;
+
+  if(pgId==='pg-map'&&!appMap) setTimeout(initMap,100);
+  else if(pgId==='pg-map'&&appMap) appMap.invalidateSize();
+  if(pgId==='pg-chat') initChat();
+  if(voiceOn) speak(getTabVoice(pgId));
+}
+
+function getTabVoice(pgId){
+  const m={'pg-home':'Halaman Utama','pg-map':'Peta Interaktif','pg-aduan':'Hab Aduan','pg-lestari':'Pengurus Ganjaran Lestari','pg-chat':'SilaTanya AI Chatbot','pg-report':'Aduan Rakyat','pg-lestari-c':'Lestari Info Hub','pg-oku':'Kebolehaksesan'};
+  return m[pgId]||pgId;
+}
+
+/* ── Init App ───────────────────────────────────────────── */
+function initApp(){
+  renderDispatchGrid();
+  renderMapBinList();
+  renderAduanList();
+  renderChampions();
+  if(role==='citizen') renderCitizenHome();
+  setInterval(liveSim,8000);
+}
+
+/* ── Live simulation ──────────────────────────────────────── */
+function liveSim(){
+  bins=bins.map(b=>({
+    ...b,
+    fill:Math.min(100,Math.max(5,b.fill+(Math.random()*3-.7))),
+    gas:Math.max(0,b.gas+Math.round(Math.random()*20-8)),
+    moist:Math.min(100,Math.max(5,b.moist+(Math.random()*2-.5))),
+  }));
+  renderDispatchGrid();
+  renderMapBinList();
+  if(appMap) renderMarkers();
+  if(role==='citizen') renderCitizenHome();
+  updateGovKPIs();
+}
+
+/* ── KPI update (gov) ─────────────────────────────────────── */
+function updateGovKPIs(){
+  const crit=bins.filter(b=>b.fill>=85||b.hz).length;
+  const saved=(bins.filter(b=>b.fill<70).length*24);
+  document.getElementById('k-crit').textContent=crit;
+  document.getElementById('k-saved').textContent='RM '+saved;
+}
+
+/* ── Dispatch Grid ────────────────────────────────────────── */
+function dispatchColor(b){
+  if(b.hz) return 'var(--purple)';
+  if(b.fill>=85) return 'var(--red)';
+  if(b.fill>=60) return 'var(--yellow-dark)';
+  return 'var(--green)';
+}
+function dispatchClass(b){ return b.hz||b.fill>=85?'critical':b.fill>=60?'warning':'normal'; }
+function dispatchLabel(b){ return b.hz?'☣️ KRITIKAL — Berbahaya':b.fill>=85?'🔴 KRITIKAL — Perlu Kosong Segera':b.fill>=60?'🟡 AMARAN — Hampir Penuh':'🟢 NORMAL'; }
+
+function renderDispatchGrid(){
+  const sorted=[...bins].sort((a,b)=>(b.hz?1000:0)+b.fill-((a.hz?1000:0)+a.fill));
+  const el=document.getElementById('dispatch-grid');
+  if(!el) return;
+  el.innerHTML=sorted.map(b=>`
+    <div class="crit-card ${dispatchClass(b)}">
+      <div class="crit-header" onclick="this.parentElement.querySelector('.crit-body').classList.toggle('gone')">
+        <div>
+          <div class="crit-id">${b.id} · ${b.zone} · ${b.dist}</div>
+          <div class="crit-name">${b.name}</div>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
+            <div class="fb" style="flex:1;"><div class="fbi" style="width:${Math.round(b.fill)}%;background:${dispatchColor(b)};"></div></div>
+            <span style="font-size:12px;font-weight:800;color:${dispatchColor(b)};font-family:'JetBrains Mono',monospace;">${Math.round(b.fill)}%</span>
+          </div>
+        </div>
+        <span class="chip ${b.hz?'cp':b.fill>=85?'cr':b.fill>=60?'cy':'cg'}">${dispatchLabel(b)}</span>
+      </div>
+      <div class="crit-body">
+        <div class="sensor-row"><div class="sensor-icon">📡</div><div class="sensor-label">Ultrasonic</div><div class="sensor-val" style="color:${dispatchColor(b)}">${Math.round(b.fill)}% penuh</div></div>
+        <div class="sensor-row"><div class="sensor-icon">💧</div><div class="sensor-label">Kelembapan</div><div class="sensor-val" style="color:${b.moist>70?'var(--red)':'var(--text)'}">${Math.round(b.moist)}% ${b.moist>70?'⚠️ Tinggi':''}</div></div>
+        <div class="sensor-row"><div class="sensor-icon">💨</div><div class="sensor-label">Gas (ppm)</div><div class="sensor-val" style="color:${b.gas>300?'var(--orange)':'var(--text)'}">${b.gas} ppm ${b.gas>300?'🔶':''}</div></div>
+        <div class="sensor-row"><div class="sensor-icon">⚖️</div><div class="sensor-label">Berat</div><div class="sensor-val">${b.weight.toFixed(1)} kg</div></div>
+        <div class="sensor-row"><div class="sensor-icon">🤖</div><div class="sensor-label">Jenis Sisa AI</div><div class="sensor-val" style="color:${b.hz?'var(--purple)':'var(--green)'}">${b.wtype}</div></div>
+        ${b.hrsLeft?`<div class="sensor-row"><div class="sensor-icon">⏰</div><div class="sensor-label">Limpah dalam</div><div class="sensor-val" style="color:${b.hrsLeft<4?'var(--red)':'var(--text)'}">${b.hrsLeft} jam</div></div>`:''}
+        <div class="dispatch-actions">
+          <button class="btn bg bsm" onclick="dispatch(this,'${b.id}')">🚛 Hantar Truk</button>
+          <button class="btn by bsm" onclick="showToast('🔧 Dijadualkan untuk penyelenggaraan — ${b.id}','')">🔧 Penyelenggaraan</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function dispatch(btn,id){
+  btn.textContent='⏳ Dihantar...';
+  btn.disabled=true;
+  
+  // Find bin and update status
+  const bin = bins.find(b=>b.id===id);
+  if(bin) {
+    bin.status = 'DISPATCHED';
+    bin.fill = 5; // Reset fill
+  }
+  
+  setTimeout(()=>{
+    btn.textContent='✅ Truk En Route';
+    showToast(`🚛 Truk dihantar ke ${id}!`,'tg');
+    renderDispatchGrid();
+    renderMapBinList();
+    if(appMap) renderMarkers();
+  },1200);
+}
+
+function overrideDispatch(){
+  showToast('⚡ Override aktif — semua truk dihantar!','ty');
+  bins.forEach(b=>{
+    if(b.fill>=70||b.hz){
+      b.status = 'DISPATCHED';
+      b.fill = 5;
+    }
+  });
+  setTimeout(()=>{
+    renderDispatchGrid();
+    renderMapBinList();
+    if(appMap) renderMarkers();
+  },1200);
+}
+
+/* ── Live Simulation Ticker (Phase 4) ─────────────────────── */
+async function triggerSimTick() {
+  const btn = document.getElementById('sim-tick-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Menjalankan tick...';
+  
+  try {
+    // Attempt to call Firebase Cloud Function
+    const cfUrl = localStorage.getItem('smarttong_cf_url') || '';
+    if (cfUrl) {
+      const resp = await fetch(`${cfUrl}/simulateTick?zone=ALL`);
+      if (!resp.ok) throw new Error('Cloud function error');
+      const data = await resp.json();
+      
+      // Update local state from response
+      bins = bins.map(b => {
+        const match = data.bins.find(db => db.binId === b.id);
+        if (match) {
+          return {
+            ...b,
+            fill: match.newFill,
+            status: match.status === 'collected' ? 'NORMAL' : match.status,
+            hz: match.event === 'HAZARDOUS_DETECTED'
+          };
+        }
+        return b;
+      });
+      showToast('⏱️ Simulasikan Timbul: Tick selesai via Cloud Function!','tg');
+    } else {
+      // Fallback local simulation tick
+      bins = bins.map(b => {
+        const rate = { B01:8, B02:5, B03:12, B04:3, B05:7 }[b.id] || 5;
+        const newFill = Math.min(100, b.fill + rate + (Math.random()*4 - 1.5));
+        const hzRand = Math.random() < 0.08;
+        return {
+          ...b,
+          fill: newFill,
+          hz: hzRand ? true : b.hz,
+          wtype: hzRand ? 'Berbahaya' : b.wtype,
+          hrsLeft: newFill >= 90 ? 0.5 : newFill >= 70 ? 2.5 : null
+        };
+      });
+      showToast('⏱️ Simulasikan Timbul: Tick selesai secara lokal!','ty');
+    }
+  } catch (e) {
+    console.warn('[SimulateTick]', e);
+    showToast('⚠️ Ralat simulation. Menjalankan secara lokal...','tr');
+    // Local fallback
+    bins = bins.map(b => {
+      const rate = { B01:8, B02:5, B03:12, B04:3, B05:7 }[b.id] || 5;
+      return { ...b, fill: Math.min(100, b.fill + rate) };
+    });
+  } finally {
+    renderDispatchGrid();
+    renderMapBinList();
+    if (appMap) {
+      renderMarkers();
+      drawOptimizedRoute();
+    }
+    if (role === 'citizen') renderCitizenHome();
+    updateGovKPIs();
+    btn.disabled = false;
+    btn.textContent = '⏱️ Simulasikan Timbul (+1 Tick)';
+  }
+}
+
+/* ── Map ──────────────────────────────────────────────────── */
+function fillColor(b){
+  if(b.hz) return '#6A1B9A';
+  if(b.fill>=85) return '#D32F2F';
+  if(b.fill>=60) return '#F57F17';
+  return '#2E7D32';
+}
+
+let activeRouteLine = null;
+let activeTruckMarker = null;
+
+function initMap(){
+  if(appMap) return;
+  appMap=L.map('map',{zoomControl:false}).setView([3.075,101.58],12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'©CartoDB',maxZoom:19}).addTo(appMap);
+  renderMarkers();
+  drawOptimizedRoute();
+}
+
+function renderMarkers(filter='ALL'){
+  if(!appMap) return;
+  Object.values(mapMkrs).forEach(m=>appMap.removeLayer(m));
+  mapMkrs={};
+  const list=filter==='ALL'?bins:bins.filter(b=>b.dist===filter);
+  list.sort((a,b)=>(b.hz?1000:0)+b.fill-((a.hz?1000:0)+a.fill)).forEach(b=>{
+    const c=fillColor(b);
+    const eta = b.hz ? '10m' : b.fill >= 85 ? '35m' : b.fill >= 60 ? '1.5j' : '—';
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="38" height="46" viewBox="0 0 38 46"><path d="M19 0C8.5 0 0 8.5 0 19C0 33 19 46 19 46C19 46 38 33 38 19C38 8.5 29.5 0 19 0Z" fill="${c}" opacity=".93"/><circle cx="19" cy="19" r="12" fill="rgba(255,255,255,.28)"/><text x="19" y="24" text-anchor="middle" fill="white" font-size="11" font-weight="800" font-family="Inter">${Math.round(b.fill)}%</text></svg>`;
+    const icon=L.divIcon({html:svg,className:'',iconSize:[38,46],iconAnchor:[19,46],popupAnchor:[0,-48]});
+    
+    // Deep links for Waze/Google Maps
+    const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${b.lat},${b.lng}`;
+    const wazeLink = `https://waze.com/ul?ll=${b.lat},${b.lng}&navigate=yes`;
+    
+    const popup=`<div class="pu-id">${b.id} · ${b.zone} · ${b.dist}</div>
+      <div class="pu-name">${b.name}</div>
+      <div class="pu-row"><span class="pu-l">Pengisian</span><span class="pu-v" style="color:${c}">${Math.round(b.fill)}%</span></div>
+      <div class="pu-row"><span class="pu-l">Jenis Sisa</span><span class="pu-v">${b.wtype}</span></div>
+      <div class="pu-row"><span class="pu-l">Gas</span><span class="pu-v">${b.gas} ppm</span></div>
+      <div class="pu-row"><span class="pu-l">Anggaran ETA</span><span class="pu-v" style="color:var(--green);font-weight:800;">${eta}</span></div>
+      ${b.hz?`<div style="margin-top:8px;padding:7px;background:#F3E5F5;border-radius:7px;font-size:11px;font-weight:700;color:#6A1B9A;">☣️ BAHAN BERBAHAYA DIKESAN</div>`:''}
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
+        <button onclick="dispatchFromPopup('${b.id}')" style="width:100%;padding:7px;background:#2E7D32;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;">🚛 Dispatch Truk</button>
+        <div style="display:flex;gap:4px;">
+          <a href="${gmapsLink}" target="_blank" style="flex:1;text-align:center;padding:5px;background:var(--bg-card2);border:1px solid var(--border);border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;color:var(--text);">🗺️ GMaps</a>
+          <a href="${wazeLink}" target="_blank" style="flex:1;text-align:center;padding:5px;background:var(--bg-card2);border:1px solid var(--border);border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;color:var(--text);">🚙 Waze</a>
+        </div>
+      </div>`;
+    mapMkrs[b.id]=L.marker([b.lat,b.lng],{icon}).addTo(appMap).bindPopup(popup);
+  });
+}
+
+function dispatchFromPopup(id) {
+  showToast(`🚛 Truk dihantar ke ${id}!`,'tg');
+  const bin = bins.find(b=>b.id===id);
+  if(bin) {
+    bin.status = 'DISPATCHED';
+    bin.fill = 5;
+  }
+  renderDispatchGrid();
+  renderMapBinList();
+  renderMarkers();
+  drawOptimizedRoute();
+}
+
+/* ── Route Optimization & Animation (Phase 4) ─────────────── */
+function drawOptimizedRoute() {
+  if (!appMap) return;
+
+  // Clear existing layers
+  if (activeRouteLine) { appMap.removeLayer(activeRouteLine); activeRouteLine = null; }
+  if (activeTruckMarker) { appMap.removeLayer(activeTruckMarker); activeTruckMarker = null; }
+
+  // Gather critical coordinates (fill >= 70% or hazardous)
+  const critPoints = bins
+    .filter(b => b.fill >= 70 || b.hz)
+    .sort((a, b) => b.fill - a.fill) // Greedy route logic
+    .map(b => [b.lat, b.lng]);
+
+  if (critPoints.length < 2) return;
+
+  // Add Depot location (e.g. Shah Alam center) at start/end
+  const depot = [3.0738, 101.5183];
+  const routePath = [depot, ...critPoints, depot];
+
+  // Draw optimized dashed route line
+  activeRouteLine = L.polyline(routePath, {
+    color: 'var(--green)',
+    weight: 4,
+    opacity: 0.8,
+    dashArray: '8, 8'
+  }).addTo(appMap);
+
+  // Add animated truck icon
+  const truckSvg = `<span style="font-size: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">🚛</span>`;
+  const truckIcon = L.divIcon({ html: truckSvg, className: '', iconSize: [24, 24], iconAnchor: [12, 12] });
+  
+  activeTruckMarker = L.marker(depot, { icon: truckIcon }).addTo(appMap);
+
+  // Simple truck animation loop along path
+  let currentIdx = 0;
+  function animateTruck() {
+    if (!activeTruckMarker || !activeRouteLine) return;
+    const startCoord = routePath[currentIdx];
+    const endCoord = routePath[(currentIdx + 1) % routePath.length];
+    
+    let steps = 40;
+    let step = 0;
+    
+    function move() {
+      if (!activeTruckMarker) return;
+      const lat = startCoord[0] + (endCoord[0] - startCoord[0]) * (step / steps);
+      const lng = startCoord[1] + (endCoord[1] - startCoord[1]) * (step / steps);
+      activeTruckMarker.setLatLng([lat, lng]);
+      
+      if (step < steps) {
+        step++;
+        setTimeout(move, 40);
+      } else {
+        currentIdx = (currentIdx + 1) % routePath.length;
+        setTimeout(animateTruck, 1000);
+      }
+    }
+    move();
+  }
+  
+  animateTruck();
+}
+
+function filterDistrict(el,dist){
+  document.querySelectorAll('.dchip').forEach(d=>d.classList.remove('on'));
+  el.classList.add('on');
+  renderMarkers(dist);
+  renderMapBinList(dist);
+}
+
+function renderMapBinList(filter='ALL'){
+  const el=document.getElementById('map-bin-list');
+  if(!el) return;
+  const list=(filter==='ALL'?bins:bins.filter(b=>b.dist===filter)).sort((a,b)=>(b.hz?1000:0)+b.fill-((a.hz?1000:0)+a.fill));
+  el.innerHTML=list.map(b=>{
+    const c=fillColor(b);
+    const chip=b.hz?'<span class="chip cp">☣️ Berbahaya</span>':b.fill>=85?'<span class="chip cr">🔴 Kritikal</span>':b.fill>=60?'<span class="chip cy">🟡 Amaran</span>':'<span class="chip cg">🟢 Normal</span>';
+    return `<div class="card" style="cursor:pointer;" onclick="openPopup('${b.id}')"><div class="cb" style="padding:13px 15px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;"><div><div style="font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-bottom:2px;">${b.id} · ${b.zone}</div><div style="font-size:13px;font-weight:700;">${b.name}</div></div>${chip}</div><div style="display:flex;align-items:center;gap:10px;"><div class="fb" style="flex:1;"><div class="fbi" style="width:${Math.round(b.fill)}%;background:${c};"></div></div><span style="font-size:12px;font-weight:800;color:${c};font-family:'JetBrains Mono',monospace;">${Math.round(b.fill)}%</span></div></div></div>`;
+  }).join('');
+}
+
+function openPopup(id){
+  const m=mapMkrs[id];
+  if(m&&appMap){m.openPopup();swTab('tab2');}
+}
+
+/* ── Aduan Hub (Gov) ──────────────────────────────────────── */
+function renderAduanList(){
+  const el=document.getElementById('aduan-list');
+  if(!el) return;
+  
+  // Custom local state check for aduans status
+  if(!window.ADUAN_STATES) {
+    window.ADUAN_STATES = {};
+  }
+
+  el.innerHTML=ADUANS.map((a, idx)=> {
+    const isDispatched = window.ADUAN_STATES[idx] === 'dispatched';
+    const cardStyle = isDispatched ? 'opacity: 0.65; border-left: 4px solid var(--green);' : '';
+    const btnText = isDispatched ? '✅ Dispatched (En Route)' : '🚛 Dispatch Compactor';
+    const statusText = isDispatched ? '<div style="color:var(--green);font-weight:800;font-size:11px;margin-top:4px;">Status: Truk dihantar (ETA 15m)</div>' : '';
+
+    return `
+    <div class="aduan-item" style="${cardStyle}">
+      <div class="aduan-img">${a.emoji}</div>
+      <div class="aduan-content">
+        <div class="aduan-title">${a.title}</div>
+        <div class="aduan-loc">📍 ${a.loc}</div>
+        ${statusText}
+        <div class="aduan-actions" style="margin-top:6px;">
+          <button class="btn br bsm" onclick="dispatchAduan(this, ${idx})" ${isDispatched ? 'disabled' : ''}>${btnText}</button>
+          <button class="btn bo bsm" onclick="showToast('🔧 Dijadualkan penyelenggaraan.','');" ${isDispatched ? 'disabled' : ''}>🔧 Penyelenggaraan</button>
+        </div>
+        <div class="aduan-time">${a.time}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function dispatchAduan(btn, idx) {
+  if(!window.ADUAN_STATES) window.ADUAN_STATES = {};
+  window.ADUAN_STATES[idx] = 'dispatched';
+  
+  btn.textContent = '⏳ Dihantar...';
+  btn.disabled = true;
+  
+  setTimeout(() => {
+    showToast('🚛 Compactor/Truk sampah berjaya dihantar ke aduan!', 'tg');
+    renderAduanList();
+  }, 1000);
+}
+
+/* ── Champions (Gov Lestari) ─────────────────────────────── */
+function renderChampions(){
+  const el=document.getElementById('champ-list');
+  if(!el) return;
+  const medals=['🥇','🥈','🥉'];
+  el.innerHTML=CHAMPIONS.map((c,i)=>`
+    <div class="champ-item${c.me?' '+'kc au':''}">
+      <div class="champ-rank">${medals[i]||'#'+(i+1)}</div>
+      <div class="champ-ava">${c.emoji}</div>
+      <div class="champ-info"><div class="champ-name">${c.name}${c.me?' (Anda)':''}</div><div class="champ-sub">${c.zone}</div></div>
+      <div class="champ-pts">${c.pts} mata</div>
+    </div>`).join('');
+}
+
+function broadcastMsg(){
+  showToast('📡 Mesej tahniah dihantar ke semua juara!','tg');
+}
+
+/* ── Citizen Home ──────────────────────────────────────────── */
+function renderCitizenHome(){
+  const pg=document.getElementById('pg-home');
+  if(!pg||role!=='citizen') return;
+  const pct=Math.min(100,Math.round(myPts/500*100));
+  const tier=myPts>=1000?'🦅 Wira Selangor':myPts>=500?'🏆 Juara Kebersihan':'🌿 Pejuang Kebersihan';
+  const next=myPts>=1000?'Tahniah — tahap tertinggi!':myPts>=500?`${1000-myPts} mata lagi untuk Wira Selangor`:`${500-myPts} mata lagi untuk Juara Kebersihan`;
+
+  pg.innerHTML=`
+    <div class="eco-hero au">
+      <div class="eco-lbl">Mata Eco Anda</div>
+      <div class="eco-pts">${myPts}</div>
+      <div class="eco-tier">${tier}</div>
+      <div class="eco-bar-bg"><div class="eco-bar" style="width:${pct}%"></div></div>
+      <div class="eco-range"><span>0</span><span>500 Juara</span><span>1000 Wira 🦅</span></div>
+      <div class="eco-next">${next}</div>
+    </div>
+
+    <div class="krow">
+      <div class="kc au d1"><div class="ki">📢</div><div class="kn tg">12</div><div class="kl">Laporan Dihantar</div></div>
+      <div class="kc au d2"><div class="ki">✅</div><div class="kn tb">9</div><div class="kl">Laporan Sah</div></div>
+      <div class="kc au d3"><div class="ki">🏅</div><div class="kn ty">2</div><div class="kl">Pencapaian</div></div>
+      <div class="kc au d4"><div class="ki">🌿</div><div class="kn tg">38%</div><div class="kl">Kitar Semula</div></div>
+    </div>
+
+    <div class="sl">Tong Berdekatan</div>
+    <div style="margin:0 14px 20px;display:flex;flex-direction:column;gap:8px;">
+      ${bins.map(b=>{const c=fillColor(b);const pct2=Math.round(b.fill);return`<div class="card au" style="cursor:pointer;" onclick="swTab('tab2')"><div class="cb" style="padding:12px 14px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div style="font-size:13px;font-weight:700;">${b.id} — ${b.name}</div><span style="font-size:10px;font-weight:700;color:${c};">${b.hz?'☣️':pct2>=85?'🔴':pct2>=60?'🟡':'🟢'}</span></div><div style="display:flex;align-items:center;gap:10px;"><div class="fb" style="flex:1;"><div class="fbi" style="width:${pct2}%;background:${c};"></div></div><span style="font-size:12px;font-weight:800;color:${c};font-family:'JetBrains Mono',monospace;">${pct2}%</span></div></div></div>`;}).join('')}
+    </div>`;
+}
+
+/* ── SilaTanya AI Chatbot ─────────────────────────────────── */
+const BOT_KB = [
+  { kw:['milo','tin','aluminium','logam','metal','can'],
+    ans:`🥫 **Tin Milo boleh dikitar semula!**\n\nLetakkan di slot **LOGAM** 🔴\n\n✅ Cara betul:\n• Basuh atau bilas tin dahulu\n• Keluarkan straw/sedutan\n• Tekan/picit tin untuk jimat ruang\n• Buang di SmartTong slot Logam\n\n🎯 Anda dapat +5 mata setiap tin diimbas!` },
+  { kw:['tapau','polystyrene','styrofoam','kotak','bekas makanan'],
+    ans:`📦 **Kotak tapau/polystyrene TIDAK boleh dikitar semula.**\n\nLetakkan di slot **SISA BAKI** ⚫\n\nSebab:\n• Kotak tapau berlemak tidak boleh diproses semula\n• Polystyrene = plastik cair — bahaya dibakar\n\n💡 Tip: Gunakan bekas makanan sendiri (tumbler/tupperware) untuk kurangkan sisa!` },
+  { kw:['botol plastik','botol air','mineral','pet','hdpe'],
+    ans:`🧴 **Botol plastik boleh dikitar semula!**\n\nLetakkan di slot **PLASTIK** 🟢\n\n✅ Cara betul:\n• Basuh & kering dahulu\n• Keluarkan penutup (tutup boleh kitar berasingan)\n• Label kertas boleh tinggal\n• Picit botol untuk jimat ruang\n\n♻️ 1 botol PET = bahan untuk baju kitar semula!` },
+  { kw:['bateri','battery','bateri handphone','powerbank'],
+    ans:`🔋 **Bateri adalah e-sisa BERBAHAYA — jangan buang dalam tong biasa!**\n\n⚠️ Risiko:\n• Api & letupan jika rosak\n• Cecair kimia pencemaran tanah\n\n✅ Hantar ke:\n• Pusat Kitar Semula E-Sisa MBSJ/MBPJ/MBSA\n• Program Kutipan E-Sisa (20 Julai 2026)\n• Kedai EcoWorld atau Mobile Phone Recycler\n\n📍 Cari lokasi terdekat di tab Peta SmartTong.` },
+  { kw:['tisu','tissue','serbet','napkin'],
+    ans:`🧻 **Tisu dan serbet TIDAK boleh dikitar semula.**\n\nLetakkan di slot **SISA BAKI** ⚫\n\nSebab: Tisu sudah kotor & serat pendek — tiada nilai kitar semula.\n\n💚 Alternatif: Guna tuala kain yang boleh dibasuh semula!` },
+  { kw:['kaca','gelas','botol kaca','pecah'],
+    ans:`🍶 **Kaca boleh dikitar semula tetapi perlu berhati-hati!**\n\nLetakkan di slot **SISA BAKI** (bungkus dahulu) ⚫\n\n⚠️ Cara selamat:\n• Bungkus dengan surat khabar\n• Labelkan "KACA PECAH"\n• JANGAN campurkan dengan kertas/plastik lain\n\n💡 Botol kaca utuh — hantar ke pusat kitar semula khas.` },
+  { kw:['haram','illegal','buang','saman','denda','hukuman'],
+    ans:`⚖️ **Pembuangan Sampah Haram di Malaysia**\n\nHukuman di bawah Akta Kerajaan Tempatan 1976:\n\n🔴 Individu: Denda sehingga **RM2,000**\n🔴 Komersial: Denda sehingga **RM500,000**\n🔴 Penjara: Sehingga 2 tahun (kes serius)\n\n📱 Lapor pembuangan haram melalui tab **Aduan** SmartTong dan dapat +15 mata!` },
+  { kw:['truck','truk','bila','kosong','penuh','b01','b02','b03','b04','b05'],
+    ans:`🚛 **Pertanyaan Status Tong**\n\nSistem SmartTong memantau tong secara masa nyata. Berdasarkan data sensor:\n\n• **B01** (USJ 1) — 85% penuh ⚠️ Dijangka dikosong ~3.2 jam\n• **B03** (Sunway) — 93% penuh 🔴 KRITIKAL — Truk sedang dalam perjalanan\n• **B05** (Shah Alam) — 77% + bahan berbahaya ☣️\n\n💡 Pantau status tong masa nyata di tab **Peta** SmartTong!` },
+  { kw:['mata','point','ganjaran','reward','juara','wira'],
+    ans:`🏆 **Sistem Mata SmartTong**\n\n📊 Cara kumpul mata:\n• Lapor tong penuh → +10 mata\n• Lapor pembuangan haram → +15 mata\n• Lapor jalan berlubang → +10 mata\n• Imbas & kitar di SmartTong → +5 mata/item\n\n🎖️ Peringkat:\n• 0–499 mata: 🌿 Pejuang Kebersihan\n• 500–999 mata: 🏆 Juara Kebersihan\n• 1000+ mata: 🦅 Wira Selangor\n\n🎁 Hadiah termasuk baucar Mydin, e-wallet kredit & sijil kerajaan!` },
+  { kw:['recycle','kitar semula','apa','macam mana','cara'],
+    ans:`♻️ **Panduan Kitar Semula SmartTong**\n\n**4 Slot SmartTong:**\n🟢 **PLASTIK** — Botol, beg plastik bersih\n🔵 **KERTAS** — Surat khabar, kadbod kering\n🔴 **LOGAM** — Tin aluminium, tin kaleng\n⚫ **SISA BAKI** — Makanan, tisu, bahan campuran\n\n💡 Tip Penting:\n• Basuh bekas sebelum kitar semula\n• Keringkan — kelembapan merosakkan kitar semula\n• Imbas ID anda untuk dapat mata!\n\n📖 Panduan lengkap di tab **Lestari Info Hub**.` },
+];
+
+let chatInited=false;
+function initChat(){
+  if(chatInited) return;
+  chatInited=true;
+  const msgs=document.getElementById('chat-msgs');
+  if(!msgs) return;
+  addBotMsg('Selamat datang ke **SilaTanya AI** 🤖\n\nSaya pakar kitar semula & pengurusan sisa SmartTong. Boleh tanya saya apa-apa tentang:\n• Cara kitar semula item-item tertentu\n• Status tong sampah berdekatan\n• Hukuman pembuangan haram\n• Sistem mata & ganjaran SmartTong\n\n*Ketik soalan anda atau pilih topik di bawah!*');
+}
+
+function addBotMsg(text){
+  const msgs=document.getElementById('chat-msgs');
+  const div=document.createElement('div');
+  div.className='msg msg-bot';
+  div.innerHTML=`<div class="msg-name">🤖 SilaTanya AI</div><div class="msg-bubble">${mdBold(text)}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function addUserMsg(text){
+  const msgs=document.getElementById('chat-msgs');
+  const div=document.createElement('div');
+  div.className='msg msg-user';
+  div.innerHTML=`<div class="msg-name">Anda</div><div class="msg-bubble">${escHtml(text)}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function showTyping(){
+  const msgs=document.getElementById('chat-msgs');
+  const div=document.createElement('div');
+  div.className='msg msg-bot'; div.id='typing';
+  div.innerHTML=`<div class="bot-typing"><div class="dot-l"></div><div class="dot-l"></div><div class="dot-l"></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+async function sendChat(){
+  if(chatBusy) return;
+  const inp=document.getElementById('chat-in');
+  const q=inp.value.trim();
+  if(!q) return;
+  inp.value='';
+  addUserMsg(q);
+  chatBusy=true;
+  const typing=showTyping();
+  
+  const geminiKey = localStorage.getItem('gemini_api_key') || '';
+  
+  if (geminiKey) {
+    // ── Live Gemini 1.5 Flash Integration (Phase 3) ──────────────────────
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+      const systemPrompt = `Anda adalah SilaTanya AI, pembantu kitar semula pintar Selangor untuk SmartTong. Tentukan cara kitar semula berdasarkan soalan warganegara. Jawab dengan mesra dan padat (max 4 ayat) dalam Bahasa Malaysia. Maklumat tong semasa: ${JSON.stringify(bins)}`;
+      
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ parts: [{ text: q }] }],
+          generationConfig: { temperature: 0.3, maxOutputTokens: 200 }
+        })
+      });
+      
+      if (!resp.ok) throw new Error('API error');
+      const data = await resp.json();
+      typing.remove();
+      const botResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Ralat mendapatkan jawapan.';
+      addBotMsg(botResponse);
+    } catch (e) {
+      console.error('[Gemini API]', e);
+      typing.remove();
+      addBotMsg('⚠️ Ralat sambungan Gemini API. Menggunakan pangkalan pengetahuan tempatan:\n\n' + getBotAnswer(q.toLowerCase()));
+    } finally {
+      chatBusy = false;
+    }
+  } else {
+    // Local fallback
+    setTimeout(()=>{
+      typing.remove();
+      const ans=getBotAnswer(q.toLowerCase());
+      addBotMsg(ans);
+      chatBusy=false;
+    },900+Math.random()*600);
+  }
+}
+
+function quickAsk(q){
+  document.getElementById('chat-in').value=q;
+  sendChat();
+  swTab('tab2');
+}
+
+function filterDistrict2(q){ quickAsk(q); }
+
+function getBotAnswer(q){
+  for(const e of BOT_KB){
+    if(e.kw.some(k=>q.includes(k))) return e.ans;
+  }
+  // Generic fallback
+  if(q.includes('hello')||q.includes('hi')||q.includes('hai')) return '👋 Hai! Saya SilaTanya AI — pakar kitar semula Selangor. Boleh tanya saya tentang cara kitar semula, status tong, atau ganjaran SmartTong!';
+  if(q.includes('terima kasih')||q.includes('thanks')) return '😊 Sama-sama! Teruskan usaha mulia menjaga kebersihan Selangor. #SelangorBersih 🌿';
+  return `🤔 Soalan menarik! Saya sedang belajar untuk menjawab dengan lebih baik.\n\nCuba tanya tentang:\n• **Cara kitar semula** — "Macam mana nak kitar tin Milo?"\n• **Status tong** — "Tong B03 dah penuh?"\n• **Ganjaran** — "Macam mana nak dapat mata?"\n• **Peraturan** — "Hukuman buang sampah haram?"`;
+}
+
+function mdBold(t){ return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'); }
+function escHtml(t){ const d=document.createElement('div');d.textContent=t;return d.innerHTML; }
+
+/* ── Report (Citizen) ──────────────────────────────────────── */
+function selRType(el){
+  document.querySelectorAll('#rtype-grid .tip-card').forEach(c=>{c.style.border='1px solid var(--border)';c.style.background='var(--surface)';});
+  el.style.border='2px solid var(--green)';el.style.background='var(--green-pale)';
+  rType=el.dataset.type;
+}
+
+function selRType2(t){
+  const el=document.querySelector(`#rtype-grid .tip-card[data-type="${t}"]`);
+  if(el) selRType(el);
+  swTab('tab3');
+}
+
+function mockQR(){
+  document.getElementById('r-binid').value='B0'+Math.ceil(Math.random()*5);
+  showToast('✅ QR berjaya diimbas!','tg');
+}
+
+function prevPhoto(inp){
+  const f=inp.files[0]; if(!f) return;
+  const url=URL.createObjectURL(f);
+  document.getElementById('r-prev').innerHTML=`<img src="${url}" style="width:100%;border-radius:var(--r-sm);max-height:150px;object-fit:cover;margin-top:6px;" alt="Foto laporan"/>`;
+}
+
+function submitRep(){
+  const pts=rType==='illegal'?15:10;
+  myPts+=pts;
+  showToast(`+${pts} mata! Laporan diterima 🎉`,'tg');
+  document.getElementById('r-binid').value='';
+  document.getElementById('r-desc').value='';
+  document.getElementById('r-prev').innerHTML='';
+  renderCitizenHome();
+  setTimeout(()=>swTab('home'),1300);
+}
+
+/* ── OKU / Settings ───────────────────────────────────────── */
+function tglVoice(){
+  voiceOn=!voiceOn;
+  document.getElementById('tgl-v').classList.toggle('on',voiceOn);
+  if(voiceOn) speak('Mod suara diaktifkan. Selamat datang ke SmartTong Selangor.');
+  else window.speechSynthesis?.cancel();
+  showToast(voiceOn?'🔊 Voice-over aktif':'🔇 Voice-over dimatikan');
+}
+
+function tglContrast(){
+  contrastOn=!contrastOn;
+  document.getElementById('tgl-c').classList.toggle('on',contrastOn);
+  document.body.style.filter=contrastOn?'contrast(1.6)':'';
+  showToast(contrastOn?'🔆 Kontras tinggi aktif':'🔅 Kontras normal');
+}
+
+function chgFont(d){
+  fontSize=Math.max(80,Math.min(140,fontSize+d*10));
+  document.body.style.fontSize=fontSize+'%';
+  document.getElementById('fs-val').textContent=fontSize+'%';
+  showToast(`🔡 Teks: ${fontSize}%`);
+}
+
+function speak(t){
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(t);
+  u.lang='ms-MY'; u.rate=0.9;
+  window.speechSynthesis.speak(u);
+}
+
+function playOKU(type){
+  const m={ok:'Terima kasih. Tong masih lega.',half:'Tong hampir penuh. Sila gunakan tong berdekatan.',full:'Tong penuh. Tong terdekat dalam 20 meter.',hazard:'Amaran! Bahan berbahaya dikesan. Sila hubungi pihak berkuasa segera.',sort:'Item dikesan. Tin aluminium. Sedang diproses pengisihan automatik.'};
+  if(!m[type]) return;
+  window.speechSynthesis?.cancel();
+  const u=new SpeechSynthesisUtterance(m[type]);
+  u.lang='ms-MY'; u.rate=.88; u.volume=1;
+  window.speechSynthesis?.speak(u);
+  showToast('🔊 Memainkan audio OKU...');
+}
+
+/* ── Toast ─────────────────────────────────────────────────── */
+let toastT;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+/* ── On load: set citizen as default (more common user) ────── */
+document.addEventListener('DOMContentLoaded',()=>{
+  setRole('citizen');
+  // Pre-populate actual Gemini API key for demo flow
+  localStorage.setItem('gemini_api_key', 'AQ.Ab8RN6JBTjdFPGql_L19mfYHsLq8_GPiF_4uiN3jvmGGkCh5TQ');
+  const keyInput = document.getElementById('gemini-key-input');
+  if (keyInput) keyInput.value = 'AQ.Ab8RN6JBTjdFPGql_L19mfYHsLq8_GPiF_4uiN3jvmGGkCh5TQ';
+});
+</script>
+</body>
+</html>
