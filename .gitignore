@@ -1,0 +1,18 @@
+# Large AI model files (too large for GitHub - keep locally only)
+*.keras
+*.h5
+*.pkl
+*.pb
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
