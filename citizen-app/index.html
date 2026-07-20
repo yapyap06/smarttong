@@ -24,7 +24,7 @@
   <script src="https://unpkg.com/lucide@0.395.0/dist/umd/lucide.min.js"></script>
 
 <style>
-/* ═══════════════════════ SmartTONG — Design System ════════════════════════ */
+/*  SmartTONG — Design System  */
 :root {
   --white:    #FFFFFF;
   --g50:      #F8F9FA;
@@ -70,7 +70,7 @@ html,body {
   overflow:hidden;
 }
 
-/* ── Full-screen layout ─────────────────────────────── */
+/*  Full-screen layout  */
 #login-screen {
   position:fixed; inset:0; z-index:500;
   background:var(--white);
@@ -88,7 +88,7 @@ html,body {
 }
 #app.visible { display:flex; }
 
-/* ── HEADER ─────────────────────────────────────────── */
+/*  HEADER  */
 #app-header {
   flex-shrink:0;
   display:flex; align-items:center; justify-content:space-between;
@@ -131,14 +131,14 @@ html,body {
   border:2px solid var(--white);
 }
 
-/* ── SCROLL AREA ────────────────────────────────────── */
+/*  SCROLL AREA  */
 #scroll-area {
   flex:1; overflow-y:auto; overflow-x:hidden;
   padding-bottom:var(--nav-h);
   -webkit-overflow-scrolling:touch;
 }
 
-/* ── BOTTOM NAV ─────────────────────────────────────── */
+/*  BOTTOM NAV  */
 #bottom-nav {
   flex-shrink:0;
   height:var(--nav-h);
@@ -169,12 +169,12 @@ html,body {
 }
 .nav-btn.active .nav-dot { opacity:1; }
 
-/* ── PAGES ──────────────────────────────────────────── */
+/*  PAGES  */
 .pg { display:none; }
 .pg.on { display:block; animation:fadeIn .2s ease; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
-/* ── SHARED HELPERS ─────────────────────────────────── */
+/*  SHARED HELPERS  */
 .sec-hdr {
   padding:18px 20px 10px;
   display:flex; align-items:flex-start; justify-content:space-between;
@@ -206,7 +206,7 @@ html,body {
 .btn-primary:hover { background:#15803d; }
 .btn-primary:active { transform:scale(.98); }
 
-/* ── LOGIN ──────────────────────────────────────────── */
+/*  LOGIN  */
 .login-logo {
   width:72px; height:72px; background:var(--green);
   border-radius:22px; display:flex; align-items:center; justify-content:center;
@@ -277,7 +277,7 @@ html,body {
 }
 .login-note { font-size:11px; color:var(--g500); text-align:center; margin-top:18px; line-height:1.6; }
 
-/* ── SETTINGS PANEL ─────────────────────────────────── */
+/*  SETTINGS PANEL  */
 #settings-overlay {
   position:fixed; inset:0; z-index:200;
   background:rgba(0,0,0,.4); backdrop-filter:blur(3px);
@@ -365,7 +365,7 @@ html,body {
   font-family:'Inter',sans-serif;
 }
 
-/* ── NOTIF PANEL ─────────────────────────────────────── */
+/*  NOTIF PANEL  */
 #notif-overlay { position:fixed; inset:0; z-index:150; display:none; }
 #notif-overlay.open { display:block; }
 .notif-box {
@@ -386,7 +386,7 @@ html,body {
 .notif-text { font-size:12px; color:var(--dark); line-height:1.5; }
 .notif-time { font-size:10px; color:var(--g500); margin-top:2px; }
 
-/* ── AI AGENT PANEL ─────────────────────────────────── */
+/*  AI AGENT PANEL  */
 .agent-strip {
   display:grid; grid-template-columns:repeat(3,1fr);
   gap:10px; padding:0 20px; margin-bottom:14px;
@@ -603,8 +603,7 @@ html,body {
 .scan-hdr-icon svg { width:20px; height:20px; }
 .scan-title { font-size:14px; font-weight:700; }
 .scan-sub   { font-size:11px; color:var(--g500); margin-top:1px; }
-#cam-viewport { width:100%; aspect-ratio:4/3; background:var(--g100); display:none; object-fit:cover; }
-#cam-preview  { display:none; width:100%; aspect-ratio:4/3; object-fit:cover; }
+/* Inline styles are used for #cam-viewport and #cam-preview for absolute styling priority */
 .scan-ctrls { display:flex; gap:10px; padding:12px 16px; }
 .scan-sec { flex:1; padding:11px; border:1.5px solid var(--g200); border-radius:var(--rsm); background:var(--white); color:var(--g700); font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:all .15s; }
 .scan-sec svg { width:15px; height:15px; }
@@ -691,7 +690,7 @@ html,body {
 </head>
 <body>
 
-<!-- ════════ LOGIN ════════ -->
+<!--  LOGIN  -->
 <div id="login-screen">
   <div class="login-logo">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
@@ -761,7 +760,7 @@ html,body {
   <div class="login-note">Dilindungi PDPA 2010 · SmartTONG AINS 2026</div>
 </div>
 
-<!-- ════════ APP SHELL ════════ -->
+<!--  APP SHELL  -->
 <div id="app">
 
   <!-- Header -->
@@ -794,7 +793,7 @@ html,body {
   <!-- Scroll area -->
   <div id="scroll-area">
 
-    <!-- ═══ GOV UTAMA ═══ -->
+    <!--  GOV UTAMA  -->
     <div class="pg" id="pg-g-utama">
       <div class="sec-hdr">
         <div><div class="sec-title">Pusat Kawalan Operasi</div><div class="sec-sub">Multi-Agent AI · KDEBWM Selangor</div></div>
@@ -841,7 +840,7 @@ html,body {
         <div class="agent-report-card">
           <div class="arc-header">
             <div class="arc-icon" style="background:var(--blue-l);color:var(--blue);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg></div>
-            <div><div class="arc-title">Laporan Pencemaran — Contamination Agent</div><div class="arc-sub" id="cont-ts">–</div></div>
+            <div><div class="arc-title">Laporan Pencemaran — Contamination Agent</div><div class="arc-sub" id="cont-ts"></div></div>
           </div>
           <div class="arc-body" id="cont-body">Menunggu analisis...</div>
           <div class="arc-footer">
@@ -855,7 +854,7 @@ html,body {
         <div class="agent-report-card">
           <div class="arc-header">
             <div class="arc-icon" style="background:var(--green-l);color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
-            <div><div class="arc-title">Jadual Kutipan — Coordination Agent</div><div class="arc-sub" id="coord-ts">–</div></div>
+            <div><div class="arc-title">Jadual Kutipan — Coordination Agent</div><div class="arc-sub" id="coord-ts"></div></div>
           </div>
           <div class="arc-body" id="coord-body">Menunggu pengoptimuman...</div>
           <div class="arc-footer">
@@ -904,7 +903,7 @@ html,body {
       </div>
     </div>
 
-    <!-- ═══ GOV PETA ═══ -->
+    <!--  GOV PETA  -->
     <div class="pg" id="pg-g-peta">
       <div class="sec-hdr"><div><div class="sec-title">Peta Interaktif</div><div class="sec-sub">Status tong masa nyata · Selangor</div></div></div>
       <div class="fchips">
@@ -919,13 +918,13 @@ html,body {
       <div class="bin-list" id="gov-bin-list"></div>
     </div>
 
-    <!-- ═══ GOV LAPORAN ═══ -->
+    <!--  GOV LAPORAN  -->
     <div class="pg" id="pg-g-laporan">
       <div class="sec-hdr"><div><div class="sec-title">Hab Aduan</div><div class="sec-sub">Laporan daripada warganegara</div></div><span class="sec-badge">4 Baru</span></div>
       <div style="padding:0 20px 20px;" id="aduan-list"></div>
     </div>
 
-    <!-- ═══ GOV HADIAH ═══ -->
+    <!--  GOV HADIAH  -->
     <div class="pg" id="pg-g-lestari">
       <div class="sec-hdr"><div><div class="sec-title">Hadiah Lestari</div><div class="sec-sub">Papan pendahulu kitar semula bulanan</div></div></div>
       <div style="padding:0 20px;margin-bottom:14px;">
@@ -944,7 +943,7 @@ html,body {
       <div style="padding:0 20px 20px;" id="gov-lb"></div>
     </div>
 
-    <!-- ═══ GOV SEBARAN ═══ -->
+    <!--  GOV SEBARAN  -->
     <div class="pg" id="pg-g-sebaran">
       <div class="sec-hdr"><div><div class="sec-title">Papan Sebaran</div><div class="sec-sub">Siaran kepada warganegara via Firebase</div></div></div>
       <div class="compose-box mx20 mb14">
@@ -963,7 +962,7 @@ html,body {
       <div style="padding:0 20px 20px;" id="seb-list"></div>
     </div>
 
-    <!-- ═══ CITIZEN UTAMA ═══ -->
+    <!--  CITIZEN UTAMA  -->
     <div class="pg" id="pg-c-utama">
       <div class="sec-hdr"><div><div class="sec-title" id="c-welcome">Selamat Datang</div><div class="sec-sub">Portal Warganegara SmartTONG</div></div></div>
       <div class="pts-hero">
@@ -1001,7 +1000,7 @@ html,body {
       <div class="sched-list" id="c-sched"></div>
     </div>
 
-    <!-- ═══ CITIZEN PETA ═══ -->
+    <!--  CITIZEN PETA  -->
     <div class="pg" id="pg-c-peta">
       <div class="sec-hdr"><div><div class="sec-title">Tong Berdekatan</div><div class="sec-sub" id="c-loc-lbl">Mengesan lokasi...</div></div></div>
       <div class="map-wrap"><div id="citizen-map"></div></div>
@@ -1009,7 +1008,7 @@ html,body {
       <div class="bin-list" id="c-bin-list"></div>
     </div>
 
-    <!-- ═══ CITIZEN IMBAS ═══ -->
+    <!--  CITIZEN IMBAS  -->
     <div class="pg" id="pg-c-imbas">
       <div class="sec-hdr"><div><div class="sec-title">Imbas Item</div><div class="sec-sub">AI pengkelasan sisa — Gemini Vision</div></div></div>
       <div class="scan-card">
@@ -1017,9 +1016,11 @@ html,body {
           <div class="scan-hdr-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
           <div><div class="scan-title">Matriks Penerimaan SmartTONG</div><div class="scan-sub">Imbas item untuk panduan kitar semula betul</div></div>
         </div>
-        <video id="cam-viewport" autoplay playsinline muted></video>
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%;">
+          <video id="cam-viewport" autoplay playsinline muted style="width:calc(100% - 32px); max-width:400px; aspect-ratio:4/3; margin:16px 0 12px 0; background:var(--g100); display:none; object-fit:cover; border-radius:12px; transform: scaleX(-1);"></video>
+          <img id="cam-preview" alt="Captured item" style="width:calc(100% - 32px); max-width:400px; aspect-ratio:4/3; margin:16px 0 12px 0; object-fit:cover; border-radius:12px; transform: scaleX(-1); display:none;"/>
+        </div>
         <canvas id="cam-canvas" style="display:none;"></canvas>
-        <img id="cam-preview" alt="Captured item"/>
         <div class="scan-ctrls">
           <button class="scan-sec" id="cam-toggle" onclick="toggleCam()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -1032,23 +1033,64 @@ html,body {
         </div>
       </div>
       <div class="scan-loading" id="scan-load"><div class="spin"></div><div style="font-size:12px;color:var(--g500);">AI sedang menganalisa...</div></div>
-      <div class="arm-result" id="arm-res">
-        <div class="arm-verdict" id="arm-verdict"></div>
-        <div class="arm-label"  id="arm-label"></div>
-        <div class="arm-slot"   id="arm-slot"></div>
-        <div class="arm-reason" id="arm-reason"></div>
-        <button class="arm-action" id="arm-act" style="display:none;" onclick="armAct()"></button>
+      <div class="scan-result" id="arm-res" style="display:none; margin:0 20px 20px; padding:16px; border:1px solid var(--border); border-radius:12px; background:var(--g50);">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--g500);margin-bottom:6px;">Keputusan AI</div>
+        <div id="arm-label" style="font-size:22px;font-weight:900;margin-bottom:2px;"></div>
+        <div id="arm-reason" style="font-size:12px;color:var(--g600);"></div>
+        <div id="arm-slot" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;"></div>
+        <button id="arm-act" style="display:none;width:100%;margin-top:12px;padding:10px;border-radius:8px;font-weight:600;font-size:13px;border:1px solid var(--border);background:var(--white);color:var(--dark);cursor:pointer;" onclick="armAct()">
+          <svg width="16" height="16" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Cuba Lagi
+        </button>
       </div>
-      <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Panduan Slot</div>
+      <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Kategori Sisa (AI Classes)</div>
       <div class="slot-guide">
-        <div class="slot-card"><div class="slot-icon" style="background:var(--green-l);color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="slot-lbl">Plastik</div><div class="slot-sub">Botol PET/HDPE bersih</div></div>
-        <div class="slot-card"><div class="slot-icon" style="background:var(--blue-l);color:var(--blue);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="slot-lbl">Kertas</div><div class="slot-sub">Kadbod &amp; surat khabar</div></div>
-        <div class="slot-card"><div class="slot-icon" style="background:var(--amber-l);color:var(--amber);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div class="slot-lbl">Logam</div><div class="slot-sub">Tin aluminium dibilas</div></div>
-        <div class="slot-card"><div class="slot-icon" style="background:var(--g100);color:var(--g500);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></div><div class="slot-lbl">Sisa Baki</div><div class="slot-sub">Makanan &amp; komposit</div></div>
+        <div class="slot-card">
+          <div class="slot-icon" style="background:rgba(25,118,210,0.1);color:#1976D2;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <div class="slot-lbl">Cardboard</div>
+          <div class="slot-sub">Buang pita pelekat &amp; pastikan kering.</div>
+        </div>
+        <div class="slot-card">
+          <div class="slot-icon" style="background:rgba(121,85,72,0.1);color:#795548;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l-2 11H8L6 3z"/><path d="M12 14v5M9 21h6"/></svg>
+          </div>
+          <div class="slot-lbl">Glass</div>
+          <div class="slot-sub">Bilas bekas kaca sebelum buang.</div>
+        </div>
+        <div class="slot-card">
+          <div class="slot-icon" style="background:rgba(239,108,0,0.1);color:#EF6C00;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="5" y1="6" x2="19" y2="6"/><line x1="5" y1="18" x2="19" y2="18"/></svg>
+          </div>
+          <div class="slot-lbl">Metal</div>
+          <div class="slot-sub">Bilas tin aluminium &amp; logam.</div>
+        </div>
+        <div class="slot-card">
+          <div class="slot-icon" style="background:rgba(25,118,210,0.1);color:#1976D2;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="slot-lbl">Paper</div>
+          <div class="slot-sub">Kertas bersih &amp; kering sahaja.</div>
+        </div>
+        <div class="slot-card">
+          <div class="slot-icon" style="background:rgba(251,140,0,0.1);color:#FB8C00;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2h4v3h-4z"/><path d="M6 9V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4l1 3v8a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-8l1-3z"/></svg>
+          </div>
+          <div class="slot-lbl">Plastic</div>
+          <div class="slot-sub">Kosongkan botol &amp; leperkan.</div>
+        </div>
+        <div class="slot-card">
+          <div class="slot-icon" style="background:rgba(66,66,66,0.1);color:#424242;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </div>
+          <div class="slot-lbl">Trash</div>
+          <div class="slot-sub">Sisa makanan &amp; non-recyclable.</div>
+        </div>
       </div>
     </div>
 
-    <!-- ═══ CITIZEN TANYA AI ═══ -->
+    <!--  CITIZEN TANYA AI  -->
     <div class="pg" id="pg-c-tanya">
       <div class="sec-hdr"><div><div class="sec-title">SilaTanya AI</div><div class="sec-sub">Citizen Q&amp;A Agent · Gemini 1.5 Flash</div></div></div>
       <div class="qq-row">
@@ -1069,7 +1111,7 @@ html,body {
 
   </div><!-- end scroll-area -->
 
-  <!-- ═══ BOTTOM NAV ═══ -->
+  <!--  BOTTOM NAV  -->
   <nav id="bottom-nav"></nav>
 
 </div><!-- end app -->
@@ -1090,7 +1132,7 @@ html,body {
           Warganegara
         </div>
         <div class="sp-name" id="sp-name">—</div>
-        <div class="sp-id"   id="sp-id">IC: ••••••</div>
+        <div class="sp-id"   id="sp-id">IC: </div>
       </div>
       <div class="sp-section">Notifikasi</div>
       <div class="sp-item">
@@ -1121,7 +1163,7 @@ html,body {
           <div><div class="sp-item-lbl">Saiz Teks <span id="fs-val" style="color:var(--green);">100</span>%</div><div class="sp-item-sub">Laraskan saiz teks</div></div>
         </div>
         <div class="fsc">
-          <button class="fsbtn" onclick="chgFont(-1)">−</button>
+          <button class="fsbtn" onclick="chgFont(-1)"></button>
           <button class="fsbtn" onclick="chgFont(1)">+</button>
         </div>
       </div>
@@ -1160,11 +1202,11 @@ html,body {
 <div class="toast" id="toast"></div>
 
 <script>
-/* ══════════════════════════════════════════════════════
+/* 
    SmartTONG — Full Application Logic
-══════════════════════════════════════════════════════ */
+ */
 
-// ── Firebase ──────────────────────────────────────────
+//  Firebase 
 firebase.initializeApp({
   apiKey: "AIzaSyByGcKKZ9WRbCv3kJu8sbb_BzRXUdZU1v4",
   authDomain: "smarttong-selangor.firebaseapp.com",
@@ -1175,7 +1217,7 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-// ── Gemini API with Google Search Grounding (RAG pipeline) ────────────────────────────────────────
+//  Gemini API with Google Search Grounding (RAG pipeline) 
 // Get your FREE key from: https://aistudio.google.com/app/apikey
 // Valid key format: AIzaSy...
 const GEMINI_KEY = 'AIzaSyDLHq3uvuvxuF3iRKDTpnxgeQGfr4BHNkk'; // User provided API Key
@@ -1215,7 +1257,7 @@ async function gemini(prompt, systemPrompt='', useSearch=false) {
   return txt;
 }
 
-// ── SmartTONG Official SOP — Full 150 QnA Dataset ────────
+//  SmartTONG Official SOP — Full 150 QnA Dataset 
 // Bahasa Melayu | KDEBWM Selangor | AINS 2026
 // Used as Gemini system context + local keyword matching
 const SMARTTONG_SOP = `
@@ -1402,11 +1444,11 @@ Soalan tentang: saham bursa, kod program, cuaca harian, resepi masakan, sejarah 
 Jawapan standard: Maaf, saya hanya dilatih untuk menjawab soalan berkaitan pengurusan sisa, proses kitar semula, atau fungsi teknikal aplikasi SmartTong sahaja. Sila kemukakan soalan berkaitan topik tersebut.
 `;
 
-// ── QnA Database (150 soal-jawab) ────────────────────────
+//  QnA Database (150 soal-jawab) 
 // Each entry: { k: 'space-separated keywords', a: 'answer' }
 // Used by getSopAnswer() for fast local matching
 const QNA_DB = [
-  // ─ Bahagian 1: Lokasi & Navigasi ─
+  //  Bahagian 1: Lokasi & Navigasi 
   { k:'tong terdekat dekat peta mana',           a:'Sila semak menu **UTAMA** di bar bawah skrin. Peta digital memaparkan semua tong terdekat berserta indikator status Hijau (kosong) atau Merah (penuh).' },
   { k:'navigasi arah google maps waze pin',       a:'Tekan ikon pin tong pilihan anda pada peta tab **UTAMA**, kemudian tekan butang **Navigasi** untuk pautan terus ke Google Maps atau Waze.' },
   { k:'tong tak muncul hilang peta',              a:'Kemungkinan besar tong sedang dialihkan untuk pengosongan oleh lori KDEBWM atau sedang dalam proses penyelenggaraan.' },
@@ -1422,7 +1464,7 @@ const QNA_DB = [
   { k:'perabot flatbed lori besar hantar',        a:'Sila gunakan **Aduan Portal** pada tab **IMBAS** atau hubungi lori flatbed KDEBWM melalui maklumat hubungan di tab **INFO**.' },
   { k:'usj stesen lrt ktm universiti uitm ukm um', a:'Gunakan fungsi carian lokasi pada peta tab **UTAMA** untuk semak sama ada kawasan anda dalam zon pilot semasa.' },
 
-  // ─ Bahagian 2: Isu Teknikal ─
+  //  Bahagian 2: Isu Teknikal 
   { k:'penutup tong tak buka kunci scan',         a:'Pastikan sambungan internet aktif semasa imbasan. Jika pintu masih terkunci, slot mungkin penuh atau mengalami masalah teknikal.' },
   { k:'sangkut loading crash force close buka semula', a:'Tutup aplikasi sepenuhnya (force close) dan buka semula. Pastikan menggunakan versi SmartTong terkini daripada stor aplikasi.' },
   { k:'mykad tidak sah format daftar',            a:'Pastikan format MyKad betul tanpa tanda sengkang, contoh: **01020310xxxx**. Pendaftaran hanya untuk identiti domestik.' },
@@ -1445,7 +1487,7 @@ const QNA_DB = [
   { k:'session expired tamat log masuk semula',   a:'Sesi tamat tempoh jika aplikasi tidak digunakan lama demi keselamatan. Sila log masuk semula.' },
   { k:'bateri telefon banyak guna',               a:'Tidak. Aplikasi dioptimumkan untuk guna tenaga minimal dan hanya aktifkan GPS/kamera apabila diperlukan sahaja.' },
 
-  // ─ Bahagian 3: Kitar Semula & AI Klasifikasi ─
+  //  Bahagian 3: Kitar Semula & AI Klasifikasi 
   { k:'pizza kotak minyak lemak kertas',          a:'Tidak boleh. Minyak pada kotak pizza merosakkan proses kitar semula kertas. Sila buang ke dalam slot **Sisa Baki**.' },
   { k:'syampu plastik botol bilas basuh',         a:'Ya, bilas sisa sabun terlebih dahulu untuk elak pencemaran cecair sebelum imbas dan masuk ke slot **Plastik**.' },
   { k:'botol mineral plastik ai tolak',           a:'Pastikan botol kosong dari air. AI tolak botol plastik yang masih mengandungi cecair.' },
@@ -1489,7 +1531,7 @@ const QNA_DB = [
   { k:'racun rumpai kimia pertanian sisa terjadual', a:'Bekas racun kimia pertanian adalah Sisa Terjadual SW401 yang memerlukan pelupusan khas Jabatan Alam Sekitar.' },
   { k:'yogurt bekas plastik kitar bilas',         a:'Boleh, dengan syarat sisa yogurt telah dibilas bersih sehingga tiada bau berasid.' },
 
-  // ─ Bahagian 4: Ganjaran, Mata & Aduan ─
+  //  Bahagian 4: Ganjaran, Mata & Aduan 
   { k:'eco-points mata dikira berat klasifikasi ai', a:'Mata dikira berdasarkan berat anggaran material sisa dan ketepatan pengkelasan AI semasa imbasan.' },
   { k:'tukar tebus hadiah tab reward baucar',     a:'Buka tab **HADIAH** di menu bar bawah. Tersedia baucar digital dan cenderahati eksklusif dari PBT Selangor.' },
   { k:'eco-points citizen compliance beza',       a:'**Eco-Points** untuk tebus hadiah barangan. **Citizen Compliance Points** adalah merit profil untuk pilihan Juara Kebersihan bulanan negeri.' },
@@ -1518,8 +1560,8 @@ const QNA_DB = [
   { k:'rakan niaga jenama pasar raya senarai',    a:'Senarai penuh jenama yang menerima mata ganjaran boleh disemak di tab **HADIAH**.' },
   { k:'had aduan sehari berganda koordinat sama', a:'Tiada had untuk aduan tulen, namun sistem menyaring laporan berganda untuk koordinat lokasi yang sama.' },
 
-  // ─ Hubungi & Lain-lain ─
-  { k:'hubungi telefon emel portal kdebwm kdeb',  a:'**Hubungi KDEBWM:**\n- Talian bebas tol: **1800-88-5678**\n- Email: smarttong@kdeb.com.my\n- Portal: smarttong.selangor.gov.my\n- Waktu pejabat: Isnin–Jumaat 8:00 AM – 5:00 PM' },
+  //  Hubungi & Lain-lain 
+  { k:'hubungi telefon emel portal kdebwm kdeb',  a:'**Hubungi KDEBWM:**\n- Talian bebas tol: **1800-88-5678**\n- Email: smarttong@kdeb.com.my\n- Portal: smarttong.selangor.gov.my\n- Waktu pejabat: IsninJumaat 8:00 AM  5:00 PM' },
   // Crime / Vandalism / Theft
   { k:'curi curi curi curi curi curi curi curi tong hilang rosak vandalism crime', a:'Sila laporkan segera kes kecurian atau vandalisme menggunakan **Aduan Portal** pada tab IMBAS. Kami akan hantar unit keselamatan.' },
   
@@ -1534,7 +1576,7 @@ const QNA_DB = [
   { k:'redeem voucher eco-points', a:'Open the REWARDS tab to browse a digital catalog of e-vouchers.' },
 ];
 
-// ── Keyword Relevance Filter ───────────────────────────
+//  Keyword Relevance Filter 
 const RELEVANT_KW = [
   // Core SmartTONG scope
   'tong','sampah','sisa','kitar','recycle','recycling','waste','plastik','kertas','logam',
@@ -1577,7 +1619,7 @@ function isRelevant(q) {
   return RELEVANT_KW.some(kw => lower.includes(kw));
 }
 
-// ── QnA Keyword Scoring & Semantic Search ────────────────
+//  QnA Keyword Scoring & Semantic Search 
 let semanticExtractor = null;
 let qnaEmbeddings = null;
 
@@ -1587,7 +1629,7 @@ async function initSemanticSearch() {
     const loadingId = 'semantic-loading-msg';
     const el = document.createElement('div');
     el.className = 'msg msg-bot'; el.id = loadingId;
-    el.innerHTML = `<div class="msg-name">Sistem</div><div class="msg-bubble" style="background:#fff3cd; color:#856404; font-size:12px;">⏳ Memuat turun model AI carian semantik (22MB)... Sila tunggu sebentar. Ini hanya berlaku sekali.</div>`;
+    el.innerHTML = `<div class="msg-name">Sistem</div><div class="msg-bubble" style="background:#fff3cd; color:#856404; font-size:12px;"> Memuat turun model AI carian semantik (22MB)... Sila tunggu sebentar. Ini hanya berlaku sekali.</div>`;
     const c = document.getElementById('chat-msgs');
     if (c) { c.appendChild(el); c.scrollTop = c.scrollHeight; }
     
@@ -1657,7 +1699,7 @@ async function getSopAnswer(q) {
 
 function getBotAnswer(q) { return getSopAnswer(q); }
 
-// ── Data ───────────────────────────────────────────────
+//  Data 
 const BINS = [
   { id:'B01', name:'Persiaran Kewajipan, USJ 1',       zone:'MBSJ', lat:3.0481, lng:101.5787, fill:85, battery:72, moist:68, gas:220, hz:false, broken:false, reported:true  },
   { id:'B02', name:'Jalan SS15/4, Subang Jaya',         zone:'MBSJ', lat:3.0754, lng:101.5843, fill:62, battery:88, moist:22, gas:89,  hz:false, broken:false, reported:false },
@@ -1693,7 +1735,7 @@ const TIPS = [
   'Bateri adalah e-sisa berbahaya. Jangan buang dalam tong biasa!',
 ];
 const SEBARANS = [
-  { from:'KDEBWM', msg:'Makluman: Operasi kutipan khas di USJ Ahad ini 8AM–12PM. Sila asingkan sisa organik.', time:'1j lalu' },
+  { from:'KDEBWM', msg:'Makluman: Operasi kutipan khas di USJ Ahad ini 8AM12PM. Sila asingkan sisa organik.', time:'1j lalu' },
   { from:'MBSJ',   msg:'Amaran: Risiko banjir kilat di Subang Jaya. Pastikan tong tidak menyekat longkang.',   time:'3j lalu' },
 ];
 const BOT_KB = [
@@ -1701,12 +1743,12 @@ const BOT_KB = [
   { kw:['plastik','botol','pet','mineral'], ans:'Botol plastik boleh dikitar semula di slot **PLASTIK**.\n\nCara betul:\n- Bilas dan kering dahulu\n- Keluarkan penutup\n- Picit botol untuk jimat ruang ✓' },
   { kw:['bateri','battery','powerbank'],    ans:'Bateri adalah e-sisa berbahaya — jangan buang dalam tong biasa!\n\nHantar ke Pusat Kitar Semula E-Sisa MBSJ/MBPJ atau kedai elektronik berdekatan.' },
   { kw:['tisu','tissue'],                   ans:'Tisu TIDAK boleh dikitar semula. Masukkan ke slot **SISA BAKI**.\n\nSebab: Serat pendek + kotor = tiada nilai kitar semula.' },
-  { kw:['mata','point','ganjaran'],         ans:'Sistem Mata SmartTONG:\n- Lapor tong penuh → **+10 mata**\n- Lapor pembuangan haram → **+15 mata**\n- Imbas & kitar item → **+5 mata**\n\n0–499 = Pejuang | 500–999 = Juara | 1000+ = Wira' },
+  { kw:['mata','point','ganjaran'],         ans:'Sistem Mata SmartTONG:\n- Lapor tong penuh  **+10 mata**\n- Lapor pembuangan haram  **+15 mata**\n- Imbas & kitar item  **+5 mata**\n\n0499 = Pejuang | 500999 = Juara | 1000+ = Wira' },
   { kw:['haram','denda','saman','hukuman'], ans:'Hukuman Pembuangan Sampah Haram di Malaysia:\n- Individu: Denda **sehingga RM2,000**\n- Komersial: Denda **sehingga RM500,000**\n- Penjara: Sehingga **2 tahun**\n\nLapor melalui tab Laporan SmartTONG!' },
   { kw:['b01','b02','b03','b04','b05','tong','status'], ans:`Status Tong Semasa:\n- **B01** (USJ 1): ${Math.round(BINS[0].fill)}% penuh\n- **B02** (SS15): ${Math.round(BINS[1].fill)}% — normal\n- **B03** (Sunway): ${Math.round(BINS[2].fill)}% KRITIKAL\n- **B04** (Taman Jaya): Pecah/Rosak\n- **B05** (Shah Alam): ${Math.round(BINS[4].fill)}% + bahan berbahaya` },
 ];
 
-// ── State ───────────────────────────────────────────────
+//  State 
 let role = 'citizen', myPoints = 240, userName = '', userIC = '';
 let voiceOn = false, contrastOn = false, fontSize = 100;
 let govMap = null, citizenMap = null, govMarkers = {};
@@ -1714,7 +1756,7 @@ let camStream = null, chatBusy = false;
 let aduan_states = {}, notifUnsub = null;
 let sebarans = [...SEBARANS];
 
-// ── Nav Config ─────────────────────────────────────────
+//  Nav Config 
 const GOV_NAV = [
   { id:'g-utama',   icon:'layout-dashboard', lbl:'Utama'   },
   { id:'g-peta',    icon:'map',              lbl:'Peta'    },
@@ -1729,7 +1771,7 @@ const CITIZEN_NAV = [
   { id:'c-tanya',  icon:'message-circle',  lbl:'Tanya AI'  },
 ];
 
-// ── SVG Icons (inline, reliable) ──────────────────────
+//  SVG Icons (inline, reliable) 
 const ICONS = {
   home:           '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
   map:            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>',
@@ -1745,7 +1787,7 @@ function navSVG(icon) {
   return ICONS[icon] || ICONS.flag;
 }
 
-// ── LOGIN ───────────────────────────────────────────────
+//  LOGIN 
 function setRole(r) {
   role = r;
   document.getElementById('rt-c').classList.toggle('active', r === 'citizen');
@@ -1835,7 +1877,7 @@ function launchApp() {
     ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg> PBT / KDEB'
     : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Warganegara';
   document.getElementById('sp-name').textContent = userName;
-  document.getElementById('sp-id').textContent   = role === 'citizen' ? `IC: ${userIC.slice(0,6)}••••` : `ID: ${userIC}`;
+  document.getElementById('sp-id').textContent   = role === 'citizen' ? `IC: ${userIC.slice(0,6)}` : `ID: ${userIC}`;
 
   buildNav();
   initData();
@@ -1869,7 +1911,7 @@ async function doLogout() {
   document.getElementById('g-id').value = '';
 }
 
-// ── Build Nav ───────────────────────────────────────────
+//  Build Nav 
 function buildNav() {
   const items = role === 'gov' ? GOV_NAV : CITIZEN_NAV;
   document.getElementById('bottom-nav').innerHTML = items.map(n => `
@@ -1880,7 +1922,7 @@ function buildNav() {
     </button>`).join('');
 }
 
-// ── Show Page ───────────────────────────────────────────
+//  Show Page 
 function showPage(pgId) {
   document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -1908,7 +1950,7 @@ function showPage(pgId) {
   }
 }
 
-// ── Data Init ───────────────────────────────────────────
+//  Data Init 
 function initData() {
   if (role === 'gov') {
     renderSchedule();
@@ -1940,13 +1982,13 @@ function updateGovKPIs() {
   document.getElementById('k-saved').textContent = 'RM ' + BINS.filter(b=>b.fill<70).length*96;
 }
 
-// ── ═══════════════════════════════════════════════════
+//  
 //    AGENT 1: CONTAMINATION AGENT
 //    Analyses bin sensor data, generates detailed report
-// ═══════════════════════════════════════════════════ ──
+//  
 async function runContaminationAgent() {
   const btn = document.getElementById('btn-cont');
-  btn.textContent = '⏳ Menganalisa...';
+  btn.textContent = ' Menganalisa...';
   btn.disabled = true;
   document.getElementById('cont-report-wrap').style.display = 'block';
   document.getElementById('cont-body').textContent = 'Contamination Agent sedang membaca telemetri IoT dan menganalisa pencemaran...';
@@ -1984,18 +2026,18 @@ Gunakan data sensor yang diberikan dan buat analisis profesional.`;
 `LAPORAN PENCEMARAN — Contamination Agent
 Masa: ${new Date().toLocaleString('ms-MY')}
 
-══ RINGKASAN EKSEKUTIF ══
+ RINGKASAN EKSEKUTIF 
 5 tong dipantau di Selangor. 2 tong memerlukan perhatian segera.
 
-══ TONG BERISIKO TINGGI ══
-• B05 (Shah Alam): GAS BERBAHAYA — ${BINS[4].gas}ppm, Kelembapan ${Math.round(BINS[4].moist)}%
-  → AMARAN MERAH: Bahan berbahaya dikesan. Evakuasi kawasan dalam radius 10m.
-• B03 (Sunway): Pengisian ${Math.round(BINS[2].fill)}%, Gas ${BINS[2].gas}ppm
-  → Risiko limpah dan bau tidak menyenangkan.
-• B01 (USJ 1): Gas ${BINS[0].gas}ppm, Kelembapan ${Math.round(BINS[0].moist)}%
-  → Pembuangan organik menyebabkan fermentasi.
+ TONG BERISIKO TINGGI 
+ B05 (Shah Alam): GAS BERBAHAYA — ${BINS[4].gas}ppm, Kelembapan ${Math.round(BINS[4].moist)}%
+   AMARAN MERAH: Bahan berbahaya dikesan. Evakuasi kawasan dalam radius 10m.
+ B03 (Sunway): Pengisian ${Math.round(BINS[2].fill)}%, Gas ${BINS[2].gas}ppm
+   Risiko limpah dan bau tidak menyenangkan.
+ B01 (USJ 1): Gas ${BINS[0].gas}ppm, Kelembapan ${Math.round(BINS[0].moist)}%
+   Pembuangan organik menyebabkan fermentasi.
 
-══ CADANGAN TINDAKAN ══
+ CADANGAN TINDAKAN 
 1. Dispatch truk kecemasan ke B05 dalam 15 minit
 2. Hubungi JPSPN untuk pengendalian bahan berbahaya
 3. Notifikasi warganegara berdekatan B05 dan B03
@@ -2006,13 +2048,13 @@ Masa: ${new Date().toLocaleString('ms-MY')}
   btn.disabled = false;
 }
 
-// ── ═══════════════════════════════════════════════════
+//  
 //    AGENT 2: COORDINATION AGENT
 //    Optimises truck routes and schedules
-// ═══════════════════════════════════════════════════ ──
+//  
 async function runCoordAgent() {
   const btn = document.getElementById('btn-coord');
-  btn.textContent = '⏳ Mengoptimumkan...';
+  btn.textContent = ' Mengoptimumkan...';
   btn.disabled = true;
   document.getElementById('coord-report-wrap').style.display = 'block';
   document.getElementById('coord-body').textContent = 'Coordination Agent sedang mengira laluan optimum berdasarkan fill level, jarak dan keutamaan...';
@@ -2054,39 +2096,39 @@ Jawab dalam Bahasa Malaysia yang profesional.`;
 `JADUAL KUTIPAN OPTIMUM — Coordination Agent
 Masa Jana: ${new Date().toLocaleString('ms-MY')}
 
-══ URUTAN KEUTAMAAN ══
+ URUTAN KEUTAMAAN 
 KRITIKAL (Sekarang):
-• Truk-D → B05 Shah Alam [BERBAHAYA] — ETA 12 minit
-• Truk-A → B03 Dataran Sunway [93%] — ETA 18 minit
+ Truk-D  B05 Shah Alam [BERBAHAYA] — ETA 12 minit
+ Truk-A  B03 Dataran Sunway [93%] — ETA 18 minit
 
 TINGGI (Dalam 1 jam):
-• Truk-B → B01 USJ 1 [85%] — ETA 35 minit
-• Truk-C → B02 SS15 [62%] — ETA 52 minit
+ Truk-B  B01 USJ 1 [85%] — ETA 35 minit
+ Truk-C  B02 SS15 [62%] — ETA 52 minit
 
 PENYELENGGARAAN:
-• Truk-E → B04 Taman Jaya [PECAH] — ETA 2j 10m
+ Truk-E  B04 Taman Jaya [PECAH] — ETA 2j 10m
 
-══ PENGELOMPOKAN ZON ══
-MBSJ: B01, B02 → Truk-A, Truk-B (laluan SS15-USJ)
-MBPJ: B03 → Truk-C (Dataran Sunway)
-MBSA: B05 → Truk-D kecemasan (Shah Alam)
+ PENGELOMPOKAN ZON 
+MBSJ: B01, B02  Truk-A, Truk-B (laluan SS15-USJ)
+MBPJ: B03  Truk-C (Dataran Sunway)
+MBSA: B05  Truk-D kecemasan (Shah Alam)
 
-══ ANGGARAN PENJIMATAN ══
+ ANGGARAN PENJIMATAN 
 Laluan AI: 47.2km | Laluan konvensional: 68.5km
-Penjimatan: 21.3km (31%) → RM 96 petrol | 4.2kg CO₂ dikurangkan`;
+Penjimatan: 21.3km (31%)  RM 96 petrol | 4.2kg CO dikurangkan`;
   }
 
   btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Optimum Laluan Truk`;
   btn.disabled = false;
 }
 
-// ── ═══════════════════════════════════════════════════
+//  
 //    AGENT 3: CITIZEN Q&A AGENT (chat)
 //    - Keyword relevance filter (EN + MY)
 //    - SOP-grounded answers
 //    - Gemini 1.5 Flash with SOP context
 //    - Robust local KB fallback (never empty)
-// ═══════════════════════════════════════════════════ ──
+//  
 function initChat() {
   addBotMsg('Selamat datang ke **SilaTanya AI** — Citizen Q&A Agent!\n\nSaya pakar kitar semula & pengurusan sisa SmartTONG Selangor berdasarkan SOP KDEBWM.\n\nTanya saya tentang:\n- Cara kitar semula item (plastik, kertas, logam, e-sisa)\n- Status tong SmartTONG berdekatan\n- Jadual kutipan & prosedur\n- Sistem mata & ganjaran Eco-Points\n- Undang-undang pembuangan sampah Malaysia');
   
@@ -2123,7 +2165,7 @@ async function sendChat() {
   const q = inp.value.trim(); if (!q) return;
   inp.value = ''; addUserMsg(q); chatBusy = true;
 
-  // ── STEP 1: Relevance filter ────────────────────────
+  //  STEP 1: Relevance filter 
   if (!isRelevant(q)) {
     addBotMsg(
       'Maaf, saya hanya boleh menjawab soalan berkaitan **pengurusan sisa, kitar semula, tong SmartTONG, sistem mata, atau undang-undang pembuangan sampah Malaysia**.\n\n' +
@@ -2139,52 +2181,31 @@ async function sendChat() {
 
   showTyping();
 
-  // ── STEP 2: Try Gemini with SOP context ─────────────
-  const binStatus = BINS.map(b =>
-    `${b.id}(${b.zone}): ${Math.round(b.fill)}% penuh, bateri ${Math.round(b.battery)}%${b.hz?' [BERBAHAYA]':''}${b.broken?' [PECAH]':''}${b.reported?' [Dilaporkan]':''}`
-  ).join('; ');
-
-const sysPmt =
-`You are SilaTanya AI, a polite and helpful recycling assistant for Selangor citizens. 
-You are given a retrieved reference context from our database to help answer the user's query.
-
-CRITICAL RULES:
-1. Use the provided context ONLY as a factual knowledge base.
-2. NEVER copy the context answer word-for-word if it creates a conversational conflict (e.g., if the context says "Tidak boleh" because an item is non-recyclable, do not say "Tidak boleh" to a user asking a general question politely).
-3. Always rephrase your greeting naturally. Address the user's specific conversational intent.
-4. Maintain a clean, professional, and helpful Malay tone.
-5. If the question is entirely unrelated (like stocks, recipes, history, plane tickets), decline politely in the same language. DO NOT use emojis.
-
-SOP SMARTTONG (reference context):
-${SMARTTONG_SOP}
-
-Current bin status:
-${binStatus}`;
-
   try {
-    // Enable search grounding
-    const ans = await gemini(q, sysPmt, true);
+    const resp = await fetch('http://127.0.0.1:7863/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: q })
+    });
+    
+    if (!resp.ok) throw new Error('API error');
+    const data = await resp.json();
     document.getElementById('typing')?.remove();
-    const fallbackAns = await getSopAnswer(q.toLowerCase());
-    const finalAns = ans.trim() || fallbackAns;
-    addBotMsg(finalAns);
-    db.collection('citizen_qa').add({
-      question:q, answer:finalAns, agent:'citizen_qa_sop_grounded',
-      timestamp:firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(()=>{});
-  } catch(e) {
-    document.getElementById('typing')?.remove();
-    if (e.message === 'INVALID_KEY') {
-       addBotMsg('⚠️ **API Key Tidak Sah**\nSistem SilaTanya AI memerlukan kunci API Gemini yang sah bermula dengan `AIza...` untuk menggunakan kebolehan carian (RAG).\nSila gantikan `GEMINI_KEY` dalam kod sumber.\n\n_Buat masa ini, saya menggunakan Pangkalan Data Tempatan (SOP KDEBWM) untuk menjawab soalan anda._');
-       const fallbackAns = await getSopAnswer(q.toLowerCase());
-       addBotMsg(fallbackAns);
+    
+    if (data.reply) {
+      addBotMsg(data.reply);
     } else {
-       // SOP-based local KB fallback
-       const fallbackAns = await getSopAnswer(q.toLowerCase());
-       addBotMsg(fallbackAns);
+      addBotMsg('Ralat mendapatkan jawapan daripada pelayan AI.');
     }
+  } catch(e) {
+    console.error('[Chat Agent API]', e);
+    document.getElementById('typing')?.remove();
+    // SOP-based local KB fallback
+    const fallbackAns = await getSopAnswer(q.toLowerCase());
+    addBotMsg(fallbackAns);
+  } finally {
+    chatBusy = false;
   }
-  chatBusy = false;
 }
 
 function qAsk(q) { document.getElementById('chat-in').value = q; sendChat(); }
@@ -2196,7 +2217,7 @@ function getBotAnswer(q) { return getSopAnswer(q); }
 function mdBold(t) { return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'); }
 function escHtml(t) { const d=document.createElement('div');d.textContent=t;return d.innerHTML; }
 
-// ── Citizen UI ─────────────────────────────────────────
+//  Citizen UI 
 function updateCitizenUI() {
   const p = myPoints;
   document.getElementById('hdr-pts-num').textContent = p;
@@ -2251,7 +2272,7 @@ function renderCitizenBinList() {
   }).join('');
 }
 
-// ── Gov Bin List ───────────────────────────────────────
+//  Gov Bin List 
 function renderGovBinList(filter='ALL') {
   const el = document.getElementById('gov-bin-list'); if (!el) return;
   let list = filter==='ALL' ? BINS : BINS.filter(b=>{
@@ -2311,7 +2332,7 @@ function overrideAll() {
   showToast('Override: Semua truk kecemasan dihantar!');
 }
 
-// ── Bin helpers ────────────────────────────────────────
+//  Bin helpers 
 function binColor(b) {
   if(b.hz)        return '#7C3AED';
   if(b.broken)    return '#D97706';
@@ -2337,7 +2358,7 @@ function binStatusSVG(b) {
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
 }
 
-// ── Maps ───────────────────────────────────────────────
+//  Maps 
 function initGovMap() {
   if(govMap) return;
   govMap = L.map('gov-map',{zoomControl:false}).setView([3.075,101.58],12);
@@ -2401,7 +2422,7 @@ function initCitizenMap() {
   }
 }
 
-// ── Aduan & LB ─────────────────────────────────────────
+//  Aduan & LB 
 const ADUAN_SVG = {
   'alert-triangle':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
   'shield-alert':  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
@@ -2473,7 +2494,7 @@ function renderSchedule() {
     </tr>`).join('');
 }
 
-// ── Broadcast ──────────────────────────────────────────
+//  Broadcast 
 async function sendBroadcast() {
   const msg = document.getElementById('bc-msg').value.trim();
   if(!msg) return showToast('Sila taip mesej');
@@ -2499,7 +2520,7 @@ async function saveBroadcast(msg) {
   } catch(e) { console.warn('[broadcast]',e); }
 }
 
-// ── Camera / Scan ──────────────────────────────────────
+//  Camera / Scan 
 async function toggleCam() {
   const video = document.getElementById('cam-viewport');
   const btn   = document.getElementById('cam-toggle');
@@ -2535,51 +2556,70 @@ async function captureClassify() {
   document.getElementById('arm-res').style.display='none';
 
   try{
-    const r=await fetch(GEMINI_URL(GEMINI_KEY),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-      contents:[{parts:[
-        {text:'Waste classification AI. Analyze image ONLY return JSON: {"label":"item name","accepted":true/false,"slot":"PLASTIK|KERTAS|LOGAM|SISA_BAKI","confidence":0.0-1.0,"reason":"reason in Malay","isHazardous":true/false}'},
-        {inline_data:{mime_type:'image/jpeg',data:dataUrl.split(',')[1]}}
-      ]}]
-    })});
+    const base64Data = dataUrl.split(',')[1];
+    const r=await fetch('http://127.0.0.1:7862/predict',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ image: base64Data })
+    });
+    
+    if(!r.ok) throw new Error('Model Server offline');
+    
     const data=await r.json();
-    const txt=data?.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    const m=txt.match(/\{[\s\S]*\}/);
     document.getElementById('scan-load').style.display='none';
-    renderARMResult(m?JSON.parse(m[0]):{label:'Tin Aluminium (Demo)',accepted:true,slot:'LOGAM',confidence:.94,reason:'Tin aluminium bersih, layak dikitar semula',isHazardous:false});
+    
+    // Direct passthrough to renderARMResult like dashboard
+    renderARMResult(data);
   }catch(e){
+    console.error(e);
     document.getElementById('scan-load').style.display='none';
     renderARMResult({label:'Tin Aluminium (Demo)',accepted:true,slot:'LOGAM',confidence:.94,reason:'Tin aluminium bersih, layak dikitar semula',isHazardous:false});
   }
 }
 
 function renderARMResult(data) {
-  const res=document.getElementById('arm-res'),verdict=document.getElementById('arm-verdict');
+  const res=document.getElementById('arm-res');
   const lbl=document.getElementById('arm-label'),slot=document.getElementById('arm-slot');
   const reason=document.getElementById('arm-reason'),act=document.getElementById('arm-act');
-  res.style.display='block'; res.className='arm-result';
-  if(data.isHazardous){
-    res.classList.add('hazardous');
-    verdict.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> BAHAYA — Tidak Diterima';
-    act.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> Lapor ke E-Sisa Hub (+25 Mata)';
-    act.style.cssText='display:flex;background:var(--orange);color:white;'; act.style.display='flex';
-  }else if(data.accepted){
-    res.classList.add('accepted');
-    verdict.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> DITERIMA';
-    act.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Buka Slot ${data.slot} (+10 Mata)`;
-    act.style.cssText='display:flex;background:var(--green);color:white;'; act.style.display='flex';
-    act.onclick=()=>{myPoints+=10;updateCitizenUI();showToast(`+10 mata! Slot ${data.slot} dibuka`);};
-  }else{
-    res.classList.add('rejected');
-    verdict.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> DITOLAK — Sisa Baki';
-    act.style.display='none';
+  res.style.display='block';
+  
+  if (data.class) {
+    // API response format from predict_server.py
+    const c = data.color || 'var(--green)';
+    lbl.textContent = data.class;
+    lbl.style.color = c;
+    reason.textContent = `Keyakinan: ${Number(data.confidence).toFixed(1)}% — ${data.tip || ''}`;
+    
+    slot.style.background = c.replace(')', ', 0.1)').replace('rgb', 'rgba').replace('#', 'rgba(') + (c.startsWith('#') ? '0,0,0,0.1)' : ''); 
+    // basic css fallback for opacity 
+    if (c === '#1976D2') { slot.style.background = 'rgba(25, 118, 210, 0.1)'; slot.style.borderColor = 'rgba(25, 118, 210, 0.3)'; }
+    else if (c === '#795548') { slot.style.background = 'rgba(121, 85, 72, 0.1)'; slot.style.borderColor = 'rgba(121, 85, 72, 0.3)'; }
+    else if (c === '#EF6C00' || c === '#FB8C00') { slot.style.background = 'rgba(239, 108, 0, 0.1)'; slot.style.borderColor = 'rgba(239, 108, 0, 0.3)'; }
+    else if (c === '#424242') { slot.style.background = 'rgba(66, 66, 66, 0.1)'; slot.style.borderColor = 'rgba(66, 66, 66, 0.3)'; }
+    else { slot.style.background = 'var(--g100)'; slot.style.borderColor = 'var(--g200)'; }
+    
+    slot.style.color = c;
+    slot.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" style="stroke:${c};fill:none;stroke-width:2;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg> ${data.bin}`;
+  } else {
+    // Fallback format
+    lbl.textContent = data.label;
+    lbl.style.color = 'var(--dark)';
+    slot.style.background = 'rgba(66, 66, 66, 0.1)';
+    slot.style.border = '1px solid rgba(66, 66, 66, 0.3)';
+    slot.style.color = 'var(--dark)';
+    slot.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Black Bin (Sisa Baki)';
+    reason.textContent = `Keyakinan: ${Math.round((data.confidence||.9)*100)}% — ${data.reason}`;
   }
-  lbl.textContent=`${data.label} (${Math.round((data.confidence||.9)*100)}% yakin)`;
-  slot.textContent=data.accepted?`Masukkan ke Slot ${data.slot}`:'Buang di Slot Sisa Baki';
-  reason.textContent=data.reason;
+  
+  act.style.display='block';
 }
-function armAct(){}
+function armAct(){
+  const res=document.getElementById('arm-res');
+  res.style.display='none';
+  toggleCam();
+}
 
-// ── Settings ───────────────────────────────────────────
+//  Settings 
 function openSettings()  { document.getElementById('settings-overlay').classList.add('open'); document.getElementById('settings-panel').classList.add('open'); }
 function closeSettings() { document.getElementById('settings-overlay').classList.remove('open'); document.getElementById('settings-panel').classList.remove('open'); }
 function settingsOverlayClick(e) { if(e.target===document.getElementById('settings-overlay')) closeSettings(); }
@@ -2589,7 +2629,7 @@ function toggleContrast(){ contrastOn=!contrastOn; document.getElementById('tgl-
 function chgFont(d)      { fontSize=Math.max(80,Math.min(140,fontSize+d*10)); document.body.style.fontSize=fontSize+'%'; document.getElementById('fs-val').textContent=fontSize; localStorage.setItem('fontSize',fontSize); }
 function speak(t)        { if(!window.speechSynthesis)return; window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='ms-MY';u.rate=.9; window.speechSynthesis.speak(u); }
 
-// ── Notifications ──────────────────────────────────────
+//  Notifications 
 function toggleNotif() {
   const o=document.getElementById('notif-overlay'); const open=o.classList.toggle('open');
   if(open){ document.getElementById('notif-badge').style.display='none'; subscribeNotifs(); }
@@ -2616,11 +2656,11 @@ function togglePushNotif() {
   if(t.classList.contains('on')) subscribeNotifs();
 }
 
-// ── Toast ───────────────────────────────────────────────
+//  Toast 
 let toastT;
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3000); }
 
-// ── Init ────────────────────────────────────────────────
+//  Init 
 window.addEventListener('load', async()=>{
   // Restore preferences
   contrastOn=localStorage.getItem('contrast')==='true';
