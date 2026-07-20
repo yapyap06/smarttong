@@ -920,7 +920,11 @@ html,body {
 
     <!--  GOV LAPORAN  -->
     <div class="pg" id="pg-g-laporan">
-      <div class="sec-hdr"><div><div class="sec-title">Hab Aduan</div><div class="sec-sub">Laporan daripada warganegara</div></div><span class="sec-badge">4 Baru</span></div>
+      <div class="sec-hdr"><div><div class="sec-title">Hab Aduan Command Center</div><div class="sec-sub">Pengurusan &amp; Pengesahan Laporan Warganegara</div></div><span class="sec-badge" id="aduan-badge">0 Baru</span></div>
+      <div style="padding:0 20px 12px; display:flex; gap:8px;">
+        <button class="fchip on" id="btn-aduan-pending" onclick="filterAduanTab('pending')">Belum Diproses (<span id="cnt-pending">0</span>)</button>
+        <button class="fchip" id="btn-aduan-processed" onclick="filterAduanTab('processed')">Telah Diproses (<span id="cnt-processed">0</span>)</button>
+      </div>
       <div style="padding:0 20px 20px;" id="aduan-list"></div>
     </div>
 
@@ -976,13 +980,13 @@ html,body {
         <div class="pts-next" id="c-pts-next">260 mata lagi untuk Juara Kebersihan</div>
       </div>
       <div class="stat-row">
-        <div class="stat-card">
+        <div class="stat-card" style="cursor:pointer;" onclick="showPage('c-aduan')">
           <div class="stat-icon" style="background:var(--green-l);color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
-          <div class="stat-num">12</div><div class="stat-lbl">Laporan</div>
+          <div class="stat-num" id="c-stat-reports">12</div><div class="stat-lbl">Laporan</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon" style="background:var(--amber-l);color:var(--amber);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <div class="stat-num">9</div><div class="stat-lbl">Disahkan</div>
+          <div class="stat-num" id="c-stat-approved">9</div><div class="stat-lbl">Disahkan</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon" style="background:var(--orange-l);color:var(--orange);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg></div>
@@ -1087,6 +1091,77 @@ html,body {
           <div class="slot-lbl">Trash</div>
           <div class="slot-sub">Sisa makanan &amp; non-recyclable.</div>
         </div>
+      </div>
+    </div>
+
+    <!--  CITIZEN ADUAN  -->
+    <div class="pg" id="pg-c-aduan">
+      <div class="sec-hdr"><div><div class="sec-title">Aduan Rakyat</div><div class="sec-sub">Lapor tong penuh, pembuangan haram atau rosak</div></div></div>
+      
+      <!-- QR Scanner Card -->
+      <div style="margin:0 20px 14px; background:var(--white); border:1px solid var(--g200); border-radius:var(--rlg); padding:18px; text-align:center; box-shadow:var(--sh-sm);">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px;">Imbas QR Tong</div>
+        <div style="font-size:11px;color:var(--g500);margin-bottom:12px;">Imbas kod QR pada tong untuk mengisi ID automatik</div>
+        <button class="btn-primary" style="width:100%;padding:10px;" onclick="mockQR()">Imbas Kod QR Tong</button>
+      </div>
+
+      <!-- Form Card -->
+      <div style="margin:0 20px 20px; background:var(--white); border:1px solid var(--g200); border-radius:var(--rlg); padding:16px; box-shadow:var(--sh-sm);">
+        <div style="font-weight:700;font-size:14px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--g200);display:flex;align-items:center;gap:6px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;stroke:var(--green);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Borang Laporan Aduan
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:4px;">ID Tong / Lokasi</label>
+          <input type="text" id="r-binid" placeholder="cth: B01 (Subang Jaya) atau nama jalan" style="width:100%;padding:10px 12px;border:1px solid var(--g200);border-radius:var(--rsm);font-size:12px;outline:none;" />
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:6px;">Jenis Masalah</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="rtype-grid">
+            <div class="rpt-type-card active" data-type="overflow" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--green);background:var(--green-l);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
+              <div style="color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></div>
+              <div style="font-size:12px;font-weight:600;">Tong Penuh</div>
+            </div>
+            <div class="rpt-type-card" data-type="illegal" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--g200);background:var(--white);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
+              <div style="color:var(--orange);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+              <div style="font-size:12px;font-weight:600;">Buang Haram</div>
+            </div>
+            <div class="rpt-type-card" data-type="broken" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--g200);background:var(--white);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
+              <div style="color:var(--amber);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+              <div style="font-size:12px;font-weight:600;">Tong Rosak</div>
+            </div>
+            <div class="rpt-type-card" data-type="pothole" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--g200);background:var(--white);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
+              <div style="color:var(--blue);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+              <div style="font-size:12px;font-weight:600;">Jalan Berlubang</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:4px;">Keterangan Laporan</label>
+          <textarea id="r-desc" rows="3" placeholder="Terangkan situasi dengan jelas..." style="width:100%;padding:10px 12px;border:1px solid var(--g200);border-radius:var(--rsm);font-size:12px;font-family:inherit;outline:none;resize:vertical;"></textarea>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:4px;">Foto Bukti (Pilihan)</label>
+          <div style="border:2px dashed var(--green-m);border-radius:var(--rsm);padding:14px;text-align:center;cursor:pointer;background:var(--green-l);" onclick="document.getElementById('r-photo').click()">
+            <div style="font-size:12px;font-weight:600;color:var(--green);display:flex;align-items:center;justify-content:center;gap:6px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Ambil / Pilih Foto Bukti
+            </div>
+          </div>
+          <input type="file" id="r-photo" accept="image/*" capture="environment" style="display:none" onchange="prevPhoto(this)" />
+          <div id="r-prev"></div>
+        </div>
+
+        <button class="btn-primary" style="width:100%;padding:12px;font-size:13px;" onclick="submitRep()">
+          Hantar Laporan (+10 Mata)
+        </button>
       </div>
     </div>
 
@@ -1715,10 +1790,10 @@ const CHAMPIONS = [
   { name:'Nurul Fadhilah',zone:'Shah Alam', pts:398 },
 ];
 const ADUANS = [
-  { title:'Tong B03 — Limpah Penuh',       loc:'Dataran Sunway, PJS 11',  time:'9:42 PM', icon:'alert-triangle', color:'var(--red)'    },
-  { title:'Pembuangan Haram — Tayar Lama', loc:'Jalan Industri USJ',       time:'8:15 PM', icon:'shield-alert',   color:'var(--orange)' },
-  { title:'Tong B04 — Pecah / Rosak',      loc:'Taman Jaya Park, PJ',      time:'7:30 PM', icon:'wrench',         color:'var(--amber)'  },
-  { title:'Jalan Berlubang',               loc:'Jalan SS19, Subang',        time:'6:55 PM', icon:'map-pin',        color:'var(--blue)'   },
+  { id:'A01', title:'Tong B03 — Limpah Penuh',       loc:'Dataran Sunway, PJS 11',  time:'9:42 PM', icon:'alert-triangle', color:'var(--red)',    status:'pending', desc:'Tong melimpah teruk, sisa organik membusuk di luar.', photo:'' },
+  { id:'A02', title:'Pembuangan Haram — Tayar Lama', loc:'Jalan Industri USJ',       time:'8:15 PM', icon:'shield-alert',   color:'var(--orange)', status:'pending', desc:'Timbunan tayar terpakai dibuang di bahu jalan.', photo:'' },
+  { id:'A03', title:'Tong B04 — Pecah / Rosak',      loc:'Taman Jaya Park, PJ',      time:'7:30 PM', icon:'wrench',         color:'var(--amber)',  status:'sah',     desc:'Penutup tong rosak dan engsel patah.', photo:'' },
+  { id:'A04', title:'Jalan Berlubang',               loc:'Jalan SS19, Subang',        time:'6:55 PM', icon:'map-pin',        color:'var(--blue)',   status:'sah',     desc:'Lubang dalam membahayakan penunggang motosikal.', photo:'' },
 ];
 const SCHEDULE = [
   { binId:'B03', loc:'Dataran Sunway', pri:'KRITIKAL', eta:'14 min',  cls:'pc-red'    },
@@ -1768,6 +1843,7 @@ const CITIZEN_NAV = [
   { id:'c-utama',  icon:'home',            lbl:'Utama'     },
   { id:'c-peta',   icon:'map',             lbl:'Peta'      },
   { id:'c-imbas',  icon:'camera',          lbl:'Imbas Item'},
+  { id:'c-aduan',  icon:'flag',            lbl:'Aduan'     },
   { id:'c-tanya',  icon:'message-circle',  lbl:'Tanya AI'  },
 ];
 
@@ -1963,6 +2039,7 @@ function initData() {
   } else {
     renderCitizenSched();
     renderCitizenBinList();
+    updateCitizenUI();
     document.getElementById('tip-txt').textContent = TIPS[Math.floor(Math.random()*TIPS.length)];
   }
 }
@@ -2428,38 +2505,94 @@ const ADUAN_SVG = {
   'shield-alert':  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
   'wrench':        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
   'map-pin':       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  'flag':          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>'
 };
+
+let currentAduanTab = 'pending';
+
+function filterAduanTab(tab) {
+  currentAduanTab = tab;
+  document.getElementById('btn-aduan-pending')?.classList.toggle('on', tab === 'pending');
+  document.getElementById('btn-aduan-processed')?.classList.toggle('on', tab === 'processed');
+  renderAduanList();
+}
+
 function renderAduanList() {
   const el = document.getElementById('aduan-list'); if(!el) return;
-  el.innerHTML = ADUANS.map((a,i)=>{
-    const done = aduan_states[i];
-    return `<div class="aduan-card" ${done?'style="opacity:.6;"':''}>
+  
+  const pendingCount = ADUANS.filter(a => a.status === 'pending').length;
+  const processedCount = ADUANS.filter(a => a.status === 'sah' || a.status === 'batal').length;
+  
+  if (document.getElementById('cnt-pending')) document.getElementById('cnt-pending').textContent = pendingCount;
+  if (document.getElementById('cnt-processed')) document.getElementById('cnt-processed').textContent = processedCount;
+  if (document.getElementById('aduan-badge')) document.getElementById('aduan-badge').textContent = pendingCount + ' Baru';
+  
+  const filtered = ADUANS.filter(a => currentAduanTab === 'pending' ? a.status === 'pending' : (a.status === 'sah' || a.status === 'batal'));
+  
+  if (filtered.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:32px 14px;color:var(--g500);font-size:12px;">Tiada aduan dalam kategori ini.</div>`;
+    return;
+  }
+  
+  el.innerHTML = filtered.map((a, i) => {
+    const realIdx = ADUANS.indexOf(a);
+    const isSah = a.status === 'sah';
+    
+    return `<div class="aduan-card" style="margin-bottom:12px;">
       <div class="aduan-hdr">
-        <div class="aduan-icon" style="background:${a.color}22;color:${a.color};">${ADUAN_SVG[a.icon]}</div>
+        <div class="aduan-icon" style="background:${a.color}22;color:${a.color};">${ADUAN_SVG[a.icon] || ADUAN_SVG['flag']}</div>
         <div style="flex:1;min-width:0;">
           <div class="aduan-title">${a.title}</div>
           <div class="aduan-loc"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${a.loc}</div>
-          ${done?'<div style="font-size:11px;color:var(--green);font-weight:700;margin-top:2px;">Truk dihantar — ETA 15 min</div>':''}
+          ${a.desc ? `<div style="font-size:11px;color:var(--g700);margin-top:4px;">${a.desc}</div>` : ''}
         </div>
         <div class="aduan-time">${a.time}</div>
       </div>
-      <div class="aduan-acts">
-        <button class="a-btn a-pri" onclick="dispatchAduan(this,${i})" ${done?'disabled':''}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-          ${done?'Dispatched':'Dispatch Truk'}
-        </button>
-        <button class="a-btn a-sec" onclick="showToast('Dijadualkan penyelenggaraan')">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-          Penyelenggaraan
-        </button>
+      
+      ${a.photo ? `<div style="padding:0 12px 8px;"><img src="${a.photo}" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1px solid var(--g200);" alt="Foto Bukti"/></div>` : ''}
+      
+      <div class="aduan-acts" style="padding:8px 12px;border-top:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        ${a.status === 'pending' ? `
+          <button class="a-btn a-pri" style="background:var(--green);color:white;border:none;flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;" onclick="approveAduan(${realIdx})">
+            ✓ Sahkan Laporan
+          </button>
+          <button class="a-btn a-sec" style="background:var(--g200);color:var(--dark);border:none;flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;" onclick="rejectAduan(${realIdx})">
+            ✕ Batal / Tolak
+          </button>
+        ` : isSah ? `
+          <span style="font-size:11px;font-weight:700;color:var(--green);padding:4px 10px;background:var(--green-l);border-radius:12px;display:inline-flex;align-items:center;gap:4px;">
+            ✓ Disahkan
+          </span>
+          <button class="a-btn a-sec" style="font-size:11px;padding:6px 12px;border-radius:6px;" onclick="showToast('Truk compactor telah dihantar ke lokasi!')">
+            Dispatch Truk
+          </button>
+        ` : `
+          <span style="font-size:11px;font-weight:700;color:var(--g600);padding:4px 10px;background:var(--g200);border-radius:12px;">
+            ✕ Dibatalkan
+          </span>
+        `}
       </div>
     </div>`;
   }).join('');
 }
-function dispatchAduan(btn,i){
-  aduan_states[i]=true;
-  btn.textContent='✓ Dispatched'; btn.disabled=true;
-  setTimeout(()=>{showToast('Truk berjaya dihantar!');renderAduanList();},600);
+
+function approveAduan(idx) {
+  if (ADUANS[idx]) {
+    ADUANS[idx].status = 'sah';
+    myApprovedReports += 1;
+    localStorage.setItem('myApprovedReports', myApprovedReports);
+    updateCitizenUI();
+    showToast('✅ Laporan aduan telah disahkan!');
+    renderAduanList();
+  }
+}
+
+function rejectAduan(idx) {
+  if (ADUANS[idx]) {
+    ADUANS[idx].status = 'batal';
+    showToast('⚠️ Laporan aduan telah dibatalkan.');
+    renderAduanList();
+  }
 }
 
 function renderGovLB() {
@@ -2518,6 +2651,65 @@ async function saveBroadcast(msg) {
       timestamp:firebase.firestore.FieldValue.serverTimestamp(), role:'all'
     });
   } catch(e) { console.warn('[broadcast]',e); }
+}
+
+//  Citizen Aduan Report 
+let rType = 'overflow';
+function selRType(el) {
+  document.querySelectorAll('#rtype-grid .rpt-type-card').forEach(c => {
+    c.style.borderColor = 'var(--g200)';
+    c.style.background = 'var(--white)';
+  });
+  el.style.borderColor = 'var(--green)';
+  el.style.background = 'var(--green-l)';
+  rType = el.dataset.type;
+}
+function mockQR() {
+  document.getElementById('r-binid').value = 'B0' + Math.ceil(Math.random() * 5);
+  showToast('✅ Kod QR Tong berjaya diimbas!');
+}
+let currentPhotoData = '';
+function prevPhoto(inp) {
+  const f = inp.files[0]; if (!f) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    currentPhotoData = e.target.result;
+    document.getElementById('r-prev').innerHTML = `<img src="${currentPhotoData}" style="width:100%;border-radius:var(--rsm);max-height:160px;object-fit:cover;margin-top:8px;" alt="Foto laporan"/>`;
+  };
+  reader.readAsDataURL(f);
+}
+function submitRep() {
+  const binId = document.getElementById('r-binid')?.value.trim() || 'Lokasi Awam';
+  const desc = document.getElementById('r-desc')?.value.trim() || 'Laporan daripada warganegara';
+  
+  const rTypeNames = { overflow:'Tong Penuh', illegal:'Buang Haram', broken:'Tong Rosak', pothole:'Jalan Berlubang' };
+  const rTypeColors = { overflow:'var(--green)', illegal:'var(--orange)', broken:'var(--amber)', pothole:'var(--blue)' };
+  const rTypeIcons = { overflow:'alert-triangle', illegal:'shield-alert', broken:'wrench', pothole:'map-pin' };
+  
+  const newAduan = {
+    id: 'A' + (ADUANS.length + 1),
+    title: (rTypeNames[rType] || 'Aduan') + ' — ' + binId,
+    loc: binId,
+    time: 'Baru Sahaja',
+    icon: rTypeIcons[rType] || 'flag',
+    color: rTypeColors[rType] || 'var(--green)',
+    status: 'pending',
+    desc: desc,
+    photo: currentPhotoData || ''
+  };
+  
+  ADUANS.unshift(newAduan);
+  mySubmittedReports += 1;
+  localStorage.setItem('mySubmittedReports', mySubmittedReports);
+  myPoints += 10;
+  updateCitizenUI();
+  
+  showToast('🎉 Laporan aduan dihantar! (Menunggu Pengesahan)');
+  if (document.getElementById('r-binid')) document.getElementById('r-binid').value = '';
+  if (document.getElementById('r-desc')) document.getElementById('r-desc').value = '';
+  if (document.getElementById('r-prev')) document.getElementById('r-prev').innerHTML = '';
+  currentPhotoData = '';
+  showPage('c-utama');
 }
 
 //  Camera / Scan 
@@ -2617,6 +2809,24 @@ function armAct(){
   const res=document.getElementById('arm-res');
   res.style.display='none';
   toggleCam();
+}
+
+let mySubmittedReports = parseInt(localStorage.getItem('mySubmittedReports') || '12');
+let myApprovedReports  = parseInt(localStorage.getItem('myApprovedReports') || '9');
+
+function updateCitizenUI() {
+  if (document.getElementById('c-pts-big')) document.getElementById('c-pts-big').textContent = myPoints;
+  if (document.getElementById('hdr-pts-val')) document.getElementById('hdr-pts-val').textContent = myPoints;
+  const pct = Math.min(100, Math.round(myPoints / 500 * 100));
+  const tier = myPoints >= 1000 ? '🦅 Wira Selangor' : myPoints >= 500 ? '🏆 Juara Kebersihan' : '🌿 Pejuang Kebersihan';
+  const next = myPoints >= 1000 ? 'Tahniah — tahap tertinggi!' : myPoints >= 500 ? `${1000 - myPoints} mata lagi untuk Wira Selangor` : `${500 - myPoints} mata lagi untuk Juara Kebersihan`;
+  
+  if (document.getElementById('c-tier')) document.getElementById('c-tier').textContent = tier;
+  if (document.getElementById('c-pts-bar')) document.getElementById('c-pts-bar').style.width = pct + '%';
+  if (document.getElementById('c-pts-next')) document.getElementById('c-pts-next').textContent = next;
+  
+  if (document.getElementById('c-stat-reports')) document.getElementById('c-stat-reports').textContent = mySubmittedReports;
+  if (document.getElementById('c-stat-approved')) document.getElementById('c-stat-approved').textContent = myApprovedReports;
 }
 
 //  Settings 
