@@ -356,14 +356,17 @@ html,body {
 .tgl.on::after { transform:translateX(20px); }
 
 /* Font size */
-.fsc { display:flex; align-items:center; gap:6px; }
+.fsc { display:flex; align-items:center; gap:8px; }
 .fsbtn {
-  width:28px; height:28px; border-radius:7px;
-  background:var(--g100); border:1px solid var(--g200);
-  color:var(--dark); font-size:16px; cursor:pointer;
+  width:32px; height:32px; border-radius:8px;
+  background:var(--g100); border:1px solid var(--g300);
+  color:var(--dark); font-size:18px; font-weight:700; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
-  font-family:'Inter',sans-serif;
+  font-family:'Inter',sans-serif; user-select:none;
+  transition:all .15s;
 }
+.fsbtn:hover { background:var(--g200); border-color:var(--green); color:var(--green); }
+.fsbtn:active { transform:scale(0.92); }
 
 /*  NOTIF PANEL  */
 #notif-overlay { position:fixed; inset:0; z-index:150; display:none; }
@@ -683,12 +686,272 @@ html,body {
 .photo-upload:hover { border-color:var(--green); color:var(--green); }
 #photo-input { display:none; }
 
+/* ── Government Aduan Card ── */
+.gov-ac {
+  background:var(--white); border:1px solid var(--g200);
+  border-radius:14px; box-shadow:var(--sh-sm);
+  margin-bottom:12px; overflow:hidden;
+  transition:box-shadow .2s;
+}
+.gov-ac:hover { box-shadow:var(--sh-md); }
+.gov-ac-hdr {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 14px; cursor:pointer; user-select:none;
+}
+.gov-ac-thumb {
+  width:72px; height:72px; flex-shrink:0;
+  border-radius:10px; overflow:hidden;
+  border:1px solid var(--g200); position:relative;
+}
+.gov-ac-thumb img {
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+.gov-ac-thumb-placeholder {
+  width:72px; height:72px; flex-shrink:0;
+  border-radius:10px; background:var(--g100);
+  border:1px dashed var(--g300);
+  display:flex; align-items:center; justify-content:center;
+}
+.gov-ac-thumb-placeholder svg { width:24px; height:24px; stroke:var(--g400); }
+.gov-ac-info { flex:1; min-width:0; }
+.gov-ac-title { font-size:13px; font-weight:700; color:var(--dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gov-ac-loc   { font-size:11px; color:var(--g500); margin-top:2px; display:flex; align-items:center; gap:3px; }
+.gov-ac-loc svg { width:10px; height:10px; flex-shrink:0; }
+.gov-ac-dt    { font-size:10px; color:var(--g500); margin-top:4px; }
+.gov-ac-right { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0; }
+.gov-ac-status-badge {
+  font-size:10px; font-weight:700; padding:3px 8px;
+  border-radius:10px; white-space:nowrap;
+}
+.gov-ac-status-badge.pending { background:var(--amber-l); color:var(--amber); }
+.gov-ac-status-badge.sah  { background:var(--green-l); color:var(--green); }
+.gov-ac-status-badge.batal { background:#FEE2E2; color:var(--red); }
+.gov-ac-mini-btns { display:flex; gap:5px; }
+.gov-ac-mini-btns button {
+  padding:5px 10px; border:none; border-radius:7px;
+  font-family:'Inter',sans-serif; font-size:11px; font-weight:700;
+  cursor:pointer; transition:opacity .15s;
+}
+.gov-ac-mini-btns button:hover { opacity:.8; }
+.gov-ac-body {
+  display:none; border-top:1px solid var(--g100);
+  padding:14px;
+  animation:fadeIn .2s ease;
+}
+.gov-ac-body.open { display:block; }
+.gov-ac-body-inner {
+  display:flex; gap:14px; align-items:flex-start; margin-bottom:12px;
+}
+.gov-ac-img-lg {
+  width:120px; height:120px; flex-shrink:0;
+  border-radius:10px; overflow:hidden;
+  border:1px solid var(--g200); cursor:zoom-in;
+}
+.gov-ac-img-lg img { width:100%; height:100%; object-fit:cover; display:block; }
+.gov-ac-img-ph {
+  width:120px; height:120px; flex-shrink:0;
+  border-radius:10px; background:var(--g100);
+  border:1px dashed var(--g300);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+}
+.gov-ac-img-ph svg { width:26px; height:26px; stroke:var(--g400); }
+.gov-ac-img-ph span { font-size:10px; color:var(--g400); }
+.gov-ac-fields { flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+.gov-ac-field { background:var(--g50); border:1px solid var(--g200); border-radius:8px; padding:9px 11px; }
+.gov-ac-field-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--g500); margin-bottom:2px; }
+.gov-ac-field-val { font-size:12px; font-weight:600; color:var(--dark); }
+.gov-ac-desc { margin-bottom:12px; }
+.gov-ac-act-row { display:flex; gap:8px; }
+.gov-ac-act-row button {
+  flex:1; padding:10px; border:none; border-radius:9px;
+  font-family:'Inter',sans-serif; font-size:12px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;
+  transition:opacity .15s;
+}
+.gov-ac-act-row button:hover { opacity:.85; }
+.gov-ac-reviewer-box {
+  margin-top:2px; padding:10px 12px;
+  border-radius:9px; font-size:11px;
+}
+.gov-ac-reviewer-box.sah  { background:var(--green-l); border:1px solid var(--green-m); color:var(--green); }
+.gov-ac-reviewer-box.batal { background:#FEE2E2; border:1px solid #FCA5A5; color:var(--red); }
+
 /* Toast */
 .toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-10px); background:var(--dark); color:white; padding:10px 20px; border-radius:20px; font-size:13px; font-weight:600; box-shadow:var(--sh-lg); opacity:0; transition:all .3s; pointer-events:none; z-index:600; white-space:nowrap; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Photo Lightbox */
+#photo-lightbox {
+  position:fixed; inset:0; z-index:900;
+  background:rgba(0,0,0,.92);
+  display:none; align-items:center; justify-content:center;
+  animation:fadeIn .2s ease;
+}
+#photo-lightbox.open { display:flex; }
+#photo-lightbox img {
+  max-width:95vw; max-height:90vh;
+  border-radius:8px;
+  object-fit:contain;
+  cursor:zoom-out;
+  transition:transform .2s ease;
+  touch-action:pinch-zoom;
+}
+#photo-lightbox-close {
+  position:absolute; top:16px; right:16px;
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(255,255,255,.15); border:none; cursor:pointer;
+  color:white; font-size:20px; display:flex; align-items:center; justify-content:center;
+}
+
+/* Aduan tabs */
+.aduan-tab-bar {
+  display:flex; gap:0; background:var(--g100);
+  border-radius:var(--r); padding:3px; margin:0 20px 14px;
+}
+.aduan-tab-btn {
+  flex:1; padding:8px; border:none; border-radius:var(--rsm);
+  background:none; cursor:pointer;
+  font-family:'Inter',sans-serif; font-size:12px; font-weight:600; color:var(--g600);
+  transition:all .2s;
+}
+.aduan-tab-btn.on { background:var(--white); color:var(--dark); box-shadow:var(--sh-sm); }
+
+/* Aduan history card */
+.hist-card {
+  margin:0 20px 10px; background:var(--white);
+  border:1px solid var(--g200); border-radius:var(--r);
+  padding:14px; box-shadow:var(--sh-sm);
+}
+.hist-status-sah { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700; background:var(--green-l); color:var(--green); }
+.hist-status-pending { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700; background:var(--amber-l); color:var(--amber); }
+.hist-status-batal { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700; background:var(--red-l); color:var(--red); }
+
+/* Citizen history card v2 */
+.chist-card {
+  margin:0 20px 12px;
+  background:var(--white);
+  border:1px solid var(--g200);
+  border-radius:14px;
+  box-shadow:var(--sh-sm);
+  overflow:hidden;
+  transition:box-shadow .2s;
+}
+.chist-card:hover { box-shadow:var(--sh-md); }
+.chist-header {
+  display:flex; align-items:center; gap:12px;
+  padding:14px 16px; cursor:pointer;
+  user-select:none;
+}
+.chist-icon {
+  width:40px; height:40px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.chist-icon svg { width:18px; height:18px; }
+.chist-meta { flex:1; min-width:0; }
+.chist-title { font-size:13px; font-weight:700; color:var(--dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chist-sub { font-size:11px; color:var(--g500); margin-top:2px; }
+.chist-chevron { color:var(--g400); transition:transform .25s; flex-shrink:0; }
+.chist-chevron.open { transform:rotate(180deg); }
+.chist-body {
+  display:none; border-top:1px solid var(--g100);
+  padding:16px;
+}
+.chist-body.open { display:block; animation:fadeIn .2s ease; }
+.chist-img-wrap {
+  width:90px; height:90px;
+  flex-shrink:0;
+  border-radius:10px; overflow:hidden;
+  border:1px solid var(--g200);
+  cursor:zoom-in;
+  position:relative;
+}
+.chist-img-wrap img {
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+.chist-img-hint {
+  position:absolute; bottom:4px; right:4px;
+  background:rgba(0,0,0,.5); color:#fff;
+  font-size:8px; font-weight:600; padding:2px 5px; border-radius:8px;
+  pointer-events:none;
+}
+.chist-body-inner {
+  display:flex; gap:12px; align-items:flex-start;
+  margin-bottom:10px;
+}
+.chist-detail-col {
+  flex:1; min-width:0;
+}
+.chist-row { display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.chist-field {
+  flex:1; min-width:140px;
+  background:var(--g50); border:1px solid var(--g200);
+  border-radius:8px; padding:10px 12px;
+}
+.chist-field-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--g500); margin-bottom:3px; }
+.chist-field-val { font-size:12px; font-weight:600; color:var(--dark); }
+.chist-reason-box {
+  margin-top:8px; padding:12px 14px;
+  background:var(--red-l); border:1px solid #FCA5A5; border-radius:10px;
+}
+.chist-reason-box.sah {
+  background:var(--green-l); border-color:var(--green-m);
+}
+.chist-reason-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+.chist-reason-box .chist-reason-lbl { color:var(--red); }
+.chist-reason-box.sah .chist-reason-lbl { color:var(--green); }
+.chist-reason-txt { font-size:12px; line-height:1.5; color:var(--dark); }
+
+/* Rejection modal */
+#reject-modal-overlay {
+  position:fixed; inset:0; z-index:800;
+  background:rgba(0,0,0,.5); backdrop-filter:blur(4px);
+  display:none; align-items:flex-end; justify-content:center;
+}
+#reject-modal-overlay.open { display:flex; }
+#reject-modal {
+  background:var(--white); width:100%; max-width:520px;
+  border-radius:20px 20px 0 0;
+  padding:24px 20px 32px;
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+#reject-modal h3 { font-size:16px; font-weight:700; margin-bottom:4px; }
+#reject-modal p { font-size:12px; color:var(--g600); margin-bottom:16px; }
+#reject-reason-inp {
+  width:100%; background:var(--g50); border:1.5px solid var(--g200);
+  border-radius:var(--rsm); padding:11px 14px;
+  font-family:'Inter',sans-serif; font-size:13px;
+  color:var(--dark); outline:none; resize:none; min-height:80px;
+  transition:border-color .2s;
+}
+#reject-reason-inp:focus { border-color:var(--red); }
+.reject-modal-btns { display:flex; gap:10px; margin-top:14px; }
+.reject-modal-btns button { flex:1; padding:12px; border:none; border-radius:var(--r); font-family:'Inter',sans-serif; font-size:13px; font-weight:700; cursor:pointer; }
+.btn-confirm-reject { background:var(--red); color:white; }
+.btn-cancel-reject { background:var(--g100); color:var(--dark); }
 </style>
 </head>
 <body>
+
+<!-- Photo Lightbox Modal -->
+<div id="photo-lightbox" onclick="closeLightbox(event)">
+  <button id="photo-lightbox-close" onclick="closeLightbox()">&times;</button>
+  <img id="photo-lightbox-img" src="" alt="Foto Bukti"/>
+</div>
+
+<!-- Rejection Reason Modal -->
+<div id="reject-modal-overlay">
+  <div id="reject-modal">
+    <h3>Tolak / Batalkan Laporan</h3>
+    <p>Berikan sebab penolakan (pilihan) supaya warganegara boleh memperbaiki laporannya.</p>
+    <textarea id="reject-reason-inp" placeholder="cth: Gambar tidak jelas, lokasi tidak tepat, maklumat tidak mencukupi..."></textarea>
+    <div class="reject-modal-btns">
+      <button class="btn-cancel-reject" onclick="closeRejectModal()">Batal</button>
+      <button class="btn-confirm-reject" onclick="confirmRejectAduan()">Sahkan Penolakan</button>
+    </div>
+  </div>
+</div>
 
 <!--  LOGIN  -->
 <div id="login-screen">
@@ -721,9 +984,9 @@ html,body {
 
     <div class="lf-group">
       <label class="lf-label" for="c-ic">Nombor MyKad / Pengenalan</label>
-      <input class="lf-input" type="tel" id="c-ic" placeholder="cth. 950101141234 (demo: taip apa sahaja)" autocomplete="off"
-        onkeydown="if(event.key==='Enter')doLogin()"/>
-      <div class="lf-hint">Demo: taip sebarang nilai (cth. &quot;1&quot;) untuk masuk</div>
+      <input class="lf-input" type="tel" id="c-ic" placeholder="cth. 950101-10-1234" maxlength="14" autocomplete="off"
+        oninput="formatIC(this)" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <div class="lf-hint">Format MyKad: XXXXXX-XX-XXXX (12 digit)</div>
     </div>
   </div>
 
@@ -1096,74 +1359,89 @@ html,body {
 
     <!--  CITIZEN ADUAN  -->
     <div class="pg" id="pg-c-aduan">
-      <div class="sec-hdr"><div><div class="sec-title">Aduan Rakyat</div><div class="sec-sub">Lapor tong penuh, pembuangan haram atau rosak</div></div></div>
-      
-      <!-- QR Scanner Card -->
-      <div style="margin:0 20px 14px; background:var(--white); border:1px solid var(--g200); border-radius:var(--rlg); padding:18px; text-align:center; box-shadow:var(--sh-sm);">
-        <div style="width:44px;height:44px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        </div>
-        <div style="font-weight:700;font-size:14px;margin-bottom:4px;">Imbas QR Tong</div>
-        <div style="font-size:11px;color:var(--g500);margin-bottom:12px;">Imbas kod QR pada tong untuk mengisi ID automatik</div>
-        <button class="btn-primary" style="width:100%;padding:10px;" onclick="mockQR()">Imbas Kod QR Tong</button>
+      <div class="sec-hdr"><div><div class="sec-title">Aduan Rakyat</div><div class="sec-sub">Lapor & semak status aduan anda</div></div></div>
+
+      <!-- Tab Bar -->
+      <div class="aduan-tab-bar">
+        <button class="aduan-tab-btn on" id="tab-aduan-new" onclick="switchAduanTab('new')">Hantar Aduan</button>
+        <button class="aduan-tab-btn" id="tab-aduan-hist" onclick="switchAduanTab('hist')">Sejarah Aduan</button>
       </div>
 
-      <!-- Form Card -->
-      <div style="margin:0 20px 20px; background:var(--white); border:1px solid var(--g200); border-radius:var(--rlg); padding:16px; box-shadow:var(--sh-sm);">
-        <div style="font-weight:700;font-size:14px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--g200);display:flex;align-items:center;gap:6px;">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;stroke:var(--green);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Borang Laporan Aduan
+      <!-- TAB 1: New Report -->
+      <div id="aduan-tab-new">
+        <!-- QR Scanner Card -->
+        <div style="margin:0 20px 14px; background:var(--white); border:1px solid var(--g200); border-radius:var(--rlg); padding:18px; text-align:center; box-shadow:var(--sh-sm);">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">Imbas QR Tong</div>
+          <div style="font-size:11px;color:var(--g500);margin-bottom:12px;">Imbas kod QR pada tong untuk mengisi ID automatik</div>
+          <button class="btn-primary" style="width:100%;padding:10px;" onclick="mockQR()">Imbas Kod QR Tong</button>
         </div>
 
-        <div style="margin-bottom:12px;">
-          <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:4px;">ID Tong / Lokasi</label>
-          <input type="text" id="r-binid" placeholder="cth: B01 (Subang Jaya) atau nama jalan" style="width:100%;padding:10px 12px;border:1px solid var(--g200);border-radius:var(--rsm);font-size:12px;outline:none;" />
-        </div>
+        <!-- Form Card -->
+        <div style="margin:0 20px 20px; background:var(--white); border:1px solid var(--g200); border-radius:var(--rlg); padding:16px; box-shadow:var(--sh-sm);">
+          <div style="font-weight:700;font-size:14px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--g200);display:flex;align-items:center;gap:6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;stroke:var(--green);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Borang Laporan Aduan
+          </div>
 
-        <div style="margin-bottom:12px;">
-          <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:6px;">Jenis Masalah</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="rtype-grid">
-            <div class="rpt-type-card active" data-type="overflow" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--green);background:var(--green-l);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
-              <div style="color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></div>
-              <div style="font-size:12px;font-weight:600;">Tong Penuh</div>
-            </div>
-            <div class="rpt-type-card" data-type="illegal" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--g200);background:var(--white);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
-              <div style="color:var(--orange);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-              <div style="font-size:12px;font-weight:600;">Buang Haram</div>
-            </div>
-            <div class="rpt-type-card" data-type="broken" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--g200);background:var(--white);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
-              <div style="color:var(--amber);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-              <div style="font-size:12px;font-weight:600;">Tong Rosak</div>
-            </div>
-            <div class="rpt-type-card" data-type="pothole" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--g200);background:var(--white);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
-              <div style="color:var(--blue);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-              <div style="font-size:12px;font-weight:600;">Jalan Berlubang</div>
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:4px;">ID Tong / Lokasi</label>
+            <input type="text" id="r-binid" placeholder="cth: B01 (Subang Jaya) atau nama jalan" style="width:100%;padding:10px 12px;border:1px solid var(--g200);border-radius:var(--rsm);font-size:12px;outline:none;" />
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:6px;">Jenis Masalah</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="rtype-grid">
+              <div class="rpt-type-card active" data-type="overflow" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--green);background:var(--green-l);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
+                <div style="color:var(--green);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></div>
+                <div style="font-size:12px;font-weight:600;">Tong Penuh</div>
+              </div>
+              <div class="rpt-type-card" data-type="illegal" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--g200);background:var(--white);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
+                <div style="color:var(--orange);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+                <div style="font-size:12px;font-weight:600;">Buang Haram</div>
+              </div>
+              <div class="rpt-type-card" data-type="broken" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--g200);background:var(--white);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
+                <div style="color:var(--amber);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+                <div style="font-size:12px;font-weight:600;">Tong Rosak</div>
+              </div>
+              <div class="rpt-type-card" data-type="pothole" onclick="selRType(this)" style="padding:10px;border:1.5px solid var(--g200);background:var(--white);border-radius:var(--rsm);cursor:pointer;display:flex;align-items:center;gap:8px;">
+                <div style="color:var(--blue);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+                <div style="font-size:12px;font-weight:600;">Jalan Berlubang</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div style="margin-bottom:12px;">
-          <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:4px;">Keterangan Laporan</label>
-          <textarea id="r-desc" rows="3" placeholder="Terangkan situasi dengan jelas..." style="width:100%;padding:10px 12px;border:1px solid var(--g200);border-radius:var(--rsm);font-size:12px;font-family:inherit;outline:none;resize:vertical;"></textarea>
-        </div>
-
-        <div style="margin-bottom:16px;">
-          <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:4px;">Foto Bukti (Pilihan)</label>
-          <div style="border:2px dashed var(--green-m);border-radius:var(--rsm);padding:14px;text-align:center;cursor:pointer;background:var(--green-l);" onclick="document.getElementById('r-photo').click()">
-            <div style="font-size:12px;font-weight:600;color:var(--green);display:flex;align-items:center;justify-content:center;gap:6px;">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              Ambil / Pilih Foto Bukti
-            </div>
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:4px;">Keterangan Laporan</label>
+            <textarea id="r-desc" rows="3" placeholder="Terangkan situasi dengan jelas..." style="width:100%;padding:10px 12px;border:1px solid var(--g200);border-radius:var(--rsm);font-size:12px;font-family:inherit;outline:none;resize:vertical;"></textarea>
           </div>
-          <input type="file" id="r-photo" accept="image/*" capture="environment" style="display:none" onchange="prevPhoto(this)" />
-          <div id="r-prev"></div>
-        </div>
 
-        <button class="btn-primary" style="width:100%;padding:12px;font-size:13px;" onclick="submitRep()">
-          Hantar Laporan (+10 Mata)
-        </button>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--g700);margin-bottom:4px;">Foto Bukti (Pilihan)</label>
+            <div style="border:2px dashed var(--green-m);border-radius:var(--rsm);padding:14px;text-align:center;cursor:pointer;background:var(--green-l);" onclick="document.getElementById('r-photo').click()">
+              <div style="font-size:12px;font-weight:600;color:var(--green);display:flex;align-items:center;justify-content:center;gap:6px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                Ambil / Pilih Foto Bukti
+              </div>
+            </div>
+            <input type="file" id="r-photo" accept="image/*" capture="environment" style="display:none" onchange="prevPhoto(this)" />
+            <div id="r-prev"></div>
+          </div>
+
+          <button class="btn-primary" style="width:100%;padding:12px;font-size:13px;" onclick="submitRep()">
+            Hantar Laporan (+10 Mata)
+          </button>
+        </div>
+      </div><!-- end tab-aduan-new -->
+
+      <!-- TAB 2: History -->
+      <div id="aduan-tab-hist" style="display:none;">
+        <div id="citizen-hist-list" style="padding-bottom:20px;"></div>
       </div>
-    </div>
+
+    </div><!-- end pg-c-aduan -->
 
     <!--  CITIZEN TANYA AI  -->
     <div class="pg" id="pg-c-tanya">
@@ -1218,13 +1496,7 @@ html,body {
         <button class="tgl" id="tgl-notif" onclick="togglePushNotif()"></button>
       </div>
       <div class="sp-section">Kebolehaksesan</div>
-      <div class="sp-item">
-        <div class="sp-item-left">
-          <div class="sp-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
-          <div><div class="sp-item-lbl">Suara (Voice-Over)</div><div class="sp-item-sub">Baca teks halaman</div></div>
-        </div>
-        <button class="tgl" id="tgl-voice" onclick="toggleVoice()"></button>
-      </div>
+
       <div class="sp-item">
         <div class="sp-item-left">
           <div class="sp-item-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></div>
@@ -1238,8 +1510,8 @@ html,body {
           <div><div class="sp-item-lbl">Saiz Teks <span id="fs-val" style="color:var(--green);">100</span>%</div><div class="sp-item-sub">Laraskan saiz teks</div></div>
         </div>
         <div class="fsc">
-          <button class="fsbtn" onclick="chgFont(-1)"></button>
-          <button class="fsbtn" onclick="chgFont(1)">+</button>
+          <button class="fsbtn" onclick="chgFont(-1)" title="Kecilkan teks">-</button>
+          <button class="fsbtn" onclick="chgFont(1)" title="Besarkan teks">+</button>
         </div>
       </div>
       <div class="sp-section">Perihal</div>
@@ -1790,10 +2062,10 @@ const CHAMPIONS = [
   { name:'Nurul Fadhilah',zone:'Shah Alam', pts:398 },
 ];
 const ADUANS = [
-  { id:'A01', title:'Tong B03 — Limpah Penuh',       loc:'Dataran Sunway, PJS 11',  time:'9:42 PM', icon:'alert-triangle', color:'var(--red)',    status:'pending', desc:'Tong melimpah teruk, sisa organik membusuk di luar.', photo:'' },
-  { id:'A02', title:'Pembuangan Haram — Tayar Lama', loc:'Jalan Industri USJ',       time:'8:15 PM', icon:'shield-alert',   color:'var(--orange)', status:'pending', desc:'Timbunan tayar terpakai dibuang di bahu jalan.', photo:'' },
-  { id:'A03', title:'Tong B04 — Pecah / Rosak',      loc:'Taman Jaya Park, PJ',      time:'7:30 PM', icon:'wrench',         color:'var(--amber)',  status:'sah',     desc:'Penutup tong rosak dan engsel patah.', photo:'' },
-  { id:'A04', title:'Jalan Berlubang',               loc:'Jalan SS19, Subang',        time:'6:55 PM', icon:'map-pin',        color:'var(--blue)',   status:'sah',     desc:'Lubang dalam membahayakan penunggang motosikal.', photo:'' },
+  { id:'A01', title:'Tong B03 — Limpah Penuh',       loc:'Dataran Sunway, PJS 11',  time:'9:42 PM', date:'21/07/2026', icon:'alert-triangle', color:'var(--red)',    status:'pending', desc:'Tong melimpah teruk, sisa organik membusuk di luar.', photo:'' },
+  { id:'A02', title:'Pembuangan Haram — Tayar Lama', loc:'Jalan Industri USJ',       time:'8:15 PM', date:'21/07/2026', icon:'shield-alert',   color:'var(--orange)', status:'pending', desc:'Timbunan tayar terpakai dibuang di bahu jalan.', photo:'' },
+  { id:'A03', title:'Tong B04 — Pecah / Rosak',      loc:'Taman Jaya Park, PJ',      time:'7:30 PM', date:'20/07/2026', icon:'wrench',         color:'var(--amber)',  status:'sah',     desc:'Penutup tong rosak dan engsel patah.', photo:'' },
+  { id:'A04', title:'Jalan Berlubang',               loc:'Jalan SS19, Subang',        time:'6:55 PM', date:'20/07/2026', icon:'map-pin',        color:'var(--blue)',   status:'sah',     desc:'Lubang dalam membahayakan penunggang motosikal.', photo:'' },
 ];
 const SCHEDULE = [
   { binId:'B03', loc:'Dataran Sunway', pri:'KRITIKAL', eta:'14 min',  cls:'pc-red'    },
@@ -1872,10 +2144,44 @@ function setRole(r) {
   document.getElementById('lf-gov').style.display     = r === 'gov'     ? 'block' : 'none';
 }
 
-function myDigitalLogin() {
-  // Simulate MyDigital ID — auto-fill and proceed
-  document.getElementById('c-ic').value = 'MYDIGID-' + Math.floor(Math.random()*900000+100000);
-  doLogin();
+function formatIC(input) {
+  let digits = input.value.replace(/\D/g, '').slice(0, 12);
+  let res = digits;
+  if (digits.length > 6) {
+    res = digits.slice(0, 6) + '-' + digits.slice(6);
+  }
+  if (digits.length > 8) {
+    res = digits.slice(0, 6) + '-' + digits.slice(6, 8) + '-' + digits.slice(8);
+  }
+  input.value = res;
+}
+
+async function myDigitalLogin() {
+  role = 'citizen';
+  userName = 'Warganegara (MyDigital ID)';
+  userIC = 'MYDIGID-USER';
+  
+  const err = document.getElementById('lf-err');
+  if (err) err.style.display = 'none';
+
+  const icHash = 'MYDIGID-USER-SESSION';
+  localStorage.setItem('session_ic_hash', icHash);
+  localStorage.setItem('session_role', 'citizen');
+
+  try {
+    const snap = await db.collection('sessions').doc(icHash).get();
+    if (snap.exists && snap.data().points) {
+      myPoints = snap.data().points;
+      updateCitizenUI();
+    }
+    await db.collection('sessions').doc(icHash).set({
+      ic_hash: icHash, role: 'citizen', login_method: 'mydigital_id',
+      last_login: firebase.firestore.FieldValue.serverTimestamp(),
+      points: myPoints, active: true
+    }, { merge: true });
+  } catch(e) {}
+
+  launchApp();
 }
 
 async function doLogin() {
@@ -1883,10 +2189,18 @@ async function doLogin() {
   err.style.display = 'none';
 
   if (role === 'citizen') {
-    const ic = document.getElementById('c-ic').value.trim();
+    let ic = document.getElementById('c-ic').value.trim();
     if (!ic) { err.textContent = 'Sila masukkan nombor IC atau gunakan MyDigital ID.'; err.style.display = 'block'; return; }
+    
+    // Auto-format IC if user typed 12 digits without dashes
+    const cleanDigits = ic.replace(/\D/g, '');
+    if (cleanDigits.length === 12 && !ic.includes('-')) {
+      ic = cleanDigits.slice(0, 6) + '-' + cleanDigits.slice(6, 8) + '-' + cleanDigits.slice(8);
+      document.getElementById('c-ic').value = ic;
+    }
+    
     userName = 'Warganegara'; userIC = ic;
-    // Fire-and-forget: save session, restore points — never block login
+    
     (async () => {
       try {
         const icHash = await hashStr(ic);
@@ -1903,18 +2217,18 @@ async function doLogin() {
           points: myPoints, active: true
         }, { merge: true });
       } catch(e) {
-        // Store hash locally even without Firebase
         const simpleHash = btoa(ic).slice(0,16).replace(/=/g,'');
         localStorage.setItem('session_ic_hash', simpleHash);
         localStorage.setItem('session_role', 'citizen');
-        console.warn('[Session] Firebase unavailable, using local session:', e.message);
       }
     })();
   } else {
     const sid = document.getElementById('g-id').value.trim();
     if (!sid) { err.textContent = 'Sila masukkan Staff ID.'; err.style.display = 'block'; return; }
-    userName = 'Pegawai KDEBWM'; userIC = sid;
-    // Fire-and-forget gov session
+    
+    const dept = document.getElementById('g-dept').value;
+    userName = (dept ? dept : 'Pegawai KDEBWM') + ' (ID: ' + sid + ')';
+    userIC = sid;
     (async () => {
       try {
         localStorage.setItem('session_ic_hash', 'gov_' + btoa(sid).slice(0,10));
@@ -1927,12 +2241,10 @@ async function doLogin() {
       } catch(e) {
         localStorage.setItem('session_ic_hash', 'gov_' + btoa(sid).slice(0,10));
         localStorage.setItem('session_role', 'gov');
-        console.warn('[Session] Firebase unavailable:', e.message);
       }
     })();
   }
 
-  // Always launch app immediately — never wait for Firebase
   launchApp();
 }
 
@@ -2500,6 +2812,130 @@ function initCitizenMap() {
 }
 
 //  Aduan & LB 
+// Image Lightbox
+function openLightbox(src) {
+  document.getElementById('photo-lightbox-img').src = src;
+  document.getElementById('photo-lightbox').classList.add('open');
+}
+function closeLightbox(e) {
+  if (!e || e.target === document.getElementById('photo-lightbox') || e.target.id === 'photo-lightbox-close') {
+    document.getElementById('photo-lightbox').classList.remove('open');
+    document.getElementById('photo-lightbox-img').src = '';
+  }
+}
+
+// Citizen Aduan Tab Switcher
+let currentCitizenAduanTab = 'new';
+function switchAduanTab(tab) {
+  currentCitizenAduanTab = tab;
+  document.getElementById('tab-aduan-new').classList.toggle('on', tab === 'new');
+  document.getElementById('tab-aduan-hist').classList.toggle('on', tab === 'hist');
+  document.getElementById('aduan-tab-new').style.display = tab === 'new' ? 'block' : 'none';
+  document.getElementById('aduan-tab-hist').style.display = tab === 'hist' ? 'block' : 'none';
+  if (tab === 'hist') renderCitizenHistory();
+}
+
+function getCitizenSessionKey() {
+  // MyDigital login stores as MYDIGID-{number}, IC login stores as hash
+  return localStorage.getItem('session_ic_hash') || 'anonymous';
+}
+
+function toggleHistCard(id) {
+  const body = document.getElementById('chist-body-' + id);
+  const chev = document.getElementById('chist-chev-' + id);
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  chev.classList.toggle('open', isOpen);
+}
+
+function renderCitizenHistory() {
+  const el = document.getElementById('citizen-hist-list'); if (!el) return;
+  const key = getCitizenSessionKey();
+  const myAduans = ADUANS.filter(a => a.submittedBy === key);
+
+  if (myAduans.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--g500);">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:44px;height:44px;margin:0 auto 14px;display:block;stroke:var(--g300);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px;color:var(--dark);">Tiada Sejarah Aduan</div>
+      <div style="font-size:12px;color:var(--g500);">Aduan yang anda hantar akan muncul di sini setelah dihantar.</div>
+    </div>`;
+    return;
+  }
+
+  const iconColors = { overflow:'var(--green)', illegal:'var(--orange)', broken:'var(--amber)', pothole:'var(--blue)', flag:'var(--purple)' };
+  const statusConfig = {
+    sah:     { badge:'<span class="hist-status-sah">✓ Disahkan</span>', dot:'var(--green)' },
+    batal:   { badge:'<span class="hist-status-batal">✕ Ditolak</span>',  dot:'var(--red)' },
+    pending: { badge:'<span class="hist-status-pending">⏳ Menunggu</span>', dot:'var(--amber)' }
+  };
+
+  el.innerHTML = myAduans.map((a, i) => {
+    const sc = statusConfig[a.status] || statusConfig.pending;
+    const cardId = 'hist-' + i;
+    const iconBg = (iconColors[a.icon] || 'var(--green)') + '18';
+    const iconClr = iconColors[a.icon] || 'var(--green)';
+    const reviewer = a.reviewedBy || 'Pegawai KDEBWM';
+    const reviewTime = a.reviewedAt || '–';
+    const aduanType = a.icon === 'alert-triangle' ? 'Tong Penuh' : a.icon === 'shield-alert' ? 'Buang Haram' : a.icon === 'wrench' ? 'Tong Rosak' : a.icon === 'map-pin' ? 'Jalan Berlubang' : 'Aduan Umum';
+
+    const imgBlock = a.photo ? `
+        <div class="chist-img-wrap" onclick="openLightbox('${a.photo}')">
+          <img src="${a.photo}" alt="Foto Bukti"/>
+          <div class="chist-img-hint">Zum</div>
+        </div>` : `<div style="width:90px;height:90px;flex-shrink:0;border-radius:10px;background:var(--g100);border:1px dashed var(--g300);display:flex;align-items:center;justify-content:center;"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' style='width:22px;height:22px;stroke:var(--g400);'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg></div>`;
+
+    return `
+    <div class="chist-card">
+      <div class="chist-header" onclick="toggleHistCard('${cardId}')">
+        <div class="chist-icon" style="background:${iconBg};">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${iconClr}" stroke-width="2">${ADUAN_SVG[a.icon] ? ADUAN_SVG[a.icon].replace(/<svg[^>]*>/,'').replace('</svg>','') : '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>'}</svg>
+        </div>
+        <div class="chist-meta">
+          <div class="chist-title">${a.title}</div>
+          <div class="chist-sub">${a.loc} &nbsp;·&nbsp; ${a.time}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${sc.badge}
+          <svg id="chist-chev-${cardId}" class="chist-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <div class="chist-body" id="chist-body-${cardId}">
+        <div class="chist-body-inner">
+          ${imgBlock}
+          <div class="chist-detail-col">
+            <div style="margin-bottom:6px;">
+              <div class="chist-field-lbl">Lokasi / ID Tong</div>
+              <div class="chist-field-val">${a.loc}</div>
+            </div>
+            <div style="margin-bottom:6px;">
+              <div class="chist-field-lbl">Jenis Aduan</div>
+              <div class="chist-field-val">${aduanType}</div>
+            </div>
+            <div style="margin-bottom:6px;">
+              <div class="chist-field-lbl">Masa Dihantar</div>
+              <div class="chist-field-val">${a.time}</div>
+            </div>
+            <div>
+              <div class="chist-field-lbl">Disemak Oleh</div>
+              <div class="chist-field-val">${a.status !== 'pending' ? reviewer : '–'}</div>
+            </div>
+          </div>
+        </div>
+
+        ${a.desc ? `<div class="chist-field" style="margin-bottom:10px;"><div class="chist-field-lbl">Keterangan</div><div class="chist-field-val" style="font-weight:400;line-height:1.6;">${a.desc}</div></div>` : ''}
+
+        ${a.status === 'sah' ? `<div class="chist-reason-box sah"><div class="chist-reason-lbl">Maklum Balas Pihak Berkuasa</div><div class="chist-reason-txt">✓ Laporan anda telah disahkan oleh <strong>${reviewer}</strong> pada ${reviewTime}. Tindakan pengurusan sisa sedang diambil. Terima kasih!</div></div>` : ''}
+
+        ${a.status === 'batal' ? `<div class="chist-reason-box"><div class="chist-reason-lbl">Sebab Penolakan</div><div class="chist-reason-txt">${a.rejectReason || '✕ Laporan tidak dapat diproses. Sila hantar semula.'}</div><div style="margin-top:6px;font-size:10px;color:var(--red);font-weight:600;">Disemak: ${reviewer} · ${reviewTime}</div></div>` : ''}
+
+        ${a.status === 'pending' ? `<div style="padding:10px 12px;background:var(--amber-l);border-radius:8px;font-size:11px;color:var(--amber);font-weight:600;">⏳ Laporan sedang menunggu semakan. Kami akan maklumkan status terkini.</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Updated approveAduan — increments the citizen's "Disahkan" counter if the aduan belongs to current session
 const ADUAN_SVG = {
   'alert-triangle':'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
   'shield-alert':  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
@@ -2517,60 +2953,130 @@ function filterAduanTab(tab) {
   renderAduanList();
 }
 
+function toggleGovAduanCard(id) {
+  const body = document.getElementById('gov-ac-body-' + id);
+  if (!body) return;
+  body.classList.toggle('open');
+}
+
 function renderAduanList() {
   const el = document.getElementById('aduan-list'); if(!el) return;
-  
-  const pendingCount = ADUANS.filter(a => a.status === 'pending').length;
+
+  const pendingCount   = ADUANS.filter(a => a.status === 'pending').length;
   const processedCount = ADUANS.filter(a => a.status === 'sah' || a.status === 'batal').length;
-  
-  if (document.getElementById('cnt-pending')) document.getElementById('cnt-pending').textContent = pendingCount;
+
+  if (document.getElementById('cnt-pending'))   document.getElementById('cnt-pending').textContent   = pendingCount;
   if (document.getElementById('cnt-processed')) document.getElementById('cnt-processed').textContent = processedCount;
-  if (document.getElementById('aduan-badge')) document.getElementById('aduan-badge').textContent = pendingCount + ' Baru';
-  
-  const filtered = ADUANS.filter(a => currentAduanTab === 'pending' ? a.status === 'pending' : (a.status === 'sah' || a.status === 'batal'));
-  
+  if (document.getElementById('aduan-badge'))   document.getElementById('aduan-badge').textContent   = pendingCount + ' Baru';
+
+  // Filter + newest first
+  const filtered = ADUANS
+    .filter(a => currentAduanTab === 'pending' ? a.status === 'pending' : (a.status === 'sah' || a.status === 'batal'))
+    .slice().reverse();
+
   if (filtered.length === 0) {
-    el.innerHTML = `<div style="text-align:center;padding:32px 14px;color:var(--g500);font-size:12px;">Tiada aduan dalam kategori ini.</div>`;
+    el.innerHTML = `<div style="text-align:center;padding:40px 14px;color:var(--g500);font-size:12px;">Tiada aduan dalam kategori ini.</div>`;
     return;
   }
-  
-  el.innerHTML = filtered.map((a, i) => {
-    const realIdx = ADUANS.indexOf(a);
-    const isSah = a.status === 'sah';
-    
-    return `<div class="aduan-card" style="margin-bottom:12px;">
-      <div class="aduan-hdr">
-        <div class="aduan-icon" style="background:${a.color}22;color:${a.color};">${ADUAN_SVG[a.icon] || ADUAN_SVG['flag']}</div>
-        <div style="flex:1;min-width:0;">
-          <div class="aduan-title">${a.title}</div>
-          <div class="aduan-loc"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${a.loc}</div>
-          ${a.desc ? `<div style="font-size:11px;color:var(--g700);margin-top:4px;">${a.desc}</div>` : ''}
+
+  el.innerHTML = filtered.map((a) => {
+    const realIdx  = ADUANS.indexOf(a);
+    const cardId   = 'gac-' + realIdx;
+    const isPend   = a.status === 'pending';
+    const isSah    = a.status === 'sah';
+    const datetime = (a.date ? a.date + ', ' : '') + a.time;
+    const reviewer = a.reviewedBy || '—';
+    const aduanType= a.icon === 'alert-triangle' ? 'Tong Penuh' : a.icon === 'shield-alert' ? 'Buang Haram' : a.icon === 'wrench' ? 'Tong Rosak' : a.icon === 'map-pin' ? 'Jalan Berlubang' : 'Aduan Umum';
+
+    const statusBadge = isPend
+      ? `<span class="gov-ac-status-badge pending">⏳ Menunggu</span>`
+      : isSah
+        ? `<span class="gov-ac-status-badge sah">✓ Disahkan</span>`
+        : `<span class="gov-ac-status-badge batal">✕ Ditolak</span>`;
+
+    // Mini action buttons shown on card header (pending only)
+    const miniActs = isPend ? `
+      <div class="gov-ac-mini-btns">
+        <button style="background:var(--green);color:white;" onclick="event.stopPropagation();approveAduan(${realIdx})">✓ Lulus</button>
+        <button style="background:var(--g200);color:var(--dark);" onclick="event.stopPropagation();rejectAduan(${realIdx})">✕ Batal</button>
+      </div>` : '';
+
+    // Thumbnail (small square on header)
+    const thumb = a.photo
+      ? `<div class="gov-ac-thumb"><img src="${a.photo}" alt=""/></div>`
+      : `<div class="gov-ac-thumb-placeholder"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`;
+
+    // Large image in body
+    const bodyImg = a.photo
+      ? `<div class="gov-ac-img-lg" onclick="openLightbox('${a.photo}')"><img src="${a.photo}" alt="Foto Bukti"/></div>`
+      : `<div class="gov-ac-img-ph"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Tiada foto</span></div>`;
+
+    // Body action buttons (pending only)
+    const bodyActs = isPend ? `
+      <div class="gov-ac-act-row">
+        <button style="background:var(--green);color:white;" onclick="approveAduan(${realIdx})">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>
+          Sahkan / Lulus
+        </button>
+        <button style="background:#FEE2E2;color:var(--red);" onclick="rejectAduan(${realIdx})">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Tolak / Batal
+        </button>
+      </div>` : '';
+
+    // Reviewer info box for processed items
+    const reviewerBox = !isPend ? `
+      <div class="gov-ac-reviewer-box ${a.status}">
+        <strong>${isSah ? '✓ Laporan Disahkan' : '✕ Laporan Ditolak'}</strong><br/>
+        Disemak oleh: ${reviewer}${a.reviewedAt ? ' · ' + a.reviewedAt : ''}
+        ${a.rejectReason ? '<br/>Sebab: ' + a.rejectReason : ''}
+      </div>` : '';
+
+    return `
+    <div class="gov-ac" id="gov-ac-${realIdx}">
+      <!-- Card Header (always visible) -->
+      <div class="gov-ac-hdr" onclick="toggleGovAduanCard('${cardId}')">
+        ${thumb}
+        <div class="gov-ac-info">
+          <div class="gov-ac-title">${a.title}</div>
+          <div class="gov-ac-loc">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${a.loc}
+          </div>
+          <div class="gov-ac-dt">${datetime}</div>
         </div>
-        <div class="aduan-time">${a.time}</div>
+        <div class="gov-ac-right">
+          ${statusBadge}
+          ${miniActs}
+        </div>
       </div>
-      
-      ${a.photo ? `<div style="padding:0 12px 8px;"><img src="${a.photo}" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1px solid var(--g200);" alt="Foto Bukti"/></div>` : ''}
-      
-      <div class="aduan-acts" style="padding:8px 12px;border-top:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;gap:8px;">
-        ${a.status === 'pending' ? `
-          <button class="a-btn a-pri" style="background:var(--green);color:white;border:none;flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;" onclick="approveAduan(${realIdx})">
-            ✓ Sahkan Laporan
-          </button>
-          <button class="a-btn a-sec" style="background:var(--g200);color:var(--dark);border:none;flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;" onclick="rejectAduan(${realIdx})">
-            ✕ Batal / Tolak
-          </button>
-        ` : isSah ? `
-          <span style="font-size:11px;font-weight:700;color:var(--green);padding:4px 10px;background:var(--green-l);border-radius:12px;display:inline-flex;align-items:center;gap:4px;">
-            ✓ Disahkan
-          </span>
-          <button class="a-btn a-sec" style="font-size:11px;padding:6px 12px;border-radius:6px;" onclick="showToast('Truk compactor telah dihantar ke lokasi!')">
-            Dispatch Truk
-          </button>
-        ` : `
-          <span style="font-size:11px;font-weight:700;color:var(--g600);padding:4px 10px;background:var(--g200);border-radius:12px;">
-            ✕ Dibatalkan
-          </span>
-        `}
+
+      <!-- Expanded Body -->
+      <div class="gov-ac-body" id="gov-ac-body-${cardId}">
+        <div class="gov-ac-body-inner">
+          ${bodyImg}
+          <div class="gov-ac-fields">
+            <div class="gov-ac-field">
+              <div class="gov-ac-field-lbl">Jenis Aduan</div>
+              <div class="gov-ac-field-val">${aduanType}</div>
+            </div>
+            <div class="gov-ac-field">
+              <div class="gov-ac-field-lbl">Lokasi</div>
+              <div class="gov-ac-field-val">${a.loc}</div>
+            </div>
+            <div class="gov-ac-field">
+              <div class="gov-ac-field-lbl">Tarikh &amp; Masa</div>
+              <div class="gov-ac-field-val">${datetime}</div>
+            </div>
+            <div class="gov-ac-field">
+              <div class="gov-ac-field-lbl">Pengirim</div>
+              <div class="gov-ac-field-val">${a.submittedBy ? 'Warganegara' : 'Demo'}</div>
+            </div>
+          </div>
+        </div>
+        ${a.desc ? `<div class="gov-ac-desc"><div class="gov-ac-field"><div class="gov-ac-field-lbl">Keterangan</div><div class="gov-ac-field-val" style="font-weight:400;line-height:1.6;">${a.desc}</div></div></div>` : ''}
+        ${bodyActs}
+        ${reviewerBox}
       </div>
     </div>`;
   }).join('');
@@ -2578,21 +3084,53 @@ function renderAduanList() {
 
 function approveAduan(idx) {
   if (ADUANS[idx]) {
+    const reviewer = userName || 'Pegawai KDEBWM';
+    const now = new Date().toLocaleString('ms-MY', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
     ADUANS[idx].status = 'sah';
-    myApprovedReports += 1;
-    localStorage.setItem('myApprovedReports', myApprovedReports);
+    ADUANS[idx].reviewedBy = reviewer;
+    ADUANS[idx].reviewedAt = now;
+    if (ADUANS[idx].submittedBy) {
+      myApprovedReports += 1;
+      localStorage.setItem('myApprovedReports', myApprovedReports);
+    }
     updateCitizenUI();
     showToast('✅ Laporan aduan telah disahkan!');
     renderAduanList();
+    const histTab = document.getElementById('aduan-tab-hist');
+    if (histTab && histTab.style.display !== 'none') renderCitizenHistory();
   }
 }
 
+let _rejectIdx = -1;
 function rejectAduan(idx) {
-  if (ADUANS[idx]) {
-    ADUANS[idx].status = 'batal';
-    showToast('⚠️ Laporan aduan telah dibatalkan.');
-    renderAduanList();
+  _rejectIdx = idx;
+  const inp = document.getElementById('reject-reason-inp');
+  if (inp) inp.value = '';
+  document.getElementById('reject-modal-overlay').classList.add('open');
+}
+function closeRejectModal() {
+  document.getElementById('reject-modal-overlay').classList.remove('open');
+  _rejectIdx = -1;
+}
+function confirmRejectAduan() {
+  if (_rejectIdx < 0 || !ADUANS[_rejectIdx]) return;
+  const reason = document.getElementById('reject-reason-inp')?.value.trim() || '';
+  const reviewer = userName || 'Pegawai KDEBWM';
+  const now = new Date().toLocaleString('ms-MY', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+  ADUANS[_rejectIdx].status = 'batal';
+  ADUANS[_rejectIdx].rejectReason = reason || 'Tiada sebab diberikan.';
+  ADUANS[_rejectIdx].reviewedBy = reviewer;
+  ADUANS[_rejectIdx].reviewedAt = now;
+  if (ADUANS[_rejectIdx].submittedBy) {
+    myPoints = Math.max(0, myPoints - 10);
+    localStorage.setItem('myPoints', myPoints);
+    updateCitizenUI();
   }
+  closeRejectModal();
+  showToast('⚠️ Laporan aduan telah ditolak. (-10 mata)');
+  renderAduanList();
+  const histTab = document.getElementById('aduan-tab-hist');
+  if (histTab && histTab.style.display !== 'none') renderCitizenHistory();
 }
 
 function renderGovLB() {
@@ -2674,7 +3212,7 @@ function prevPhoto(inp) {
   const reader = new FileReader();
   reader.onload = function(e) {
     currentPhotoData = e.target.result;
-    document.getElementById('r-prev').innerHTML = `<img src="${currentPhotoData}" style="width:100%;border-radius:var(--rsm);max-height:160px;object-fit:cover;margin-top:8px;" alt="Foto laporan"/>`;
+    document.getElementById('r-prev').innerHTML = `<img src="${currentPhotoData}" onclick="openLightbox('${currentPhotoData}')" style="width:100%;border-radius:var(--rsm);max-height:160px;object-fit:cover;margin-top:8px;cursor:zoom-in;" alt="Foto laporan"/>`;
   };
   reader.readAsDataURL(f);
 }
@@ -2686,16 +3224,24 @@ function submitRep() {
   const rTypeColors = { overflow:'var(--green)', illegal:'var(--orange)', broken:'var(--amber)', pothole:'var(--blue)' };
   const rTypeIcons = { overflow:'alert-triangle', illegal:'shield-alert', broken:'wrench', pothole:'map-pin' };
   
+  const sessionKey = getCitizenSessionKey();
+  
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ms-MY', {day:'2-digit', month:'2-digit', year:'numeric'});
+  const timeStr = now.toLocaleTimeString('ms-MY', {hour:'2-digit', minute:'2-digit'});
+
   const newAduan = {
     id: 'A' + (ADUANS.length + 1),
     title: (rTypeNames[rType] || 'Aduan') + ' — ' + binId,
     loc: binId,
-    time: 'Baru Sahaja',
+    time: timeStr,
+    date: dateStr,
     icon: rTypeIcons[rType] || 'flag',
     color: rTypeColors[rType] || 'var(--green)',
     status: 'pending',
     desc: desc,
-    photo: currentPhotoData || ''
+    photo: currentPhotoData || '',
+    submittedBy: sessionKey
   };
   
   ADUANS.unshift(newAduan);
@@ -2704,7 +3250,7 @@ function submitRep() {
   myPoints += 10;
   updateCitizenUI();
   
-  showToast('🎉 Laporan aduan dihantar! (Menunggu Pengesahan)');
+  showToast('🎉 Laporan dihantar! (+10 Mata) — Menunggu Pengesahan');
   if (document.getElementById('r-binid')) document.getElementById('r-binid').value = '';
   if (document.getElementById('r-desc')) document.getElementById('r-desc').value = '';
   if (document.getElementById('r-prev')) document.getElementById('r-prev').innerHTML = '';
@@ -2811,15 +3357,19 @@ function armAct(){
   toggleCam();
 }
 
+myPoints = parseInt(localStorage.getItem('myPoints') || '240');
 let mySubmittedReports = parseInt(localStorage.getItem('mySubmittedReports') || '12');
 let myApprovedReports  = parseInt(localStorage.getItem('myApprovedReports') || '9');
 
 function updateCitizenUI() {
+  // Persist myPoints
+  localStorage.setItem('myPoints', myPoints);
+  
   if (document.getElementById('c-pts-big')) document.getElementById('c-pts-big').textContent = myPoints;
   if (document.getElementById('hdr-pts-val')) document.getElementById('hdr-pts-val').textContent = myPoints;
   const pct = Math.min(100, Math.round(myPoints / 500 * 100));
-  const tier = myPoints >= 1000 ? '🦅 Wira Selangor' : myPoints >= 500 ? '🏆 Juara Kebersihan' : '🌿 Pejuang Kebersihan';
-  const next = myPoints >= 1000 ? 'Tahniah — tahap tertinggi!' : myPoints >= 500 ? `${1000 - myPoints} mata lagi untuk Wira Selangor` : `${500 - myPoints} mata lagi untuk Juara Kebersihan`;
+  const tier = myPoints >= 1000 ? '\ud83e\udda5 Wira Selangor' : myPoints >= 500 ? '\ud83c\udfc6 Juara Kebersihan' : '\ud83c\udf3f Pejuang Kebersihan';
+  const next = myPoints >= 1000 ? 'Tahniah \u2014 tahap tertinggi!' : myPoints >= 500 ? `${1000 - myPoints} mata lagi untuk Wira Selangor` : `${500 - myPoints} mata lagi untuk Juara Kebersihan`;
   
   if (document.getElementById('c-tier')) document.getElementById('c-tier').textContent = tier;
   if (document.getElementById('c-pts-bar')) document.getElementById('c-pts-bar').style.width = pct + '%';
@@ -2836,7 +3386,14 @@ function settingsOverlayClick(e) { if(e.target===document.getElementById('settin
 
 function toggleVoice()  { voiceOn=!voiceOn; document.getElementById('tgl-voice').classList.toggle('on',voiceOn); if(voiceOn)speak('Mod suara diaktifkan.'); else window.speechSynthesis?.cancel(); }
 function toggleContrast(){ contrastOn=!contrastOn; document.getElementById('tgl-contrast').classList.toggle('on',contrastOn); document.body.style.filter=contrastOn?'contrast(1.6)':''; localStorage.setItem('contrast',contrastOn); }
-function chgFont(d)      { fontSize=Math.max(80,Math.min(140,fontSize+d*10)); document.body.style.fontSize=fontSize+'%'; document.getElementById('fs-val').textContent=fontSize; localStorage.setItem('fontSize',fontSize); }
+function chgFont(d) {
+  fontSize = Math.max(80, Math.min(140, fontSize + d * 10));
+  document.documentElement.style.zoom = (fontSize / 100);
+  document.body.style.zoom = (fontSize / 100);
+  document.body.style.fontSize = fontSize + '%';
+  if (document.getElementById('fs-val')) document.getElementById('fs-val').textContent = fontSize;
+  localStorage.setItem('fontSize', fontSize);
+}
 function speak(t)        { if(!window.speechSynthesis)return; window.speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='ms-MY';u.rate=.9; window.speechSynthesis.speak(u); }
 
 //  Notifications 
@@ -2876,8 +3433,10 @@ window.addEventListener('load', async()=>{
   contrastOn=localStorage.getItem('contrast')==='true';
   fontSize=parseInt(localStorage.getItem('fontSize')||'100');
   if(contrastOn){ document.body.style.filter='contrast(1.6)'; document.getElementById('tgl-contrast').classList.add('on'); }
-  document.body.style.fontSize=fontSize+'%';
-  document.getElementById('fs-val').textContent=fontSize;
+  document.documentElement.style.zoom = (fontSize / 100);
+  document.body.style.zoom = (fontSize / 100);
+  document.body.style.fontSize = fontSize + '%';
+  if (document.getElementById('fs-val')) document.getElementById('fs-val').textContent = fontSize;
 
   // Auto-login: use localStorage instantly (offline-safe), sync Firebase in background
   const savedHash = localStorage.getItem('session_ic_hash');
