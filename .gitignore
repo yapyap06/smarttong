@@ -16,3 +16,10 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+
+# Temporary scratch notes & logs
+AI_chat*.txt
+ImplementationPlan*.md
+Updateinterface.md
+*.log
+temp.js
