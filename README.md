@@ -1,12 +1,11 @@
 # SmartTONG AI 🗑️
-## Multi-Agent AI Smart Waste Management System · AINS 2026
+## Multi-Agent AI Smart Waste Management System
 
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_App-000000?style=for-the-badge&logo=vercel)](https://smarttong.vercel.app)
 [![Render Backend](https://img.shields.io/badge/Render-Cloud_AI_Backend-46E3B7?style=for-the-badge&logo=render)](https://smarttong-backend.onrender.com)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-SmartTong_Repo-181717?style=for-the-badge&logo=github)](https://github.com/yapyap06/smarttong)
-[![Selangor AINS 2026](https://img.shields.io/badge/Selangor-AINS_2026_Inovasi-16A34A?style=for-the-badge)](https://inovasi.selangor.gov.my)
 
-> **SmartTONG AI** is a solar-powered retrofit smart bin ecosystem and Multi-Agent AI platform designed for Selangor PBT municipal councils (KDEBWM, MBSJ, MBPJ, MBSA, MPKS, MPAJ). It combines real-time IoT sensor telemetry, AI waste classification, automated truck dispatching with 20-minute cooldowns, citizen reporting, and OKU audio accessibility.
+> **SmartTONG AI** is a solar-powered retrofit smart bin ecosystem and Multi-Agent AI platform designed for municipal councils (KDEBWM, MBSJ, MBPJ, MBSA, MPKS, MPAJ). It combines real-time IoT sensor telemetry, AI waste classification, automated truck dispatching with 20-minute cooldowns, citizen reporting, and OKU audio accessibility.
 
 ---
 
@@ -27,7 +26,7 @@ flowchart TD
     subgraph MultiAgentSystem ["🤖 Multi-Agent AI Engine"]
         Agent1["🧪 1. Contamination Analysis Agent<br/>(Gas PPM, Kelembapan, Telemetri IoT)"]
         Agent2["🚛 2. Coordination & Route Agent<br/>(20-min Truck Cooldown, Optimum Laluan)"]
-        Agent3["💬 3. SilaTanya Citizen Q&A Agent<br/>(Dataset SOP 150 Q&A KDEBWM)"]
+        Agent3["💬 3. SilaTanya Citizen Q&A Agent<br/>(Dataset SOP 150 Q&A)"]
         Agent4["📷 4. Gemini 1.5 Flash Vision Classifier<br/>(Cardboard, Glass, Metal, Paper, Plastic, Trash)"]
     end
 
@@ -92,7 +91,7 @@ flowchart TD
 ### 3. 🤖 Multi-Agent AI Engine
 - **Contamination Agent:** Reads IoT gas (PPM) & moisture sensor data to detect hazardous waste and potential gas leaks.
 - **Coordination Agent:** Ranks bins by urgency score and calculates optimal truck dispatch routes and cost savings.
-- **SilaTanya AI Assistant:** 150 Q&A KDEBWM SOP dataset + Gemini 1.5 Flash natural language chat.
+- **SilaTanya AI Assistant:** 150 Q&A SOP dataset + Gemini 1.5 Flash natural language chat.
 
 ---
 
@@ -158,29 +157,28 @@ python backend/chat_agent.py
 
 ---
 
-## 📊 Impact Numbers & AINS 2026 Rubric Mapping
+## 📊 Key Operational Metrics & Performance Impact
 
-| Metric | Value | Source |
+| Operational Metric | Estimated Value | Analysis & Calculation Source |
 | :--- | :--- | :--- |
-| **Selangor Daily Waste** | 39,900 tonnes | KPKT 2025 estimate |
-| **KDEBWM Fleet Vehicles** | 1,100+ trucks | kdebwm.com |
-| **SmartTONG Route Reduction** | ~31% (21.3 km per route) | Nearest-neighbour route simulation |
-| **Weekly Fuel Savings** | RM 1,176 (per 100 bins) | 420 L × RM 2.80/L |
-| **CO₂ Avoided** | 1.1 tonnes weekly | 2.68 kg/L × 420 L |
-| **Retrofit BOM Cost** | ~RM 180 / bin | ESP32 + sensors retrofit kit |
+| **Municipal Daily Waste Coverage** | 39,900 tonnes | Public Sanitation Data |
+| **SmartTONG Route Optimization** | ~31% (21.3 km reduction per route) | Nearest-neighbour AI logistics route simulation |
+| **Weekly Fleet Fuel Savings** | RM 1,176 (per 100 bins) | Calculated: 420 L × RM 2.80/L |
+| **Weekly CO₂ Reduction** | 1.1 tonnes CO₂ avoided | 2.68 kg CO₂ per L fuel saved |
+| **Retrofit Sensor Kit BOM** | ~RM 180 / bin | ESP32 + Ultrasonic + MQ135 sensor kit estimate |
 
 ---
 
-## 🏆 AINS 2026 Rubric Alignment
+## 🛠️ Technical Specifications & System Compatibility
 
-| Rubric Criteria | Weight | SmartTONG Advantage |
+| System Component | Specification / Standard | Capabilities & Integration |
 | :--- | :--- | :--- |
-| **Faedah / Impak** | 30% | Quantified RM fuel savings, OKU audio inclusion, Eco-Points gamification |
-| **Keberkesanan** | 25% | Multi-Agent AI real-time IoT analysis + 20-min truck dispatch cooldown |
-| **Inovasi & Kreativiti** | 20% | Dual-engine AI (Local TensorFlow + Cloud Gemini 1.5 Flash Vision) |
-| **Kebolehlaksanaan** | 15% | Low-cost solar retrofit kit (~RM 180), Vercel & Render cloud integration |
-| **Pembentangan** | 10% | Live interactive PWA + PBT Operations Dashboard + complete documentation |
+| **Frontend Web PWA** | HTML5 / CSS3 / ES6 Vanilla JS | Progressive Web App with offline caching & Vercel deployment |
+| **AI Inference Engines** | TensorFlow Keras + Gemini 1.5 Flash Vision | Dual-engine image classification & natural language processing |
+| **Cloud Backend API** | Python Gunicorn Flask Server | RESTful API endpoints hosted on Render for cloud AI processing |
+| **Database & Realtime Sync** | Firebase Firestore | Real-time session management, dispatch tracking, & broadcast sync |
+| **Hardware Retrofit Kit** | ESP32 Microcontroller | Solar-powered IoT telemetry (Ultrasonic, MQ-135 Gas, Servo, Audio) |
 
 ---
 
-*SmartTONG AI · AINS 2026 · Kesejahteraan Negeri Selangor*
+*SmartTONG AI · Multi-Agent AI Smart Waste Management System*
