@@ -1284,8 +1284,8 @@ html,body {
           <div><div class="scan-title">Matriks Penerimaan SmartTONG</div><div class="scan-sub">Imbas item untuk panduan kitar semula betul</div></div>
         </div>
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%;">
-          <video id="cam-viewport" autoplay playsinline muted style="width:calc(100% - 32px); max-width:400px; aspect-ratio:4/3; margin:16px 0 12px 0; background:var(--g100); display:none; object-fit:cover; border-radius:12px; transform: scaleX(-1);"></video>
-          <img id="cam-preview" alt="Captured item" style="width:calc(100% - 32px); max-width:400px; aspect-ratio:4/3; margin:16px 0 12px 0; object-fit:cover; border-radius:12px; transform: scaleX(-1); display:none;"/>
+          <video id="cam-viewport" autoplay playsinline muted style="width:calc(100% - 32px); max-width:400px; aspect-ratio:4/3; margin:16px 0 12px 0; background:var(--g100); display:none; object-fit:cover; border-radius:12px;"></video>
+          <img id="cam-preview" alt="Captured item" style="width:calc(100% - 32px); max-width:400px; aspect-ratio:4/3; margin:16px 0 12px 0; object-fit:cover; border-radius:12px; display:none;"/>
         </div>
         <canvas id="cam-canvas" style="display:none;"></canvas>
         <div class="scan-ctrls">
@@ -3393,7 +3393,7 @@ async function toggleCam() {
   }
   try {
     prev.style.display='none';
-    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}});
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:640},height:{ideal:480}}});
     video.style.display='block'; video.srcObject=camStream; await video.play();
     btn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M16 16l-4-4-4 4"/><path d="M12 12V20"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Tutup Kamera';
     cap.disabled=false;
