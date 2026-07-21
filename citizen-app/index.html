@@ -2583,7 +2583,7 @@ async function sendChat() {
   showTyping();
 
   try {
-    const resp = await fetch('http://127.0.0.1:7863/chat', {
+    const resp = await fetch('https://smarttong-backend.onrender.com/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: q })
@@ -3425,7 +3425,7 @@ async function captureClassify() {
 
   try{
     const base64Data = dataUrl.split(',')[1];
-    const r=await fetch('http://127.0.0.1:7862/predict',{
+    const r=await fetch('https://smarttong-backend.onrender.com/predict',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ image: base64Data })
