@@ -2038,6 +2038,14 @@ async function getSopAnswer(q) {
     if (best && bestScore >= 4) return best.a;
   }
 
+  // Direct Gemini AI Fallback for any unmapped question when online / on Vercel
+  try {
+    const aiResp = await gemini(lower, SMARTTONG_SOP);
+    if (aiResp && aiResp.trim()) return aiResp;
+  } catch(err) {
+    console.warn('[Gemini AI Fallback Error]', err);
+  }
+
   if (/b0[1-5]|status tong|tong berapa|semua tong/.test(lower))
     return `**Status Tong SmartTONG Semasa:**\n${BINS.map(b=>`- **${b.id}** (${b.zone}): ${Math.round(b.fill)}% penuh${b.hz?' - BERBAHAYA':''}${b.broken?' - PECAH':''}${b.battery<=20?' - bateri rendah':''}`).join('\n')}`;
 
@@ -2045,6 +2053,7 @@ async function getSopAnswer(q) {
 }
 
 function getBotAnswer(q) { return getSopAnswer(q); }
+
 
 //  Data 
 const BINS = [
@@ -3430,7 +3439,36 @@ async function captureClassify() {
     // Direct passthrough to renderARMResult like dashboard
     renderARMResult(data);
   }catch(e){
-    console.error(e);
+    console.warn('[Cam Scanner] Local python server offline/Vercel. Using Gemini 1.5 Flash Vision AI API...', e);
+    try {
+      const base64Data = dataUrl.split(',')[1];
+      const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+      const vResp = await fetch(visionUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: "Analisis gambar sisa ini untuk SmartTONG Selangor. Klasifikasikan ke dalam salah satu kategori berikut: Cardboard, Glass, Metal, Paper, Plastic, atau Sisa Baki. Jawab DALAM FORMAT JSON SAHAJA: {\"class\": \"KATEGORI_ITEM\", \"bin\": \"NAMA_SLOT\", \"color\": \"#HEX_COLOR\", \"confidence\": 94, \"tip\": \"PANDUAN_KITAR_SEMULA_SINGKAT\"}. Hex color contoh: Cardboard=#1976D2, Glass=#795548, Metal=#EF6C00, Paper=#1976D2, Plastic=#FB8C00, Sisa Baki=#424242." },
+              { inlineData: { mimeType: "image/jpeg", data: base64Data } }
+            ]
+          }]
+        })
+      });
+      if (vResp.ok) {
+        const vData = await vResp.json();
+        const rawTxt = vData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const jsonMatch = rawTxt.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          document.getElementById('scan-load').style.display='none';
+          renderARMResult(parsed);
+          return;
+        }
+      }
+    } catch(err2) {
+      console.error('[Gemini Vision AI Error]', err2);
+    }
     document.getElementById('scan-load').style.display='none';
     renderARMResult({label:'Tin Aluminium (Demo)',accepted:true,slot:'LOGAM',confidence:.94,reason:'Tin aluminium bersih, layak dikitar semula',isHazardous:false});
   }
