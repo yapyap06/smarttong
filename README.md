@@ -1,7 +1,98 @@
 # SmartTONG AI 🗑️
-## Sistem Pemantauan Sisa Pintar Berkuasa AI · AINS 2026
+## Multi-Agent AI Smart Waste Management System · AINS 2026
 
-> *A solar-powered retrofit sensor kit + AI that turns any public bin into a live data point — with waste classification, overflow prediction, OKU audio guidance, and real-time PBT route optimization.*
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_App-000000?style=for-the-badge&logo=vercel)](https://smarttong.vercel.app)
+[![Render Backend](https://img.shields.io/badge/Render-Cloud_AI_Backend-46E3B7?style=for-the-badge&logo=render)](https://smarttong-backend.onrender.com)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-SmartTong_Repo-181717?style=for-the-badge&logo=github)](https://github.com/yapyap06/smarttong)
+[![Selangor AINS 2026](https://img.shields.io/badge/Selangor-AINS_2026_Inovasi-16A34A?style=for-the-badge)](https://inovasi.selangor.gov.my)
+
+> **SmartTONG AI** is a solar-powered retrofit smart bin ecosystem and Multi-Agent AI platform designed for Selangor PBT municipal councils (KDEBWM, MBSJ, MBPJ, MBSA, MPKS, MPAJ). It combines real-time IoT sensor telemetry, AI waste classification, automated truck dispatching with 20-minute cooldowns, citizen reporting, and OKU audio accessibility.
+
+---
+
+## 📐 System Architecture & Multi-Agent AI Flow
+
+```mermaid
+flowchart TD
+    subgraph Users ["👥 User Access Layer"]
+        CitizenApp["📱 Citizen Web PWA<br/>(Juara Kebersihan)"]
+        GovPortal["🏢 PBT Government Ops Portal<br/>(MPKS / MBSJ / MBSA / MBPJ / MPAJ)"]
+    end
+
+    subgraph Hosting ["☁️ Cloud Hosting & Distribution"]
+        Vercel["⚡ Vercel Edge Host<br/>smarttong.vercel.app"]
+        Render["🐍 Render Cloud Backend<br/>smarttong-backend.onrender.com"]
+    end
+
+    subgraph MultiAgentSystem ["🤖 Multi-Agent AI Engine"]
+        Agent1["🧪 1. Contamination Analysis Agent<br/>(Gas PPM, Kelembapan, Telemetri IoT)"]
+        Agent2["🚛 2. Coordination & Route Agent<br/>(20-min Truck Cooldown, Optimum Laluan)"]
+        Agent3["💬 3. SilaTanya Citizen Q&A Agent<br/>(Dataset SOP 150 Q&A KDEBWM)"]
+        Agent4["📷 4. Gemini 1.5 Flash Vision Classifier<br/>(Cardboard, Glass, Metal, Paper, Plastic, Trash)"]
+    end
+
+    subgraph DataLayer ["🗄️ Persistence & Cloud Storage"]
+        Firebase["🔥 Firebase Firestore<br/>(Sessions, Aduans, Dispatches, Broadcasts)"]
+        LocalStorage["💾 Browser LocalStorage<br/>(Session Cache, Points, Cooldown Timers)"]
+    end
+
+    subgraph IoTLayer ["🔌 Smart Bin IoT Hardware"]
+        ESP32["⚡ ESP32 Solar Retrofit Kit"]
+        Sensors["📡 Ultrasonic, MQ-135 Gas, PIR Sensors"]
+        Actuators["🔒 Servo Lock Lid, NeoPixel LED, DFPlayer OKU Audio"]
+    end
+
+    CitizenApp -->|Deploy| Vercel
+    GovPortal -->|Deploy| Vercel
+
+    Vercel -->|Fallback Cloud API| Render
+    Vercel -->|Fallback Direct AI| Agent4
+    Vercel -->|Read/Write State| LocalStorage
+
+    Render -->|Execute Serverless AI| Agent1
+    Render -->|Execute Serverless AI| Agent2
+    Render -->|Execute Serverless AI| Agent3
+
+    CitizenApp -->|Submit Aduan & Points| Firebase
+    GovPortal -->|Approve/Reject & Dispatch| Firebase
+
+    Sensors -->|Telemetry Data| ESP32
+    ESP32 -->|HTTP/MQTT Push| Firebase
+    ESP32 -->|Controls| Actuators
+```
+
+---
+
+## ✨ Key Features & Enhancements
+
+### 1. 🏢 PBT Government Command Center (`/citizen-app/index.html`)
+- **Multi-Council Dynamic Branding:** Supports login by council department (e.g. `MPKS — Klang`, `MBSJ — Subang Jaya`, `MBSA — Shah Alam`, `MBPJ — Petaling Jaya`, `MPAJ — Ampang Jaya`, `KDEBWM`). Official broadcasts dynamically display the logged-in council badge.
+- **Truck Dispatch with 20-Minute Cooldown:** 
+  - Clicking **Dispatch Truk** on any bin switches the button to a **disabled gray state** (`#9CA3AF`).
+  - Displays a live countdown timer (`Truk Dihantar (19m 59s)`).
+  - Automatically resets to **GREEN** after 20 minutes. Cooldown state persists in `localStorage`.
+- **Redesigned Aduan Management:**
+  - Standardized square thumbnail image frame (72×72px header / 120×120px body).
+  - Date & Time stamp on every card with newest-first sorting.
+  - Quick action buttons (✓ Lulus / ✕ Batal) on both card header and expanded detail view.
+  - Optional reviewer rejection reasons stored in Firebase.
+
+### 2. 📱 Citizen PWA (`Juara Kebersihan`)
+- **AI Cam Scanner:**
+  - Dual capture modes: **Live Camera** or **Pilih Gambar (Photo Gallery Upload)**.
+  - Automatic device camera selection (back camera for mobile phones, front camera for laptops).
+  - Natural unmirrored viewport preview.
+- **Real-Time Aduan Status & Points Sync:**
+  - Citizens earn +10 points for submitted reports. Points decrease (-10) if rejected by PBT, and "Disahkan" count increments when approved (`Lulus`).
+  - Full Aduan History with reviewer feedback cards.
+- **Accessibility & Settings:**
+  - Saiz Teks UI zoom scaling (80% to 140%).
+  - High Contrast mode & MyDigital ID single sign-on demo.
+
+### 3. 🤖 Multi-Agent AI Engine
+- **Contamination Agent:** Reads IoT gas (PPM) & moisture sensor data to detect hazardous waste and potential gas leaks.
+- **Coordination Agent:** Ranks bins by urgency score and calculates optimal truck dispatch routes and cost savings.
+- **SilaTanya AI Assistant:** 150 Q&A KDEBWM SOP dataset + Gemini 1.5 Flash natural language chat.
 
 ---
 
@@ -9,183 +100,86 @@
 
 ```
 SmartTong/
-├── firmware/
-│   ├── SmartTong_main/          ← Arduino sketch (flash to ESP32)
-│   │   ├── SmartTong_main.ino   ← MAIN ENTRY POINT
-│   │   ├── Config.h             ← ⚙️  EDIT THIS FIRST (WiFi, Firebase, pins)
-│   │   ├── SensorHub.h/.cpp     ← Ultrasonic, MQ-135, PIR
-│   │   ├── CameraAI.h/.cpp      ← AI waste classifier (mock → real swap)
-│   │   ├── LidController.h/.cpp ← Servo lid control
-│   │   ├── LEDStatus.h/.cpp     ← NeoPixel fill indicator
-│   │   ├── OKUAudio.h/.cpp      ← DFPlayer Mini audio feedback
-│   │   └── MQTTClient.h/.cpp    ← WiFi + Firebase HTTP publish
-│   ├── wokwi/
-│   │   ├── diagram.json         ← Paste into Wokwi circuit editor
-│   │   └── wokwi.toml           ← Wokwi project config
-│   └── edge_impulse/
-│       └── TRAINING_GUIDE.md   ← Full Edge Impulse training walkthrough
-├── backend/
-│   ├── functions/src/
-│   │   ├── index.ts             ← Firebase Functions entry point
-│   │   ├── predictOverflow.ts   ← AI fill prediction (linear regression)
-│   │   ├── optimizeRoute.ts     ← Truck route optimization
-│   │   ├── detectAnomaly.ts     ← Real-time alert generation
-│   │   ├── aggregateKPIs.ts     ← Daily KPI cron job
-│   │   └── seedDemoData.ts      ← One-time demo data seeder
-│   └── firestore.rules          ← Security rules
-├── dashboard/
-│   └── index.html               ← PBT Ops Dashboard (open in browser)
+├── vercel.json                 ← Vercel deployment & route configuration
+├── server.py                   ← Unified Flask server for Render (predict + chat)
+├── app.py                      ← Gunicorn WSGI entry point for Render
+├── requirements.txt            ← Python dependencies (Flask, CORS, Pillow, NumPy, Gunicorn)
+├── index.html                  ← Root redirect for Vercel static hosting
 ├── citizen-app/
-│   ├── index.html               ← Citizen PWA (Juara Kebersihan)
-│   ├── manifest.json            ← PWA manifest
-│   └── sw.js                    ← Service worker (offline support)
-└── docs/                        ← Lampiran B screenshots go here
+│   ├── index.html              ← Main Web App (Citizen PWA + PBT Government Portal)
+│   ├── manifest.json           ← PWA manifest
+│   └── sw.js                   ← Service worker offline support
+├── dashboard/
+│   └── index.html              ← Dedicated PBT Analytics Dashboard
+├── SmartTONG-AI/
+│   ├── predict_server.py       ← Local Image Classification Server (Port 7862)
+│   ├── app.py                  ← Gradio Waste Classifier UI
+│   └── models/                 ← TensorFlow Keras EfficientNet models
+├── backend/
+│   ├── chat_agent.py           ← Local Chat Assistant Server (Port 7863)
+│   └── functions/              ← Firebase Cloud Functions (TypeScript)
+├── firmware/
+│   ├── SmartTong_main/         ← Arduino Sketch for ESP32 hardware
+│   └── wokwi/                  ← Wokwi circuit diagram & configuration
+└── docs/                       ← Documentation & presentation assets
 ```
 
 ---
 
-## ⚡ Quick Start (No Hardware Yet — Wokwi Simulation)
+## 🌐 Live URLs & Deployment Architecture
 
-### 1. Open Wokwi Simulation
-1. Go to [https://wokwi.com/projects/new/esp32](https://wokwi.com/projects/new/esp32)
-2. Copy the contents of `firmware/SmartTong_main/SmartTong_main.ino` into the code editor
-3. Copy `SensorHub.h/cpp`, `CameraAI.h/cpp`, `LidController.h/cpp`, `LEDStatus.h/cpp`, `OKUAudio.h/cpp`, `MQTTClient.h/cpp`, `Config.h` into separate tabs
-4. In the diagram editor, paste the contents of `firmware/wokwi/diagram.json`
-5. Install libraries in Wokwi: ArduinoJson, Adafruit NeoPixel, ESP32Servo
-6. Press ▶ to simulate!
-
-### 2. Set Up Firebase
-1. Go to [https://console.firebase.google.com](https://console.firebase.google.com) → New Project
-2. Enable **Firestore Database** (test mode for development)
-3. Enable **Realtime Database** (for ESP32 HTTPS publishing)
-4. Copy your Firebase config into `Config.h` (FIREBASE_HOST, FIREBASE_AUTH)
-5. Copy Firebase Web config into `dashboard/index.html` and `citizen-app/index.html`
-6. Deploy Cloud Functions:
-   ```bash
-   cd backend/functions
-   npm install
-   firebase deploy --only functions
-   ```
-7. Seed demo data:
-   ```
-   GET https://your-region-your-project.cloudfunctions.net/seedDemoData
-   ```
-
-### 3. Open Dashboard
-- Open `dashboard/index.html` in any browser — **no server needed**
-- Works immediately with demo data
-- Connects to Firebase automatically when config is set
-
-### 4. Open Citizen App
-- Open `citizen-app/index.html` in a mobile browser
-- Or serve with: `python -m http.server 3000` and visit `localhost:3000`
-- Install as PWA: Chrome → "Add to Home Screen"
+| Environment | URL | Details |
+| :--- | :--- | :--- |
+| **Vercel Web App** | [`https://smarttong.vercel.app`](https://smarttong.vercel.app) | Public PWA Frontend (HTML/CSS/JS) |
+| **Render AI Backend** | [`https://smarttong-backend.onrender.com`](https://smarttong-backend.onrender.com) | Live Cloud Python AI Server |
+| **GitHub Repository** | [`yapyap06/smarttong`](https://github.com/yapyap06/smarttong) | Source Code Repository |
 
 ---
 
-## 🔧 Hardware Setup (When Parts Arrive)
+## ⚡ Local Setup Guide
 
-### Required Libraries (Arduino IDE → Library Manager)
+### 1. Run Local Web App
+Open `citizen-app/index.html` in any browser, or serve locally using Python:
+```bash
+python -m http.server 3000
 ```
-Adafruit NeoPixel      by Adafruit
-ESP32Servo             by Kevin Harrington
-ArduinoJson            by Benoit Blanchon  (v6.x)
+Visit `http://localhost:3000/citizen-app/index.html`.
+
+### 2. Run Local Python AI Servers (Optional)
+To run the local TensorFlow model and Flask Chat Agent:
+
+```bash
+# Terminal 1: Cam Scanner Prediction Server (Port 7862)
+python SmartTONG-AI/predict_server.py
+
+# Terminal 2: Chat Assistant Server (Port 7863)
+python backend/chat_agent.py
 ```
 
-### Pin Connections
-
-| Component | ESP32 Pin | Notes |
-|---|---|---|
-| Ultrasonic TRIG | GPIO 5 | |
-| Ultrasonic ECHO | GPIO 18 | |
-| MQ-135 AO | GPIO 34 | ADC1 only (34-39) |
-| PIR OUT | GPIO 14 | |
-| Servo Signal | GPIO 13 | |
-| NeoPixel DIN | GPIO 27 | |
-| DFPlayer RX | GPIO 16 (ESP32 TX2) | |
-| DFPlayer TX | GPIO 17 (ESP32 RX2) | |
-
-All pins are configurable in `Config.h`.
-
-### First Flash Steps
-1. Select board: **ESP32 Dev Module**
-2. Partition scheme: **Default 4MB with spiffs**
-3. PSRAM: **Disabled** (enable when using ESP32-CAM)
-4. Upload speed: 115200
-5. Flash, open Serial Monitor at 115200 baud, watch startup logs
-
 ---
 
-## 🤖 AI Classifier — Swap Mock → Real
-
-The firmware ships with a mock classifier for Wokwi testing.  
-When hardware + Edge Impulse model are ready:
-
-1. Follow `firmware/edge_impulse/TRAINING_GUIDE.md`
-2. Install the exported Edge Impulse library (`.zip`)
-3. In `CameraAI.h`, uncomment line: `#define USE_REAL_CLASSIFIER`
-4. In `CameraAI.cpp`, uncomment the ESP32-CAM init and `run_classifier()` code
-5. Re-flash — **no other code changes needed**
-
----
-
-## 📊 Impact Numbers (for Lampiran B)
+## 📊 Impact Numbers & AINS 2026 Rubric Mapping
 
 | Metric | Value | Source |
-|---|---|---|
-| Malaysia daily waste | 39,900 tonnes | KPKT 2025 estimate |
-| Landfill dependency | 82.5% | Solid Waste Corp 2024 |
-| Selangor KDEBWM trucks | 1,100+ | kdebwm.com |
-| Illegal dumpsites closed (2025) | 3,634 | KPKT enforcement data |
-| SmartTONG trip reduction | ~25% | Nearest-neighbour route sim |
-| Fuel saved (100 bins, weekly) | RM 1,176 | Calculated: 420 L × RM 2.80 |
-| CO₂ avoided (100 bins, weekly) | 1.1 tonnes | 2.68 kg/L × 420 L |
-| Overflow reduction | ~77% | Alarm-triggered collection |
-| Retrofit cost per bin | ~RM 180 | Shopee/Cytron BOM estimate |
-| Payback period (100 bins) | ~15 weeks | Fuel savings alone |
+| :--- | :--- | :--- |
+| **Selangor Daily Waste** | 39,900 tonnes | KPKT 2025 estimate |
+| **KDEBWM Fleet Vehicles** | 1,100+ trucks | kdebwm.com |
+| **SmartTONG Route Reduction** | ~31% (21.3 km per route) | Nearest-neighbour route simulation |
+| **Weekly Fuel Savings** | RM 1,176 (per 100 bins) | 420 L × RM 2.80/L |
+| **CO₂ Avoided** | 1.1 tonnes weekly | 2.68 kg/L × 420 L |
+| **Retrofit BOM Cost** | ~RM 180 / bin | ESP32 + sensors retrofit kit |
 
 ---
 
-## 📅 13-Day Timeline
+## 🏆 AINS 2026 Rubric Alignment
 
-| Day | Date | Milestone |
-|---|---|---|
-| 1 | 2 Jul | Order hardware · Wokwi sim start · Firebase setup |
-| 2 | 3 Jul | Firmware complete in Wokwi · Firebase publishing live |
-| 3 | 4 Jul | Dashboard live with real Firestore data |
-| 4 | 5 Jul | Citizen PWA QR report flow working · Edge Impulse dataset collection |
-| 5 | 6 Jul | Model trained >80% · Hardware arriving |
-| 6 | 7 Jul | Physical wiring on perfboard |
-| 7 | 8 Jul | ESP32-CAM real classifier integrated |
-| 8 | 9 Jul | DFPlayer OKU audio working · Full LED status |
-| 9 | 10 Jul | End-to-end test: sensor → Firebase → dashboard |
-| 10 | 11 Jul | IP65 enclosure assembly · Solar charging circuit |
-| 11 | 12 Jul | Lampiran B report writing |
-| 12 | 13 Jul | Lampiran C video recording & editing |
-| 13 | 14 Jul | Final QA · Upload to Hab metaSEL |
-| — | 15 Jul | **SUBMISSION DEADLINE** |
-
----
-
-## 🏆 AINS 2026 Rubric Mapping
-
-| Kriteria | Wajaran | SmartTONG AI advantage |
-|---|---|---|
-| Faedah/Impak | 30% | Quantified RM savings + OKU inclusion + recycling KPI |
-| Keberkesanan | 25% | Live data + 4–12h overflow prediction |
-| Inovasi & Kreativiti | 20% | On-device TFLite + OKU audio = first in Malaysia |
-| Kebolehlaksanaan | 15% | RM 180 retrofit, solar, no new bins needed |
-| Pembentangan | 10% | Live dashboard demo + structured video |
-
----
-
-## 🔗 Resources
-
-- **Wokwi** (simulation): https://wokwi.com/projects/new/esp32
-- **Edge Impulse** (AI training): https://studio.edgeimpulse.com
-- **Firebase Console**: https://console.firebase.google.com
-- **AINS 2026 Portal**: https://inovasi.selangor.gov.my
-- **Hab metaSEL**: https://hab.selangor.gov.my
+| Rubric Criteria | Weight | SmartTONG Advantage |
+| :--- | :--- | :--- |
+| **Faedah / Impak** | 30% | Quantified RM fuel savings, OKU audio inclusion, Eco-Points gamification |
+| **Keberkesanan** | 25% | Multi-Agent AI real-time IoT analysis + 20-min truck dispatch cooldown |
+| **Inovasi & Kreativiti** | 20% | Dual-engine AI (Local TensorFlow + Cloud Gemini 1.5 Flash Vision) |
+| **Kebolehlaksanaan** | 15% | Low-cost solar retrofit kit (~RM 180), Vercel & Render cloud integration |
+| **Pembentangan** | 10% | Live interactive PWA + PBT Operations Dashboard + complete documentation |
 
 ---
 
