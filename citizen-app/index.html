@@ -1288,11 +1288,16 @@ html,body {
           <img id="cam-preview" alt="Captured item" style="width:calc(100% - 32px); max-width:400px; aspect-ratio:4/3; margin:16px 0 12px 0; object-fit:cover; border-radius:12px; display:none;"/>
         </div>
         <canvas id="cam-canvas" style="display:none;"></canvas>
-        <div class="scan-ctrls">
+        <div class="scan-ctrls" style="flex-wrap:wrap;gap:8px;">
           <button class="scan-sec" id="cam-toggle" onclick="toggleCam()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             Buka Kamera
           </button>
+          <button class="scan-sec" onclick="document.getElementById('cam-file-input').click()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Pilih Gambar
+          </button>
+          <input type="file" id="cam-file-input" accept="image/*" style="display:none;" onchange="handleCamFileSelect(this)"/>
           <button class="scan-pri" id="cam-cap" onclick="captureClassify()" disabled>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             Imbas Sekarang
@@ -3402,21 +3407,52 @@ async function toggleCam() {
   }
   try {
     prev.style.display='none';
-    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:640},height:{ideal:480}}});
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+    } catch(err1) {
+      camStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    }
     video.style.display='block'; video.srcObject=camStream; await video.play();
     btn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M16 16l-4-4-4 4"/><path d="M12 12V20"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Tutup Kamera';
     cap.disabled=false;
-  } catch(e){ alert('Gagal akses kamera. Sila benarkan kebenaran dalam pelayar.'); }
+  } catch(e){
+    alert('Kamera disekat oleh pelayar. Anda boleh benarkan kebenaran di tetapan pelayar atau gunakan butang "Pilih Gambar" untuk muat naik foto.');
+  }
+}
+
+function handleCamFileSelect(input) {
+  const f = input.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const video = document.getElementById('cam-viewport');
+    const prev  = document.getElementById('cam-preview');
+    if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream = null; }
+    video.style.display = 'none';
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+    document.getElementById('cam-cap').disabled = false;
+  };
+  reader.readAsDataURL(f);
 }
 
 async function captureClassify() {
   const video  = document.getElementById('cam-viewport');
   const canvas = document.getElementById('cam-canvas');
   const prev   = document.getElementById('cam-preview');
-  canvas.width=video.videoWidth||640; canvas.height=video.videoHeight||480;
-  canvas.getContext('2d').drawImage(video,0,0);
-  const dataUrl=canvas.toDataURL('image/jpeg',.85);
-  prev.src=dataUrl; video.style.display='none'; prev.style.display='block';
+  
+  let dataUrl = '';
+  if (video.style.display !== 'none' && video.srcObject) {
+    canvas.width=video.videoWidth||640; canvas.height=video.videoHeight||480;
+    canvas.getContext('2d').drawImage(video,0,0);
+    dataUrl=canvas.toDataURL('image/jpeg',.85);
+    prev.src=dataUrl; video.style.display='none'; prev.style.display='block';
+  } else if (prev.src && prev.style.display !== 'none') {
+    dataUrl = prev.src;
+  }
+
+  if(!dataUrl) return alert('Sila buka kamera atau pilih gambar dahulu.');
+
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
   document.getElementById('cam-toggle').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Buka Kamera';
   document.getElementById('cam-cap').disabled=true;
