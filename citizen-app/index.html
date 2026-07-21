@@ -1064,7 +1064,7 @@ html,body {
       </div>
 
       <!-- 3 AI Agents -->
-      <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Status Agen AI</div>
+      <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Status Agent AI</div>
       <div class="agent-strip">
         <div class="agent-card">
           <div class="agent-icon-wrap" style="background:var(--blue-l);color:var(--blue);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg></div>
@@ -2096,7 +2096,7 @@ const BOT_KB = [
 ];
 
 //  State 
-let role = 'citizen', myPoints = 240, userName = '', userIC = '';
+let role = 'citizen', myPoints = 240, userName = '', userIC = '', userDept = '';
 let voiceOn = false, contrastOn = false, fontSize = 100;
 let govMap = null, citizenMap = null, govMarkers = {};
 let camStream = null, chatBusy = false;
@@ -2227,14 +2227,17 @@ async function doLogin() {
     if (!sid) { err.textContent = 'Sila masukkan Staff ID.'; err.style.display = 'block'; return; }
     
     const dept = document.getElementById('g-dept').value;
+    userDept = dept;
     userName = (dept ? dept : 'Pegawai KDEBWM') + ' (ID: ' + sid + ')';
     userIC = sid;
+    localStorage.setItem('session_user_name', userName);
+    localStorage.setItem('session_user_dept', dept);
     (async () => {
       try {
         localStorage.setItem('session_ic_hash', 'gov_' + btoa(sid).slice(0,10));
         localStorage.setItem('session_role', 'gov');
         await db.collection('sessions').doc('gov_' + sid).set({
-          staff_id: sid, role: 'gov',
+          staff_id: sid, role: 'gov', dept: dept,
           last_login: firebase.firestore.FieldValue.serverTimestamp(),
           active: true
         }, { merge: true });
@@ -2661,8 +2664,69 @@ function renderCitizenBinList() {
   }).join('');
 }
 
+let currentMapFilter = 'ALL';
+
+function updateGovKPIs() {
+  const crit = BINS.filter(b=>b.fill>=85||b.hz).length;
+  if (document.getElementById('k-crit')) document.getElementById('k-crit').textContent = crit;
+}
+
+// ── Dispatch Cooldown Manager (20 min cooldown) ──
+function getDispatchCooldowns() {
+  try {
+    return JSON.parse(localStorage.getItem('dispatch_cooldowns') || '{}');
+  } catch(e) { return {}; }
+}
+
+function setDispatchCooldown(binId) {
+  const cd = getDispatchCooldowns();
+  cd[binId] = Date.now() + 20 * 60 * 1000;
+  localStorage.setItem('dispatch_cooldowns', JSON.stringify(cd));
+}
+
+function getRemainingCooldownMs(binId) {
+  const cd = getDispatchCooldowns();
+  if (!cd[binId]) return 0;
+  const rem = cd[binId] - Date.now();
+  if (rem <= 0) {
+    delete cd[binId];
+    localStorage.setItem('dispatch_cooldowns', JSON.stringify(cd));
+    return 0;
+  }
+  return rem;
+}
+
+function formatCooldownTime(ms) {
+  const totalSec = Math.ceil(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return `${min}m ${sec < 10 ? '0' : ''}${sec}s`;
+}
+
+let dispatchInterval = null;
+function startDispatchTimer() {
+  if (dispatchInterval) return;
+  dispatchInterval = setInterval(() => {
+    const cd = getDispatchCooldowns();
+    const activeKeys = Object.keys(cd);
+    if (activeKeys.length === 0) {
+      clearInterval(dispatchInterval);
+      dispatchInterval = null;
+      return;
+    }
+    let hasExpired = false;
+    activeKeys.forEach(id => {
+      if (getRemainingCooldownMs(id) === 0) hasExpired = true;
+    });
+    const el = document.getElementById('gov-bin-list');
+    if (el) renderGovBinList(currentMapFilter);
+    if (govMap && hasExpired) renderGovMarkers(currentMapFilter);
+  }, 1000);
+}
+
 //  Gov Bin List 
 function renderGovBinList(filter='ALL') {
+  currentMapFilter = filter;
   const el = document.getElementById('gov-bin-list'); if (!el) return;
   let list = filter==='ALL' ? BINS : BINS.filter(b=>{
     if(filter==='kritikal') return b.fill>=85;
@@ -2676,6 +2740,21 @@ function renderGovBinList(filter='ALL') {
     const c = binColor(b), s = binStatusLabel(b);
     const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${b.lat},${b.lng}`;
     const waze  = `https://waze.com/ul?ll=${b.lat},${b.lng}&navigate=yes`;
+    
+    const remMs = getRemainingCooldownMs(b.id);
+    const isCooling = remMs > 0;
+    const dispatchBtnHtml = isCooling ? `
+      <button class="bin-dispatch-btn" disabled style="background:#9CA3AF;color:#FFFFFF;cursor:not-allowed;box-shadow:none;opacity:0.9;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Truk Dihantar (${formatCooldownTime(remMs)})
+      </button>
+    ` : `
+      <button class="bin-dispatch-btn" onclick="dispatchBin('${b.id}')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Dispatch Truk
+      </button>
+    `;
+
     return `<div class="bin-card">
       <div class="bin-si" style="background:${c}22;color:${c};">${binStatusSVG(b)}</div>
       <div class="bin-info">
@@ -2690,10 +2769,7 @@ function renderGovBinList(filter='ALL') {
         </div>
         <div class="fill-bar"><div class="fill-in" style="width:${b.fill}%;background:${c};"></div></div>
         <div class="bin-act">
-          <button class="bin-dispatch-btn" onclick="dispatchBin('${b.id}')">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-            Dispatch Truk
-          </button>
+          ${dispatchBtnHtml}
           <a href="${gmaps}" target="_blank" class="bin-nav-btn">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
           </a>
@@ -2708,17 +2784,31 @@ function renderGovBinList(filter='ALL') {
 }
 
 function dispatchBin(id) {
+  const rem = getRemainingCooldownMs(id);
+  if (rem > 0) {
+    showToast(`Truk dihantar ke ${id}`);
+    return;
+  }
   const b = BINS.find(x=>x.id===id); if (!b) return;
   b.fill = 8; b.reported = false;
+  setDispatchCooldown(id);
   showToast(`Truk dihantar ke ${id}`);
-  renderGovBinList(); if(govMap) renderGovMarkers();
+  renderGovBinList(currentMapFilter);
+  if(govMap) renderGovMarkers(currentMapFilter);
   updateGovKPIs();
   db.collection('dispatches').add({ binId:id, ts:firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
+  startDispatchTimer();
 }
 function overrideAll() {
-  BINS.filter(b=>b.fill>=70||b.hz).forEach(b=>{b.fill=8;});
-  renderGovBinList(); if(govMap)renderGovMarkers(); updateGovKPIs();
+  BINS.filter(b=>b.fill>=70||b.hz).forEach(b=>{
+    b.fill=8;
+    setDispatchCooldown(b.id);
+  });
+  renderGovBinList(currentMapFilter);
+  if(govMap) renderGovMarkers(currentMapFilter);
+  updateGovKPIs();
   showToast('Override: Semua truk kecemasan dihantar!');
+  startDispatchTimer();
 }
 
 //  Bin helpers 
@@ -2769,6 +2859,11 @@ function renderGovMarkers(filter='ALL') {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="42" height="52" viewBox="0 0 42 52"><path d="M21 0C9.4 0 0 9.4 0 21C0 36.8 21 52 21 52S42 36.8 42 21C42 9.4 32.6 0 21 0Z" fill="#${hex}" opacity=".95"/><circle cx="21" cy="21" r="14" fill="rgba(255,255,255,.22)"/><text x="21" y="26" text-anchor="middle" fill="white" font-size="10" font-weight="800" font-family="Inter">${Math.round(b.fill)}%</text></svg>`;
     const icon = L.divIcon({html:svg,className:'',iconSize:[42,52],iconAnchor:[21,52],popupAnchor:[0,-54]});
     const battColor = b.battery<=20?'#DC2626':'#16A34A';
+    const remMs = getRemainingCooldownMs(b.id);
+    const popupBtn = remMs > 0 ?
+      `<button disabled style="width:100%;padding:9px;background:#9CA3AF;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:not-allowed;">Truk Dihantar (${formatCooldownTime(remMs)})</button>` :
+      `<button onclick="dispatchBin('${b.id}')" style="width:100%;padding:9px;background:#16A34A;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">Dispatch Truk</button>`;
+
     const popup = `<div style="font-family:Inter,sans-serif;min-width:220px;">
       <div style="font-size:13px;font-weight:700;margin-bottom:4px;">${b.id} · ${b.zone}</div>
       <div style="font-size:11px;color:#666;margin-bottom:12px;">${b.name}</div>
@@ -2782,7 +2877,7 @@ function renderGovMarkers(filter='ALL') {
       ${b.broken?'<div style="background:#FEF3C7;border-radius:6px;padding:8px;font-size:11px;font-weight:700;color:#D97706;margin-bottom:8px;">Tong pecah — perlu penyelenggaraan</div>':''}
       ${b.reported?'<div style="background:#FEE2E2;border-radius:6px;padding:8px;font-size:11px;font-weight:700;color:#DC2626;margin-bottom:8px;">Dilaporkan oleh warganegara</div>':''}
       ${b.battery<=20?'<div style="background:#FEF3C7;border-radius:6px;padding:8px;font-size:11px;font-weight:700;color:#D97706;margin-bottom:8px;">Bateri rendah — tukar bateri</div>':''}
-      <button onclick="dispatchBin('${b.id}')" style="width:100%;padding:9px;background:#16A34A;color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">Dispatch Truk</button>
+      ${popupBtn}
     </div>`;
     govMarkers[b.id] = L.marker([b.lat,b.lng],{icon}).addTo(govMap).bindPopup(popup,{maxWidth:260});
   });
@@ -3165,27 +3260,53 @@ function renderSchedule() {
     </tr>`).join('');
 }
 
+// Helper to resolve government agency code (MPKS, MBSJ, MBPJ, MBSA, MPAJ, KDEBWM)
+function getGovAgencyName() {
+  const dept = userDept || localStorage.getItem('session_user_dept') || '';
+  if (dept) {
+    const parts = dept.split('—');
+    if (parts[0]) {
+      const code = parts[0].trim().split(' ')[0].trim();
+      if (code) return code;
+    }
+  }
+  const uName = userName || localStorage.getItem('session_user_name') || '';
+  if (uName) {
+    const parts = uName.split('—');
+    if (parts[0]) {
+      const code = parts[0].trim().split(' ')[0].trim();
+      if (code && code !== 'Pegawai') return code;
+    }
+  }
+  return 'KDEBWM';
+}
+
 //  Broadcast 
 async function sendBroadcast() {
   const msg = document.getElementById('bc-msg').value.trim();
   if(!msg) return showToast('Sila taip mesej');
-  await saveBroadcast(msg);
+  const agency = getGovAgencyName();
+  sebarans.unshift({from: agency, msg, time:'Baru sahaja'});
+  renderSebarans();
+  await saveBroadcast(msg, agency);
   document.getElementById('bc-msg').value = '';
   showToast('Pengumuman dihantar!');
 }
 async function sendSebaran() {
   const msg = document.getElementById('seb-msg').value.trim();
   if(!msg) return showToast('Sila taip mesej');
-  sebarans.unshift({from:'KDEBWM', msg, time:'Baru sahaja'});
+  const agency = getGovAgencyName();
+  sebarans.unshift({from: agency, msg, time:'Baru sahaja'});
   renderSebarans();
-  await saveBroadcast(msg);
+  await saveBroadcast(msg, agency);
   document.getElementById('seb-msg').value = '';
   showToast('Siaran dihantar kepada warganegara!');
 }
-async function saveBroadcast(msg) {
+async function saveBroadcast(msg, agency) {
+  const sender = agency || getGovAgencyName();
   try {
     await db.collection('broadcasts').add({
-      message:msg, from:'KDEBWM',
+      message:msg, from:sender,
       timestamp:firebase.firestore.FieldValue.serverTimestamp(), role:'all'
     });
   } catch(e) { console.warn('[broadcast]',e); }
@@ -3443,9 +3564,11 @@ window.addEventListener('load', async()=>{
   const savedRole = localStorage.getItem('session_role');
   if(savedHash && savedRole){
     role     = savedRole;
-    userName = savedRole === 'gov' ? 'Pegawai KDEBWM' : 'Warganegara';
+    userDept = localStorage.getItem('session_user_dept') || '';
+    userName = savedRole === 'gov' ? (localStorage.getItem('session_user_name') || 'Pegawai KDEBWM') : 'Warganegara';
     userIC   = savedHash;
     launchApp();
+    startDispatchTimer();
     // Background Firebase sync
     db.collection('sessions').doc(savedHash).get().then(snap => {
       if(snap.exists && snap.data().points){ myPoints=snap.data().points; if(role==='citizen')updateCitizenUI(); }
