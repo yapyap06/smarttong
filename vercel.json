@@ -1,8 +1,7 @@
 {
-  "version": 2,
   "cleanUrls": true,
-  "rewrites": [
-    { "source": "/", "destination": "/citizen-app/index.html" },
-    { "source": "/(.*)", "destination": "/citizen-app/$1" }
+  "routes": [
+    { "src": "/", "dest": "/citizen-app/index.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
