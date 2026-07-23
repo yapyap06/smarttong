@@ -160,12 +160,23 @@ def chat_with_silatanya(user_message):
     if not user_message or not user_message.strip():
         return "Hai! Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor.\n\nSila tanya tentang kitar semula, lokasi tong, atau sistem mata Eco-Points!"
 
-    # 1. Try official Gemini client with gemini-1.5-flash
+    # System instruction encouraging Web Search Grounding for spontaneous queries
+    dynamic_system_prompt = system_knowledge_base + """
+---
+[LIVE WEB RETRIEVAL & SPONTANEOUS QUESTION HANDLING]
+- For questions covered in the SOP manual above, prioritize the SOP guidelines.
+- For any spontaneous or external questions (e.g. specific Malaysian environmental acts, Akta 672, e-waste drop-offs, local municipal guidelines, recycling specific items not listed), USE Google Search Grounding to search the web, retrieve accurate information, and answer conversationally.
+- Answer in clean Malay if the user asked in Malay, or English if asked in English.
+- Always provide helpful, accurate, and conversational answers.
+"""
+
+    # 1. Try official Gemini client with Google Search Grounding enabled
     if client:
         try:
             config = types.GenerateContentConfig(
-                system_instruction=system_knowledge_base,
-                temperature=0.25,
+                system_instruction=dynamic_system_prompt,
+                temperature=0.35,
+                tools=[{"google_search": {}}]
             )
             response = client.models.generate_content(
                 model='gemini-1.5-flash',
@@ -177,18 +188,19 @@ def chat_with_silatanya(user_message):
         except Exception as e:
             print(f"[chat_agent Gemini SDK error]: {e}")
 
-    # 2. Try direct REST call to Gemini API
+    # 2. Try direct REST call with google_search_retrieval grounding
     try:
         import urllib.request, json
         api_key = os.environ.get("GEMINI_API_KEY", GEMINI_KEY)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
         payload = {
             "contents": [{"parts": [{"text": user_message}]}],
-            "system_instruction": {"parts": [{"text": system_knowledge_base}]},
-            "generationConfig": {"temperature": 0.25, "maxOutputTokens": 600}
+            "system_instruction": {"parts": [{"text": dynamic_system_prompt}]},
+            "tools": [{"google_search_retrieval": {"dynamic_retrieval_config": {"mode": "MODE_DYNAMIC", "dynamic_threshold": 0.3}}}],
+            "generationConfig": {"temperature": 0.35, "maxOutputTokens": 800}
         }
         req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-        with urllib.request.urlopen(req, timeout=12) as resp:
+        with urllib.request.urlopen(req, timeout=14) as resp:
             res_data = json.loads(resp.read().decode('utf-8'))
             text = res_data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
             if text and text.strip():
@@ -196,40 +208,29 @@ def chat_with_silatanya(user_message):
     except Exception as err:
         print(f"[chat_agent direct REST error]: {err}")
 
-    # 3. Comprehensive SOP Keyword & QnA Lookup Fallback
+    # 3. Fallback direct REST call without tools if search tool is restricted
+    try:
+        import urllib.request, json
+        api_key = os.environ.get("GEMINI_API_KEY", GEMINI_KEY)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        payload = {
+            "contents": [{"parts": [{"text": user_message}]}],
+            "system_instruction": {"parts": [{"text": dynamic_system_prompt}]},
+            "generationConfig": {"temperature": 0.35, "maxOutputTokens": 800}
+        }
+        req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req, timeout=14) as resp:
+            res_data = json.loads(resp.read().decode('utf-8'))
+            text = res_data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+            if text and text.strip():
+                return text.strip()
+    except Exception as err:
+        print(f"[chat_agent plain REST error]: {err}")
+
+    # 4. Keyword Fallback as absolute last resort
     msg = user_message.lower()
-    
-    # Act / Law / Legal / Hukuman / Denda queries
     if any(k in msg for k in ['act', 'akta', 'law', 'undang', 'hukuman', 'denda', 'saman', 'merata', 'illegal', 'haram', 'fine', 'penalty']):
         return "Di bawah **Akta Pengurusan Sisa Pepejal dan Pembersihan Awam 2007 (Akta 672)** dan **Akta Kerajaan Tempatan 1976 (Akta 171)**, pembuangan sampah merata-rata tempat atau pembuangan haram adalah kesalahan jenayah. Pesalah boleh dikenakan komposit sehingga **RM 500** oleh PBT, atau denda mahkamah sehingga **RM 10,000** serta hukuman penjara."
-
-    # Tissue / Diaper / Soiled items
-    if any(k in msg for k in ['tissue', 'tisu', 'pampers', 'diaper', 'oily', 'minyak', 'soiled', 'pizza']):
-        return "Tisu terpakai, tuala kertas, pampers, atau bahan berminyak **TIDAK BOLEH dikitar semula** kerana serat kotoran. Sila buang ke dalam **Slot Sisa Baki (Tong Hitam)**."
-
-    # Milo / Tin / Logam / Metal Cans
-    if any(k in msg for k in ['milo', 'tin milo', 'tin aluminium', 'tin minuman', 'metal can', 'aluminium']):
-        return "Tin Milo atau tin aluminium diperbuat daripada **logam**. Sila bilas tin sehingga bersih dan buang ke dalam **Slot Logam (Warna Jingga)** di tong SmartTONG atau mana-mana tong kitar semula logam."
-
-    # Plastic / Bottles
-    if any(k in msg for k in ['plastik', 'botol', 'bottle', 'plastic']):
-        return "Botol atau bekas plastik perlu dikosongkan dan dibilas sebelum dimasukkan ke dalam **Slot Plastik (Warna Jingga)**."
-
-    # Paper / Cardboard
-    if any(k in msg for k in ['kertas', 'kadbod', 'paper', 'cardboard', 'box']):
-        return "Kertas dan kadbod bersih (tidak berminyak) boleh dimasukkan ke dalam **Slot Kertas (Warna Biru)**."
-
-    # Report / Aduan / Full Bin / Broken Bin
-    if any(k in msg for k in ['penuh', 'aduan', 'lapor', 'report', 'broken', 'rosak', 'overflow']):
-        return "Untuk membuat aduan tong penuh atau masalah kebersihan, buka **Tab Aduan**, muat naik gambar bukti, dan hantar laporan untuk menerima **+10 Eco-Points**!"
-
-    # Eco-Points / Mata / Redeem / Voucher / Rewards
-    if any(k in msg for k in ['mata', 'point', 'hadiah', 'tebus', 'reward', 'voucher', 'cukai']):
-        return "Mata Eco-Points dikumpul melalui pengasingan sisa dan laporan aduan. Buka **Tab Hadiah** untuk menebus baucar Touch 'n Go, diskaun cukai pintu PBT, dan baucar peniaga!"
-
-    # Location / Nearest Bin / Map
-    if any(k in msg for k in ['lokasi', 'terdekat', 'near', 'location', 'map', 'peta', 'mana']):
-        return "Untuk mencari lokasi tong SmartTONG terdekat, buka **Tab UTAMA (Peta)**. Indikator warna menunjukkan: **Hijau** (Normal/Kosong), **Kuning** (Amaran), **Merah** (Penuh), dan **Ungu** (Bahan Berbahaya)."
 
     return "Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor.\n\nSaya boleh bantu menjawab soalan tentang kitar semula (plastik, tin, kertas, tisu), akta & undang-undang pembuangan sampah, lokasi tong berdekatan, atau panduan aduan kebersihan!"
 
