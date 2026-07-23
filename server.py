@@ -131,12 +131,21 @@ def chat():
         try:
             from backend.chat_agent import chat_with_silatanya
             reply = chat_with_silatanya(user_msg)
-            return jsonify({'reply': reply})
+            if reply and reply.strip():
+                return jsonify({'reply': reply})
         except Exception as e:
             print(f"[Chat Agent Module Error] {e}")
-            return jsonify({
-                'reply': f"Hai! Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor.\n\nSila tanya tentang kitar semula, lokasi tong, atau sistem mata Eco-Points!"
-            })
+
+        # Direct fallback response if chat_agent fails
+        msg = user_msg.lower()
+        if 'milo' in msg or 'tin' in msg or 'logam' in msg:
+            fallback = "Tin Milo atau tin aluminium diperbuat daripada **logam**. Sila bilas tin sehingga bersih dan buang ke dalam **Slot Logam (Warna Jingga)** di tong SmartTONG atau mana-mana tong kitar semula logam."
+        elif 'plastik' in msg or 'botol' in msg:
+            fallback = "Botol atau bekas plastik perlu dikosongkan dan dibilas sebelum dimasukkan ke dalam **Slot Plastik (Warna Jingga)**."
+        else:
+            fallback = f"Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor.\n\nSila tanya tentang cara kitar semula item, lokasi tong berdekatan, atau panduan aduan kebersihan!"
+
+        return jsonify({'reply': fallback})
 
     except Exception as e:
         print(f"[Chat Error] {e}")

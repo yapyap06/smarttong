@@ -13,7 +13,12 @@ from google import genai
 from google.genai import types
 
 # Initialize the official Gemini Client
-client = genai.Client(api_key="AIzaSyBaVPCP3RQhPLMW6eBkXus5O97MePTwUBM")
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyDLHq3uvuvxuF3iRKDTpnxgeQGfr4BHNkk")
+client = None
+try:
+    client = genai.Client(api_key=GEMINI_KEY)
+except Exception as e:
+    print(f"[chat_agent] Client init notice: {e}")
 
 # Comprehensive System Instruction combining App Features, User Manual, and Sorting Rules
 system_knowledge_base = """
@@ -152,18 +157,59 @@ CRITICAL CONVERSATIONAL CONSTRAINTS:
 
 
 def chat_with_silatanya(user_message):
-    config = types.GenerateContentConfig(
-        system_instruction=system_knowledge_base,
-        temperature=0.2,  # Low temperature guarantees it adheres strictly to the provided manual
-    )
+    if not user_message or not user_message.strip():
+        return "Hai! Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor.\n\nSila tanya tentang kitar semula, lokasi tong, atau sistem mata Eco-Points!"
 
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=user_message,
-        config=config
-    )
+    # 1. Try official Gemini client with gemini-1.5-flash
+    if client:
+        try:
+            config = types.GenerateContentConfig(
+                system_instruction=system_knowledge_base,
+                temperature=0.25,
+            )
+            response = client.models.generate_content(
+                model='gemini-1.5-flash',
+                contents=user_message,
+                config=config
+            )
+            if response and response.text and response.text.strip():
+                return response.text.strip()
+        except Exception as e:
+            print(f"[chat_agent Gemini SDK error]: {e}")
 
-    return response.text
+    # 2. Try direct REST call to Gemini API
+    try:
+        import urllib.request, json
+        api_key = os.environ.get("GEMINI_API_KEY", GEMINI_KEY)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        payload = {
+            "contents": [{"parts": [{"text": user_message}]}],
+            "systemInstruction": {"parts": [{"text": system_knowledge_base}]},
+            "generationConfig": {"temperature": 0.3, "maxOutputTokens": 600}
+        }
+        req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            res_data = json.loads(resp.read().decode('utf-8'))
+            text = res_data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+            if text and text.strip():
+                return text.strip()
+    except Exception as err:
+        print(f"[chat_agent direct REST error]: {err}")
+
+    # 3. SOP Keyword Fallback
+    msg = user_message.lower()
+    if any(k in msg for k in ['milo', 'tin', 'logam', 'can', 'metal', 'aluminium']):
+        return "Tin Milo atau tin aluminium diperbuat daripada **logam**. Sila bilas tin sehingga bersih dan buang ke dalam **Slot Logam (Warna Jingga)** di tong SmartTONG atau mana-mana tong kitar semula logam."
+    elif any(k in msg for k in ['plastik', 'botol', 'bottle', 'plastic']):
+        return "Botol atau bekas plastik perlu dikosongkan dan dibilas sebelum dimasukkan ke dalam **Slot Plastik (Warna Jingga)**."
+    elif any(k in msg for k in ['kertas', 'kadbod', 'paper', 'cardboard', 'box']):
+        return "Kertas dan kadbod bersih (tidak berminyak) boleh dimasukkan ke dalam **Slot Kertas (Warna Biru)**."
+    elif any(k in msg for k in ['penuh', 'aduan', 'lapor', 'report', 'broken', 'rosak']):
+        return "Untuk membuat aduan tong penuh atau masalah kebersihan, buka **Tab Aduan**, muat naik gambar bukti, dan hantar laporan untuk menerima **+10 Eco-Points**!"
+    elif any(k in msg for k in ['mata', 'point', 'hadiah', 'tebus', 'reward', 'voucher']):
+        return "Mata Eco-Points dikumpul melalui pengasingan sisa dan laporan aduan. Buka **Tab Hadiah** untuk menebus baucar Touch 'n Go, diskaun cukai pintu PBT, dan baucar peniaga!"
+
+    return "Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor.\n\nSaya boleh bantu menjawab soalan tentang kitar semula (plastik, tin, kertas), lokasi tong berdekatan, atau panduan aduan kebersihan!"
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS

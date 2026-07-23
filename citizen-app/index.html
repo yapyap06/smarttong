@@ -2015,7 +2015,7 @@ function cosineSimilarity(vecA, vecB) {
 async function getSopAnswer(q) {
   const lower = q.toLowerCase();
 
-  if (/\b(hello|hai|hi|salam|apa khabar|selamat)\b/.test(lower))
+  if (/^(hello|hai|hi|salam|apa khabar|selamat pagi|selamat petang|selamat malam)!?$/i.test(lower.trim()))
     return 'Hai! Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor berdasarkan SOP KDEBWM.\nTanya saya tentang kitar semula, status tong, jadual kutipan, atau sistem mata Eco-Points!';
   if (/terima kasih|thanks|thank you/.test(lower))
     return 'Sama-sama! Teruskan usaha mulia menjaga kebersihan Selangor. Bersama kita boleh!';
