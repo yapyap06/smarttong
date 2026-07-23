@@ -196,22 +196,42 @@ def chat_with_silatanya(user_message):
     except Exception as err:
         print(f"[chat_agent direct REST error]: {err}")
 
-    # 3. SOP Keyword Fallback
+    # 3. Comprehensive SOP Keyword & QnA Lookup Fallback
     msg = user_message.lower()
-    if any(k in msg for k in ['tissue', 'tisu', 'pampers', 'diaper', 'oily', 'minyak', 'soiled']):
-        return "Tisu terpakai, tuala kertas, pampers, atau bahan berminyak **TIDAK BOLEH dikitar semula**. Sila buang ke dalam **Slot Sisa Baki (Tong Hitam)**."
-    elif any(k in msg for k in ['milo', 'tin milo', 'tin aluminium', 'tin minuman', 'metal can', 'aluminium']):
+    
+    # Act / Law / Legal / Hukuman / Denda queries
+    if any(k in msg for k in ['act', 'akta', 'law', 'undang', 'hukuman', 'denda', 'saman', 'merata', 'illegal', 'haram', 'fine', 'penalty']):
+        return "Di bawah **Akta Pengurusan Sisa Pepejal dan Pembersihan Awam 2007 (Akta 672)** dan **Akta Kerajaan Tempatan 1976 (Akta 171)**, pembuangan sampah merata-rata tempat atau pembuangan haram adalah kesalahan jenayah. Pesalah boleh dikenakan komposit sehingga **RM 500** oleh PBT, atau denda mahkamah sehingga **RM 10,000** serta hukuman penjara."
+
+    # Tissue / Diaper / Soiled items
+    if any(k in msg for k in ['tissue', 'tisu', 'pampers', 'diaper', 'oily', 'minyak', 'soiled', 'pizza']):
+        return "Tisu terpakai, tuala kertas, pampers, atau bahan berminyak **TIDAK BOLEH dikitar semula** kerana serat kotoran. Sila buang ke dalam **Slot Sisa Baki (Tong Hitam)**."
+
+    # Milo / Tin / Logam / Metal Cans
+    if any(k in msg for k in ['milo', 'tin milo', 'tin aluminium', 'tin minuman', 'metal can', 'aluminium']):
         return "Tin Milo atau tin aluminium diperbuat daripada **logam**. Sila bilas tin sehingga bersih dan buang ke dalam **Slot Logam (Warna Jingga)** di tong SmartTONG atau mana-mana tong kitar semula logam."
-    elif any(k in msg for k in ['plastik', 'botol', 'bottle', 'plastic']):
+
+    # Plastic / Bottles
+    if any(k in msg for k in ['plastik', 'botol', 'bottle', 'plastic']):
         return "Botol atau bekas plastik perlu dikosongkan dan dibilas sebelum dimasukkan ke dalam **Slot Plastik (Warna Jingga)**."
-    elif any(k in msg for k in ['kertas', 'kadbod', 'paper', 'cardboard', 'box']):
+
+    # Paper / Cardboard
+    if any(k in msg for k in ['kertas', 'kadbod', 'paper', 'cardboard', 'box']):
         return "Kertas dan kadbod bersih (tidak berminyak) boleh dimasukkan ke dalam **Slot Kertas (Warna Biru)**."
-    elif any(k in msg for k in ['penuh', 'aduan', 'lapor', 'report', 'broken', 'rosak']):
+
+    # Report / Aduan / Full Bin / Broken Bin
+    if any(k in msg for k in ['penuh', 'aduan', 'lapor', 'report', 'broken', 'rosak', 'overflow']):
         return "Untuk membuat aduan tong penuh atau masalah kebersihan, buka **Tab Aduan**, muat naik gambar bukti, dan hantar laporan untuk menerima **+10 Eco-Points**!"
-    elif any(k in msg for k in ['mata', 'point', 'hadiah', 'tebus', 'reward', 'voucher']):
+
+    # Eco-Points / Mata / Redeem / Voucher / Rewards
+    if any(k in msg for k in ['mata', 'point', 'hadiah', 'tebus', 'reward', 'voucher', 'cukai']):
         return "Mata Eco-Points dikumpul melalui pengasingan sisa dan laporan aduan. Buka **Tab Hadiah** untuk menebus baucar Touch 'n Go, diskaun cukai pintu PBT, dan baucar peniaga!"
 
-    return "Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor.\n\nSaya boleh bantu menjawab soalan tentang kitar semula (plastik, tin, kertas, tisu), lokasi tong berdekatan, atau panduan aduan kebersihan!"
+    # Location / Nearest Bin / Map
+    if any(k in msg for k in ['lokasi', 'terdekat', 'near', 'location', 'map', 'peta', 'mana']):
+        return "Untuk mencari lokasi tong SmartTONG terdekat, buka **Tab UTAMA (Peta)**. Indikator warna menunjukkan: **Hijau** (Normal/Kosong), **Kuning** (Amaran), **Merah** (Penuh), dan **Ungu** (Bahan Berbahaya)."
+
+    return "Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor.\n\nSaya boleh bantu menjawab soalan tentang kitar semula (plastik, tin, kertas, tisu), akta & undang-undang pembuangan sampah, lokasi tong berdekatan, atau panduan aduan kebersihan!"
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
