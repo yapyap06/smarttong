@@ -1434,7 +1434,7 @@ html,body {
                 Ambil / Pilih Foto Bukti
               </div>
             </div>
-            <input type="file" id="r-photo" accept="image/*" capture="environment" style="display:none" onchange="prevPhoto(this)" />
+            <input type="file" id="r-photo" accept="image/*" style="display:none" onchange="prevPhoto(this)" />
             <div id="r-prev"></div>
           </div>
 
@@ -3350,9 +3350,20 @@ function prevPhoto(inp) {
   const reader = new FileReader();
   reader.onload = function(e) {
     currentPhotoData = e.target.result;
-    document.getElementById('r-prev').innerHTML = `<img src="${currentPhotoData}" onclick="openLightbox('${currentPhotoData}')" style="width:100%;border-radius:var(--rsm);max-height:160px;object-fit:cover;margin-top:8px;cursor:zoom-in;" alt="Foto laporan"/>`;
+    document.getElementById('r-prev').innerHTML = `
+      <div style="position:relative;margin-top:10px;display:inline-block;width:100%;">
+        <img src="${currentPhotoData}" onclick="openLightbox('${currentPhotoData}')" style="width:100%;border-radius:var(--rsm);max-height:180px;object-fit:cover;cursor:zoom-in;display:block;" alt="Foto laporan"/>
+        <button type="button" onclick="removeReportPhoto()" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(220,38,38,0.92);color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3);font-size:16px;font-weight:bold;line-height:1;" title="Padam Foto">&times;</button>
+      </div>`;
   };
   reader.readAsDataURL(f);
+}
+function removeReportPhoto() {
+  currentPhotoData = '';
+  const inp = document.getElementById('r-photo');
+  if (inp) inp.value = '';
+  const prev = document.getElementById('r-prev');
+  if (prev) prev.innerHTML = '';
 }
 function submitRep() {
   const binId = document.getElementById('r-binid')?.value.trim() || 'Lokasi Awam';
@@ -3564,10 +3575,11 @@ function updateCitizenUI() {
   localStorage.setItem('myPoints', myPoints);
   
   if (document.getElementById('c-pts-big')) document.getElementById('c-pts-big').textContent = myPoints;
-  if (document.getElementById('hdr-pts-val')) document.getElementById('hdr-pts-val').textContent = myPoints;
+  if (document.getElementById('hdr-pts-num')) document.getElementById('hdr-pts-num').textContent = myPoints;
+  
   const pct = Math.min(100, Math.round(myPoints / 500 * 100));
-  const tier = myPoints >= 1000 ? '\ud83e\udda5 Wira Selangor' : myPoints >= 500 ? '\ud83c\udfc6 Juara Kebersihan' : '\ud83c\udf3f Pejuang Kebersihan';
-  const next = myPoints >= 1000 ? 'Tahniah \u2014 tahap tertinggi!' : myPoints >= 500 ? `${1000 - myPoints} mata lagi untuk Wira Selangor` : `${500 - myPoints} mata lagi untuk Juara Kebersihan`;
+  const tier = myPoints >= 1000 ? '🦥 Wira Selangor' : myPoints >= 500 ? '🏆 Juara Kebersihan' : '🌿 Pejuang Kebersihan';
+  const next = myPoints >= 1000 ? 'Tahniah — tahap tertinggi!' : myPoints >= 500 ? `${1000 - myPoints} mata lagi untuk Wira Selangor` : `${500 - myPoints} mata lagi untuk Juara Kebersihan`;
   
   if (document.getElementById('c-tier')) document.getElementById('c-tier').textContent = tier;
   if (document.getElementById('c-pts-bar')) document.getElementById('c-pts-bar').style.width = pct + '%';
@@ -3575,6 +3587,10 @@ function updateCitizenUI() {
   
   if (document.getElementById('c-stat-reports')) document.getElementById('c-stat-reports').textContent = mySubmittedReports;
   if (document.getElementById('c-stat-approved')) document.getElementById('c-stat-approved').textContent = myApprovedReports;
+
+  // Sync to Firestore
+  const hash = localStorage.getItem('session_ic_hash');
+  if (hash && typeof db !== 'undefined') db.collection('sessions').doc(hash).update({points: myPoints}).catch(()=>{});
 }
 
 //  Settings 
