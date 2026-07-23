@@ -780,7 +780,7 @@ html,body {
 .gov-ac-reviewer-box.batal { background:#FEE2E2; border:1px solid #FCA5A5; color:var(--red); }
 
 /* Toast */
-.toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-10px); background:var(--dark); color:white; padding:10px 20px; border-radius:20px; font-size:13px; font-weight:600; box-shadow:var(--sh-lg); opacity:0; transition:all .3s; pointer-events:none; z-index:600; white-space:nowrap; }
+.toast { position:fixed; top:70px; left:50%; transform:translateX(-50%) translateY(-10px); background:var(--dark); color:white; padding:10px 16px; border-radius:20px; font-size:12px; font-weight:600; text-align:center; box-shadow:var(--sh-lg); opacity:0; transition:all .3s; pointer-events:none; z-index:600; max-width:calc(100vw - 32px); width:max-content; box-sizing:border-box; white-space:normal; word-break:break-word; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
 /* Photo Lightbox */
@@ -2626,23 +2626,7 @@ function getBotAnswer(q) { return getSopAnswer(q); }
 function mdBold(t) { return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'); }
 function escHtml(t) { const d=document.createElement('div');d.textContent=t;return d.innerHTML; }
 
-//  Citizen UI 
-function updateCitizenUI() {
-  const p = myPoints;
-  document.getElementById('hdr-pts-num').textContent = p;
-  document.getElementById('c-pts-big').textContent   = p;
-  const tier = p >= 1000 ? 'Wira Selangor' : p >= 500 ? 'Juara Kebersihan' : 'Pejuang Kebersihan';
-  const next = p >= 1000 ? 'Tahniah — tahap tertinggi!'
-    : p >= 500 ? `${1000-p} mata lagi untuk Wira Selangor`
-    : `${500-p} mata lagi untuk Juara Kebersihan`;
-  const pct = p >= 1000 ? 100 : p >= 500 ? Math.round((p-500)/5) : Math.round(p/5);
-  document.getElementById('c-tier').textContent    = tier;
-  document.getElementById('c-pts-next').textContent = next;
-  document.getElementById('c-pts-bar').style.width = pct + '%';
-  // Save updated points
-  const hash = localStorage.getItem('session_ic_hash');
-  if (hash) db.collection('sessions').doc(hash).update({points:p}).catch(()=>{});
-}
+
 
 function renderCitizenSched() {
   const items = [
@@ -3399,7 +3383,7 @@ function submitRep() {
   myPoints += 10;
   updateCitizenUI();
   
-  showToast('🎉 Laporan dihantar! (+10 Mata) — Menunggu Pengesahan');
+  showToast('Laporan dihantar! (+10 Mata) — Menunggu Pengesahan');
   if (document.getElementById('r-binid')) document.getElementById('r-binid').value = '';
   if (document.getElementById('r-desc')) document.getElementById('r-desc').value = '';
   if (document.getElementById('r-prev')) document.getElementById('r-prev').innerHTML = '';
@@ -3577,7 +3561,7 @@ function updateCitizenUI() {
   if (document.getElementById('c-pts-big')) document.getElementById('c-pts-big').textContent = myPoints;
   if (document.getElementById('hdr-pts-num')) document.getElementById('hdr-pts-num').textContent = myPoints;
   
-  const pct = Math.min(100, Math.round(myPoints / 500 * 100));
+  const pct = Math.min(100, Math.max(0, Math.round((myPoints / 1000) * 100)));
   const tier = myPoints >= 1000 ? '🦥 Wira Selangor' : myPoints >= 500 ? '🏆 Juara Kebersihan' : '🌿 Pejuang Kebersihan';
   const next = myPoints >= 1000 ? 'Tahniah — tahap tertinggi!' : myPoints >= 500 ? `${1000 - myPoints} mata lagi untuk Wira Selangor` : `${500 - myPoints} mata lagi untuk Juara Kebersihan`;
   
