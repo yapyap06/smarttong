@@ -92,33 +92,36 @@ html,body {
 #app-header {
   flex-shrink:0;
   display:flex; align-items:center; justify-content:space-between;
-  padding:0 20px;
+  padding:0 16px;
   height:var(--hdr-h);
   background:var(--white);
   border-bottom:1px solid var(--g200);
   z-index:50;
+  gap:8px;
 }
-.hdr-brand { display:flex; align-items:center; gap:10px; }
+.hdr-brand { display:flex; align-items:center; gap:8px; min-width:0; }
 .hdr-logo {
-  width:34px; height:34px; background:var(--green);
+  width:32px; height:32px; background:var(--green);
   border-radius:9px; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
 }
-.hdr-logo svg { color:white; width:18px; height:18px; }
-.hdr-title { font-size:16px; font-weight:700; color:var(--dark); }
-.hdr-sub   { font-size:10px; color:var(--g500); line-height:1.2; }
-.hdr-right { display:flex; align-items:center; gap:8px; }
+.hdr-logo svg { color:white; width:16px; height:16px; }
+.hdr-title { font-size:14px; font-weight:700; color:var(--dark); white-space:nowrap; }
+.hdr-sub   { font-size:10px; color:var(--g500); line-height:1.2; white-space:nowrap; }
+.hdr-right { display:flex; align-items:center; gap:6px; flex-shrink:0; }
 .hdr-pts {
-  display:flex; align-items:center; gap:5px;
+  display:flex; align-items:center; gap:4px;
   background:var(--green-l); border:1px solid var(--green-m);
-  border-radius:20px; padding:5px 12px;
+  border-radius:20px; padding:4px 9px;
 }
-.hdr-pts-num { font-size:14px; font-weight:700; color:var(--green); }
+.hdr-pts-num { font-size:13px; font-weight:700; color:var(--green); }
 .hdr-pts-lbl { font-size:10px; color:var(--green); font-weight:500; }
 .hdr-icon-btn {
-  width:36px; height:36px; border-radius:9px;
+  width:34px; height:34px; border-radius:9px;
   background:var(--g100); border:none; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   color:var(--g600); position:relative; transition:background .15s;
+  flex-shrink:0;
 }
 .hdr-icon-btn:hover { background:var(--g200); }
 .hdr-icon-btn svg { width:17px; height:17px; }
