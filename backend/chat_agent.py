@@ -184,11 +184,11 @@ def chat_with_silatanya(user_message):
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
         payload = {
             "contents": [{"parts": [{"text": user_message}]}],
-            "systemInstruction": {"parts": [{"text": system_knowledge_base}]},
-            "generationConfig": {"temperature": 0.3, "maxOutputTokens": 600}
+            "system_instruction": {"parts": [{"text": system_knowledge_base}]},
+            "generationConfig": {"temperature": 0.25, "maxOutputTokens": 600}
         }
         req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=12) as resp:
             res_data = json.loads(resp.read().decode('utf-8'))
             text = res_data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
             if text and text.strip():
@@ -198,7 +198,9 @@ def chat_with_silatanya(user_message):
 
     # 3. SOP Keyword Fallback
     msg = user_message.lower()
-    if any(k in msg for k in ['milo', 'tin', 'logam', 'can', 'metal', 'aluminium']):
+    if any(k in msg for k in ['tissue', 'tisu', 'pampers', 'diaper', 'oily', 'minyak', 'soiled']):
+        return "Tisu terpakai, tuala kertas, pampers, atau bahan berminyak **TIDAK BOLEH dikitar semula**. Sila buang ke dalam **Slot Sisa Baki (Tong Hitam)**."
+    elif any(k in msg for k in ['milo', 'tin milo', 'tin aluminium', 'tin minuman', 'metal can', 'aluminium']):
         return "Tin Milo atau tin aluminium diperbuat daripada **logam**. Sila bilas tin sehingga bersih dan buang ke dalam **Slot Logam (Warna Jingga)** di tong SmartTONG atau mana-mana tong kitar semula logam."
     elif any(k in msg for k in ['plastik', 'botol', 'bottle', 'plastic']):
         return "Botol atau bekas plastik perlu dikosongkan dan dibilas sebelum dimasukkan ke dalam **Slot Plastik (Warna Jingga)**."
@@ -209,7 +211,7 @@ def chat_with_silatanya(user_message):
     elif any(k in msg for k in ['mata', 'point', 'hadiah', 'tebus', 'reward', 'voucher']):
         return "Mata Eco-Points dikumpul melalui pengasingan sisa dan laporan aduan. Buka **Tab Hadiah** untuk menebus baucar Touch 'n Go, diskaun cukai pintu PBT, dan baucar peniaga!"
 
-    return "Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor.\n\nSaya boleh bantu menjawab soalan tentang kitar semula (plastik, tin, kertas), lokasi tong berdekatan, atau panduan aduan kebersihan!"
+    return "Saya **SilaTanya AI** — pakar pengurusan sisa SmartTONG Selangor.\n\nSaya boleh bantu menjawab soalan tentang kitar semula (plastik, tin, kertas, tisu), lokasi tong berdekatan, atau panduan aduan kebersihan!"
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
