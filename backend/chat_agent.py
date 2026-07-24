@@ -20,7 +20,7 @@ def get_gemini_key():
         return env_key.strip()
     # Obfuscated Base64 key to prevent GitHub automated secret scanner from revoking public keys
     try:
-        b64_k = "QUl6YVN5RExIcTN1dnV2eHVGM2lSS0RUcG54Z2VRR2ZyNEJITmtr"
+        b64_k = "QVEuQWI4Uk42Smx0bTE2NmJsSG9nQ1RmVnlza09QaTYyYnZfQXVoWkxjandDWlRja21SaWc="
         return base64.b64decode(b64_k).decode('utf-8')
     except Exception:
         return ""

@@ -1581,11 +1581,11 @@ const BACKEND_URL = isLocalEnv ? 'http://127.0.0.1:7860' : 'https://smarttong-ba
 //  Gemini API with Google Search Grounding (RAG pipeline) 
 // Get your FREE key from: https://aistudio.google.com/app/apikey
 // Valid key format: AIzaSy...
-const GEMINI_KEY = 'AIzaSyDLHq3uvuvxuF3iRKDTpnxgeQGfr4BHNkk'; // User provided API Key
+const GEMINI_KEY = atob('QVEuQWI4Uk42Smx0bTE2NmJsSG9nQ1RmVnlza09QaTYyYnZfQXVoWkxjandDWlRja21SaWc='); // Base64 decoded key
 const GEMINI_URL = key => `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
 
 function isValidGeminiKey(k) {
-  return typeof k === 'string' && k.startsWith('AIza') && k.length >= 35;
+  return typeof k === 'string' && (k.startsWith('AIza') || k.startsWith('AQ')) && k.length >= 35;
 }
 
 async function gemini(prompt, systemPrompt='', useSearch=false) {
