@@ -102,7 +102,40 @@ def predict():
                 }
             })
 
-        # 2. Heuristic fallback for demo stability
+        # 2. Try Gemini 1.5 Flash Vision AI Fallback (Lightweight, Cloud-Safe)
+        try:
+            import urllib.request
+            from backend.chat_agent import get_gemini_key
+            k = get_gemini_key()
+            if k:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={k}"
+                payload = {
+                    "contents": [{
+                        "parts": [
+                            { "text": "Classify this waste image for SmartTONG Selangor. Categories: Cardboard, Glass, Metal, Paper, Plastic, Trash. Output JSON ONLY: {\"class\": \"CATEGORY_NAME\", \"bin\": \"SLOT_NAME\", \"color\": \"#HEX_COLOR\", \"confidence\": 94.5, \"tip\": \"RECYCLING_TIP\"}" },
+                            { "inlineData": { "mimeType": "image/jpeg", "data": img_b64 } }
+                        ]
+                    }]
+                }
+                req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+                with urllib.request.urlopen(req, timeout=14) as resp:
+                    res_data = json.loads(resp.read().decode('utf-8'))
+                    text = res_data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+                    import re
+                    json_match = re.search(r'\{[\s\S]*\}', text)
+                    if json_match:
+                        parsed = json.loads(json_match.group(0))
+                        return jsonify({
+                            "class": parsed.get("class", "Plastic"),
+                            "confidence": float(parsed.get("confidence", 94.5)),
+                            "bin": parsed.get("bin", "Orange Recycling Bin (Plastik)"),
+                            "color": parsed.get("color", "#FB8C00"),
+                            "tip": parsed.get("tip", "Empty bottles and flatten them to save space.")
+                        })
+        except Exception as err:
+            print(f"[Gemini Vision AI fallback error]: {err}")
+
+        # 3. Heuristic fallback for demo stability
         return jsonify({
             "class": "Plastic",
             "confidence": 94.5,

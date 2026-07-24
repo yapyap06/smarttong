@@ -1572,6 +1572,12 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
+// Determine backend endpoint dynamically (Local localhost vs Production Render)
+const isLocalEnv = window.location.hostname === 'localhost' || 
+                   window.location.hostname === '127.0.0.1' || 
+                   window.location.protocol === 'file:';
+const BACKEND_URL = isLocalEnv ? 'http://127.0.0.1:7860' : 'https://smarttong-backend.onrender.com';
+
 //  Gemini API with Google Search Grounding (RAG pipeline) 
 // Get your FREE key from: https://aistudio.google.com/app/apikey
 // Valid key format: AIzaSy...
@@ -1926,9 +1932,11 @@ const QNA_DB = [
   { k:'navigate directions pin', a:'Tap your preferred bin pin on the map, then tap Navigate for Google Maps or Waze.' },
   { k:'bin disappeared missing map', a:'The unit is likely temporarily offline for clearing or maintenance.' },
   { k:'paper cardboard klang', a:'Filter the region by Klang on the HOME menu and look for active Paper slots.' },
-  { k:'metal aluminium petaling jaya', a:'Filter the zone by MBPJ/Petaling on the HOME tab.' },
   { k:'points calculate reward', a:'Points are dynamically derived based on weight and AI classification.' },
   { k:'redeem voucher eco-points', a:'Open the REWARDS tab to browse a digital catalog of e-vouchers.' },
+  { k:'teach knowledge recycling kitar semula ilmu panduan info learn', a:'**Panduan Kitar Semula SmartTONG:**\n1. **Kertas/Kadbod (Slot Biru):** Surat khabar, majalah, kotak bersih.\n2. **Plastik (Slot Jingga):** Botol minuman, bekas sabun (bilas dulu).\n3. **Logam (Slot Jingga):** Tin minuman aluminium, tin Milo, tin makanan.\n4. **Sisa Baki (Slot Hitam):** Tisu, pampers, polistirena, sisa berminyak.' },
+  { k:'act akta law undang denda saman hukuman merata illegal fine penalty dispose tempat', a:'Di bawah **Akta Pengurusan Sisa Pepejal dan Pembersihan Awam 2007 (Akta 672)** dan **Akta Kerajaan Tempatan 1976 (Akta 171)**, pembuangan sampah merata-rata tempat atau pembuangan haram adalah kesalahan jenayah dengan komposit sehingga **RM 500** atau denda mahkamah sehingga **RM 10,000** serta hukuman penjara.' },
+  { k:'tissue tisu paper towel pampers diaper soiled oily pizza', a:'Tisu terpakai, tuala kertas, pampers, atau kotak berminyak **TIDAK BOLEH dikitar semula** kerana serat kotoran. Sila buang ke dalam **Slot Sisa Baki (Tong Hitam)**.' },
 ];
 
 //  Keyword Relevance Filter 
@@ -2043,7 +2051,7 @@ async function getSopAnswer(q) {
       }
       if (score > bestScore) { bestScore = score; best = entry; }
     }
-    if (best && bestScore >= 4) return best.a;
+    if (best && bestScore >= 2) return best.a;
   }
 
   // Direct Gemini AI Fallback for any unmapped question when online / on Vercel
@@ -2591,7 +2599,7 @@ async function sendChat() {
   showTyping();
 
   try {
-    const resp = await fetch('https://smarttong-backend.onrender.com/chat', {
+    const resp = await fetch(`${BACKEND_URL}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: q })
@@ -3459,7 +3467,7 @@ async function captureClassify() {
 
   try{
     const base64Data = dataUrl.split(',')[1];
-    const r=await fetch('https://smarttong-backend.onrender.com/predict',{
+    const r=await fetch(`${BACKEND_URL}/predict`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ image: base64Data })
