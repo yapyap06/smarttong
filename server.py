@@ -108,7 +108,7 @@ def predict():
             from backend.chat_agent import get_gemini_key
             k = get_gemini_key()
             if k:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={k}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={k}"
                 payload = {
                     "contents": [{
                         "parts": [

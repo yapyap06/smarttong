@@ -192,7 +192,7 @@ def chat_with_silatanya(user_message):
                 tools=[{"google_search": {}}]
             )
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-2.5-flash',
                 contents=user_message,
                 config=config
             )
@@ -205,7 +205,7 @@ def chat_with_silatanya(user_message):
     try:
         import urllib.request, json
         api_key = os.environ.get("GEMINI_API_KEY", GEMINI_KEY)
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
         payload = {
             "contents": [{"parts": [{"text": user_message}]}],
             "system_instruction": {"parts": [{"text": dynamic_system_prompt}]},
@@ -225,7 +225,7 @@ def chat_with_silatanya(user_message):
     try:
         import urllib.request, json
         api_key = os.environ.get("GEMINI_API_KEY", GEMINI_KEY)
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
         payload = {
             "contents": [{"parts": [{"text": user_message}]}],
             "system_instruction": {"parts": [{"text": dynamic_system_prompt}]},

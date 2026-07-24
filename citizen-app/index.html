@@ -3481,10 +3481,10 @@ async function captureClassify() {
     // Direct passthrough to renderARMResult like dashboard
     renderARMResult(data);
   }catch(e){
-    console.warn('[Cam Scanner] Local python server offline/Vercel. Using Gemini 1.5 Flash Vision AI API...', e);
+    console.warn('[Cam Scanner] Local python server offline/Vercel. Using Gemini 2.5 Flash Vision AI API...', e);
     try {
       const base64Data = dataUrl.split(',')[1];
-      const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+      const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
       const vResp = await fetch(visionUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
