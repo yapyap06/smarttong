@@ -1111,10 +1111,18 @@
     }
 
     // 5. Actuation Animation: Open Flap & Throw Stimulated Waste In
+    const flapCloseTimers = {};
+
     function triggerActuation(slotKey, title, itemType) {
       const flap = flaps[slotKey];
       const servo = servos[slotKey];
       if (!flap) return;
+
+      // Clear any prior pending close timer for this slot
+      if (flapCloseTimers[slotKey]) {
+        clearTimeout(flapCloseTimers[slotKey]);
+        delete flapCloseTimers[slotKey];
+      }
 
       playBeep(659, 0.08);
       setTimeout(() => playBeep(880, 0.12), 100);
@@ -1139,26 +1147,27 @@
       const cfg = binConfigs.find(c => c.key === slotKey);
       animateItemThrow(activeItem, cfg ? cfg.posX : 0, slotKey);
 
-      // Auto-Close after 4 seconds
-      setTimeout(() => {
+      // Auto-Close promptly after the item has entered the flap cavity (~1.3 seconds)
+      flapCloseTimers[slotKey] = setTimeout(() => {
         closeFlap(slotKey);
-      }, 4200);
+        delete flapCloseTimers[slotKey];
+      }, 1400);
     }
 
     function closeFlap(slotKey) {
       const flap = flaps[slotKey];
       if (!flap) return;
       playServoSound();
-      flap.targetAngle = 0; // Return to closed
+      flap.targetAngle = 0; // Return to closed position
 
       document.getElementById('val-lock').textContent = 'ALL LOCKED';
       document.getElementById('val-lock').style.color = '#16a34a';
-      document.getElementById('oled-disp').innerHTML = `SISA BERJAYA DIMASUKKAN<br/>Flap Dikunci Semula (Standby)`;
-      addLog(`Motor servo ${slotKey.toUpperCase()} kembali ke 0°. Intake flap dikunci rapat.`);
+      document.getElementById('oled-disp').innerHTML = `SISA BERJAYA DIMASUKKAN<br/>Flap Dikunci Rapat (Standby)`;
+      addLog(`Item selamat masuk. Motor servo ${slotKey.toUpperCase()} kembali ke 0°. Pintu flap ditutup &amp; dikunci rapat.`);
 
       setTimeout(() => {
         document.getElementById('oled-disp').innerHTML = `SYSTEM STANDBY...<br/>Sedia Menerima Imbasan Sisa`;
-      }, 2500);
+      }, 2000);
     }
 
     function animateItemThrow(itemMesh, targetX, slotKey) {
@@ -1361,6 +1370,9 @@
         const servo = servos[cfg.key];
         if (flap) {
           flap.currentAngle += (flap.targetAngle - flap.currentAngle) * 0.14;
+          if (Math.abs(flap.targetAngle - flap.currentAngle) < 0.005) {
+            flap.currentAngle = flap.targetAngle;
+          }
           flap.hinge.rotation.x = flap.currentAngle;
           if (servo) {
             servo.rotation.z = flap.currentAngle * 0.85;
