@@ -3501,14 +3501,71 @@ async function captureClassify() {
   try{
     const base64Data = dataUrl.split(',')[1];
 
-    // 1️⃣ Primary: HF Space (pure Keras model, no Gemini)
+    // 1️⃣ Primary for Live Camera: Gemini 2.5 Flash Vision API
+    // Accurately recognizes real-world objects, ignores fingers/hands, laptops, lighting
     let predDone = false;
+    try {
+      const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
+      const vResp = await fetch(visionUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: "Analisis gambar sisa fizikal ini untuk sistem SmartTONG Selangor (KDEBWM). Kenalpasti objek fizikal utama yang dipegang atau dalam imej (abaikan jari tangan, meja, laptop atau bilik). Klasifikasikan secara TEPAT ke dalam SALAH SATU: Plastic, Metal, Glass, Paper, Cardboard, atau Trash. Contoh: pembungkus snek/foil atau klip rambut/pengepit plastik = Plastic; tin minuman = Metal; botol kaca = Glass; kertas bersih = Paper; kotak = Cardboard; tisu kotor/lap basah = Trash. Jawab DALAM FORMAT JSON SAHAJA: {\"class\": \"Plastic\"|\"Metal\"|\"Glass\"|\"Paper\"|\"Cardboard\"|\"Trash\", \"bin\": \"NAMA_SLOT\", \"color\": \"#HEX_COLOR\", \"confidence\": 95, \"tip\": \"PANDUAN_RINGKAS\"}. Bin & color: Plastic -> 'Orange Recycling Bin (Plastik)', color: '#FB8C00'; Metal -> 'Orange Recycling Bin (Logam)', color: '#EF6C00'; Paper -> 'Blue Recycling Bin (Kertas/Kadbod)', color: '#1976D2'; Cardboard -> 'Blue Recycling Bin (Kertas/Kadbod)', color: '#1976D2'; Glass -> 'Brown Recycling Bin (Kaca)', color: '#795548'; Trash -> 'Black Bin (Sisa Baki)', color: '#424242'." },
+              { inlineData: { mimeType: "image/jpeg", data: base64Data } }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 1200,
+            responseMimeType: "application/json"
+          }
+        }),
+        signal: AbortSignal.timeout(12000)
+      });
+      if (vResp.ok) {
+        const vData = await vResp.json();
+        const rawTxt = vData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const jsonMatch = rawTxt.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.class) {
+            // Normalize class and color
+            let c = parsed.class.trim();
+            if (c.toLowerCase() === 'plastik') c = 'Plastic';
+            if (c.toLowerCase() === 'logam') c = 'Metal';
+            if (c.toLowerCase() === 'kaca') c = 'Glass';
+            if (c.toLowerCase() === 'kertas') c = 'Paper';
+            if (c.toLowerCase() === 'kadbod') c = 'Cardboard';
+            if (c.toLowerCase() === 'sisa baki') c = 'Trash';
+            parsed.class = c;
+            if (!parsed.bin) {
+              if (c === 'Plastic') { parsed.bin = 'Orange Recycling Bin (Plastik)'; parsed.color = '#FB8C00'; }
+              else if (c === 'Metal') { parsed.bin = 'Orange Recycling Bin (Logam)'; parsed.color = '#EF6C00'; }
+              else if (c === 'Glass') { parsed.bin = 'Brown Recycling Bin (Kaca)'; parsed.color = '#795548'; }
+              else if (c === 'Trash') { parsed.bin = 'Black Bin (Sisa Baki)'; parsed.color = '#424242'; }
+              else { parsed.bin = 'Blue Recycling Bin (Kertas/Kadbod)'; parsed.color = '#1976D2'; }
+            }
+            document.getElementById('scan-load').style.display='none';
+            renderARMResult(parsed);
+            predDone = true;
+          }
+        }
+      }
+    } catch(vErr) {
+      console.warn('[Scanner] Gemini Vision direct call unavailable, trying Cloud Backend...', vErr);
+    }
+
+    if (predDone) return;
+
+    // 2️⃣ Secondary: HF Space (FastAPI / Keras Backend)
     try {
       const r = await fetch(`${BACKEND_URL}/predict`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ image: base64Data }),
-        signal: AbortSignal.timeout(25000)
+        signal: AbortSignal.timeout(20000)
       });
       if (r.ok) {
         const data = await r.json();
@@ -3524,14 +3581,14 @@ async function captureClassify() {
 
     if (predDone) return;
 
-    // 2️⃣ Secondary fallback: Render backend
+    // 3️⃣ Tertiary: Render backend
     if (!isLocalEnv) {
       try {
         const r2 = await fetch(`${BACKEND_FALLBACK}/predict`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ image: base64Data }),
-          signal: AbortSignal.timeout(20000)
+          signal: AbortSignal.timeout(15000)
         });
         if (r2.ok) {
           const data2 = await r2.json();
@@ -3542,46 +3599,16 @@ async function captureClassify() {
           }
         }
       } catch(e2) {
-        console.warn('[Scanner] Render also offline, using Gemini Vision AI...', e2);
+        console.warn('[Scanner] Render backend offline...', e2);
       }
     }
 
     if (predDone) return;
 
-    // 3️⃣ Last resort: Gemini Vision API (browser-side)
-    throw new Error('Both backends offline');
+    throw new Error('All prediction pipelines exhausted');
 
   }catch(e){
-    console.warn('[Cam Scanner] All backends offline. Using Gemini 2.5 Flash Vision AI API...', e);
-    try {
-      const base64Data = dataUrl.split(',')[1];
-      const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
-      const vResp = await fetch(visionUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: "Analisis gambar sisa ini untuk SmartTONG Selangor. Klasifikasikan ke dalam salah satu kategori berikut: Cardboard, Glass, Metal, Paper, Plastic, atau Sisa Baki. Jawab DALAM FORMAT JSON SAHAJA: {\"class\": \"KATEGORI_ITEM\", \"bin\": \"NAMA_SLOT\", \"color\": \"#HEX_COLOR\", \"confidence\": 94, \"tip\": \"PANDUAN_KITAR_SEMULA_SINGKAT\"}. Hex color contoh: Cardboard=#1976D2, Glass=#795548, Metal=#EF6C00, Paper=#1976D2, Plastic=#FB8C00, Sisa Baki=#424242." },
-              { inlineData: { mimeType: "image/jpeg", data: base64Data } }
-            ]
-          }]
-        })
-      });
-      if (vResp.ok) {
-        const vData = await vResp.json();
-        const rawTxt = vData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const jsonMatch = rawTxt.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          document.getElementById('scan-load').style.display='none';
-          renderARMResult(parsed);
-          return;
-        }
-      }
-    } catch(err2) {
-      console.error('[Gemini Vision AI Error]', err2);
-    }
+    console.error('[Cam Scanner Error]', e);
     document.getElementById('scan-load').style.display='none';
     renderARMResult({label:'Tin Aluminium (Demo)',accepted:true,slot:'LOGAM',confidence:.94,reason:'Tin aluminium bersih, layak dikitar semula',isHazardous:false});
   }
