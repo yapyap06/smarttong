@@ -3557,6 +3557,13 @@ async function captureClassify() {
   }
 }
 
+function getConfidenceLabel(conf) {
+  const c = Number(conf);
+  if (c >= 85) return 'Keyakinan: Sangat Tinggi';
+  if (c >= 50) return 'Keyakinan: Tinggi';
+  return 'Keyakinan: Sederhana';
+}
+
 function renderARMResult(data) {
   const res=document.getElementById('arm-res');
   const lbl=document.getElementById('arm-label'),slot=document.getElementById('arm-slot');
@@ -3568,7 +3575,7 @@ function renderARMResult(data) {
     const c = data.color || 'var(--green)';
     lbl.textContent = data.class;
     lbl.style.color = c;
-    reason.textContent = `Keyakinan: ${Number(data.confidence).toFixed(1)}% — ${data.tip || ''}`;
+    reason.textContent = `${getConfidenceLabel(data.confidence)} — ${data.tip || ''}`;
     
     slot.style.background = c.replace(')', ', 0.1)').replace('rgb', 'rgba').replace('#', 'rgba(') + (c.startsWith('#') ? '0,0,0,0.1)' : ''); 
     // basic css fallback for opacity 
@@ -3588,7 +3595,8 @@ function renderARMResult(data) {
     slot.style.border = '1px solid rgba(66, 66, 66, 0.3)';
     slot.style.color = 'var(--dark)';
     slot.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Black Bin (Sisa Baki)';
-    reason.textContent = `Keyakinan: ${Math.round((data.confidence||.9)*100)}% — ${data.reason}`;
+    const confVal = (data.confidence && data.confidence <= 1) ? data.confidence * 100 : (data.confidence || 90);
+    reason.textContent = `${getConfidenceLabel(confVal)} — ${data.reason || ''}`;
   }
   
   act.style.display='block';

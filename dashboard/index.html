@@ -3587,11 +3587,18 @@
       }
     }
 
+    function getConfidenceLabel(conf) {
+      const c = Number(conf);
+      if (c >= 85) return 'Keyakinan: Sangat Tinggi';
+      if (c >= 50) return 'Keyakinan: Tinggi';
+      return 'Keyakinan: Sederhana';
+    }
+
     function showScanResult(result) {
       const c = result.color || 'var(--green)';
       document.getElementById('scan-class').textContent = result.class;
       document.getElementById('scan-class').style.color = c;
-      document.getElementById('scan-conf').textContent = `Keyakinan: ${Number(result.confidence).toFixed(1)}%${result.tip ? ' — ' + result.tip : ''}`;
+      document.getElementById('scan-conf').textContent = `${getConfidenceLabel(result.confidence)}${result.tip ? ' — ' + result.tip : ''}`;
       document.getElementById('scan-bin').innerHTML =
         `<svg width="13" height="13" viewBox="0 0 24 24" style="stroke:${c};fill:none;stroke-width:2;">` +
         `<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>` +
