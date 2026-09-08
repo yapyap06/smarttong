@@ -3578,8 +3578,7 @@ function renderARMResult(data) {
     const c = data.color || 'var(--green)';
     lbl.textContent = data.class;
     lbl.style.color = c;
-    const modelTag = '<div style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:#EFF6FF;border:1px solid #BFDBFE;color:#1D4ED8;border-radius:6px;font-size:11px;font-weight:700;margin-bottom:6px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Model: best_model_finetuned224.keras</div>';
-    reason.innerHTML = `${modelTag}<br>${getConfidenceLabel(data.confidence)} (${data.confidence}%) — ${data.tip || ''}`;
+    reason.textContent = `${getConfidenceLabel(data.confidence)} (${data.confidence}%) — ${data.tip || ''}`;
     
     slot.style.background = c.replace(')', ', 0.1)').replace('rgb', 'rgba').replace('#', 'rgba(') + (c.startsWith('#') ? '0,0,0,0.1)' : ''); 
     // basic css fallback for opacity 
@@ -3638,25 +3637,31 @@ function triggerKioskOpen() {
     timestamp: Date.now()
   };
 
-  // 1. Send to Global Cloud Relay (Works across any mobile 5G/Wi-Fi to laptop simulator)
-  try {
-    fetch('https://ninjayy-smarttong-ai.hf.space/actuate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).then(r => r.json()).then(res => {
-      console.log('[SmartTONG Cloud Relay] Actuation sent:', res);
-    }).catch(err => {
-      console.warn('[SmartTONG Cloud Relay Error]', err);
-    });
-  } catch(e) {
-    console.warn('[SmartTONG Cloud Relay]', e);
-  }
+  // 1. Send to Global Cloud Relays in parallel (HF Space & Render)
+  const relayUrls = [
+    'https://ninjayy-smarttong-ai.hf.space/actuate',
+    'https://smarttong-backend.onrender.com/actuate'
+  ];
+  relayUrls.forEach(url => {
+    try {
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(r => r.json()).then(res => {
+        console.log(`[SmartTONG Cloud Relay] Actuation delivered to ${url}:`, res);
+      }).catch(err => {
+        console.warn(`[SmartTONG Relay Warning] ${url}:`, err);
+      });
+    } catch(e){}
+  });
 
   // 2. Send to Firebase Firestore (in parallel)
   try {
     if (typeof db !== 'undefined' && db) {
-      db.collection('smarttong_actuations').doc('B01').set(payload);
+      db.collection('smarttong_actuations').doc('B01').set(payload)
+        .then(() => console.log('[Firestore Relay] Actuation saved to B01'))
+        .catch(err => console.warn('[Firestore Relay Error]', err));
     }
   } catch(e) {
     console.warn('Firestore actuation error:', e);

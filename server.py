@@ -155,6 +155,43 @@ def chat():
         print(f"[Chat Error] {e}")
         return jsonify({'error': str(e)}), 500
 
+# ── Actuation Relay Endpoint (/actuate) ──────────────────────────────────────
+LATEST_ACTUATION_ID = 0
+LATEST_ACTUATION = {
+    "id": 0,
+    "slot": "paper",
+    "class": "Paper",
+    "color": "#1976D2",
+    "bin": "Blue Recycling Bin (Kertas/Kadbod)",
+    "timestamp": 0
+}
+
+@app.route('/actuate', methods=['GET', 'POST', 'OPTIONS'])
+def actuate():
+    global LATEST_ACTUATION_ID, LATEST_ACTUATION
+    if request.method == 'OPTIONS':
+        return '', 200
+
+    if request.method == 'POST':
+        try:
+            data = request.get_json(force=True) or {}
+            LATEST_ACTUATION_ID += 1
+            ts = int(time.time() * 1000)
+            LATEST_ACTUATION = {
+                "id": LATEST_ACTUATION_ID,
+                "slot": data.get("slot", "paper"),
+                "class": data.get("class", "Paper"),
+                "color": data.get("color", "#1976D2"),
+                "bin": data.get("bin", "Blue Recycling Bin (Kertas/Kadbod)"),
+                "timestamp": ts
+            }
+            print(f"[SmartTONG Render Actuate #{LATEST_ACTUATION_ID}] Broadcast: {LATEST_ACTUATION['class']}")
+            return jsonify({"status": "ok", "actuation": LATEST_ACTUATION})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    return jsonify(LATEST_ACTUATION)
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 7860))
     print(f"[SmartTONG Cloud] Starting Flask server on port {port}...")

@@ -1200,9 +1200,13 @@
       requestAnimationFrame(stepThrow);
     }
 
-    // 6. Realtime Multi-Tier Cloud Sync (Cloud Relay + Firebase + BroadcastChannel)
-    const CLOUD_RELAY_URL = 'https://ninjayy-smarttong-ai.hf.space/actuate';
+    // 6. Realtime Multi-Tier Cloud Sync (HF Space + Render + Firebase + BroadcastChannel)
+    const CLOUD_RELAY_URLS = [
+      'https://ninjayy-smarttong-ai.hf.space/actuate',
+      'https://smarttong-backend.onrender.com/actuate'
+    ];
     let lastProcessedId = -1;
+    let lastProcessedTimestamp = 0;
     let isRelayConnected = false;
 
     function setSyncStatus(isLive, label) {
@@ -1214,9 +1218,9 @@
 
     // A. Global Cloud Relay (Instant cross-device push & fast polling)
     function initGlobalCloudRelay() {
-      // 1. Server-Sent Events (SSE) for 0ms push latency
+      // 1. Server-Sent Events (SSE) for zero-latency push
       try {
-        const es = new EventSource(CLOUD_RELAY_URL + '/stream');
+        const es = new EventSource(CLOUD_RELAY_URLS[0] + '/stream');
         es.onmessage = (event) => {
           if (event.data) {
             try {
@@ -1227,9 +1231,14 @@
                 if (lastProcessedId === -1) lastProcessedId = data.current_id || 0;
                 return;
               }
-              if (data && data.id !== undefined && data.id > lastProcessedId) {
-                lastProcessedId = data.id;
-                handleIncomingScan(data, 'Cloud Relay (Masa Nyata)');
+              if (data && (data.id !== undefined || data.timestamp)) {
+                const isNewId = data.id !== undefined && data.id > lastProcessedId;
+                const isNewTime = data.timestamp && data.timestamp > lastProcessedTimestamp;
+                if (isNewId || isNewTime) {
+                  if (data.id !== undefined) lastProcessedId = Math.max(lastProcessedId, data.id);
+                  if (data.timestamp) lastProcessedTimestamp = Math.max(lastProcessedTimestamp, data.timestamp);
+                  handleIncomingScan(data, 'Cloud Relay (SSE Push)');
+                }
               }
             } catch(e) {}
           }
@@ -1239,23 +1248,36 @@
         console.warn('SSE notice:', e);
       }
 
-      // 2. Fast Polling (every 600ms) - 100% reliable across any network firewall
+      // 2. Ultra-Reliable Fast Polling (every 500ms) across both Cloud Relays
       setInterval(async () => {
-        try {
-          const res = await fetch(CLOUD_RELAY_URL, { cache: 'no-store' });
-          if (res.ok) {
-            const data = await res.json();
-            isRelayConnected = true;
-            setSyncStatus(true, 'Cloud Relay: Terhubung (Live)');
-            if (lastProcessedId === -1) {
-              lastProcessedId = data.id || 0;
-            } else if (data && data.id !== undefined && data.id > lastProcessedId) {
-              lastProcessedId = data.id;
-              handleIncomingScan(data, 'Cloud Relay (Masa Nyata)');
+        for (const relayUrl of CLOUD_RELAY_URLS) {
+          try {
+            const res = await fetch(relayUrl, { cache: 'no-store' });
+            if (res.ok) {
+              const data = await res.json();
+              isRelayConnected = true;
+              setSyncStatus(true, 'Cloud Relay: Terhubung (Live)');
+              if (lastProcessedId === -1 && lastProcessedTimestamp === 0) {
+                lastProcessedId = data.id || 0;
+                lastProcessedTimestamp = data.timestamp || Date.now();
+                return;
+              }
+              // Detect server restart
+              if (data.id !== undefined && data.id < lastProcessedId && data.timestamp > lastProcessedTimestamp) {
+                lastProcessedId = data.id;
+              }
+              const isNewId = data.id !== undefined && data.id > lastProcessedId;
+              const isNewTime = data.timestamp && (Date.now() - data.timestamp < 35000) && data.timestamp > lastProcessedTimestamp;
+              if (isNewId || isNewTime) {
+                if (data.id !== undefined) lastProcessedId = Math.max(lastProcessedId, data.id);
+                if (data.timestamp) lastProcessedTimestamp = Math.max(lastProcessedTimestamp, data.timestamp);
+                handleIncomingScan(data, 'Cloud Relay (Fast Poll)');
+                break;
+              }
             }
-          }
-        } catch(e) {}
-      }, 600);
+          } catch(e) {}
+        }
+      }, 500);
     }
     initGlobalCloudRelay();
 
@@ -1282,7 +1304,7 @@
     const bc = new BroadcastChannel('smarttong_channel');
     bc.onmessage = (e) => {
       if (e.data && e.data.type === 'ACTUATION') {
-        handleIncomingScan(e.data.payload, 'Citizen App (Masa Nyata)');
+        handleIncomingScan(e.data.payload, 'Citizen App (BroadcastChannel)');
       }
     };
 
@@ -1297,21 +1319,22 @@
 
     function initFirebaseSync() {
       if (!db) return;
-      db.collection('smarttong_actuations').doc('B01')
-        .onSnapshot((doc) => {
-          if (doc.exists) {
-            const data = doc.data();
-            if (data && data.timestamp && (Date.now() - data.timestamp < 30000) && data.timestamp > lastProcessedTimestamp) {
-              lastProcessedTimestamp = data.timestamp;
-              handleIncomingScan(data, 'Firebase Firestore (Awan)');
+      try {
+        db.collection('smarttong_actuations').doc('B01')
+          .onSnapshot((doc) => {
+            if (doc && doc.exists) {
+              const data = doc.data();
+              if (data && data.timestamp && (Date.now() - data.timestamp < 35000) && data.timestamp > lastProcessedTimestamp) {
+                lastProcessedTimestamp = data.timestamp;
+                handleIncomingScan(data, 'Firebase Firestore (Awan)');
+              }
             }
-          }
-        }, (err) => {
-          console.warn("Firestore notice:", err);
-          if (!isRelayConnected) {
-            setSyncStatus(false, 'Cloud Sync: Mod Sandaran');
-          }
-        });
+          }, (err) => {
+            console.warn("Firestore notice:", err);
+          });
+      } catch(e) {
+        console.warn("Firebase init error:", e);
+      }
     }
 
     let lastScanTime = 0;
