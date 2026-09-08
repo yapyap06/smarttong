@@ -1572,11 +1572,14 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-// Determine backend endpoint dynamically (Local localhost vs Production Render)
+// Determine backend endpoint dynamically
+// Local dev  → predict_server.py (pure Keras, port 7860)
+// Production → HF Space (pure Keras, no Gemini) with Render as fallback
 const isLocalEnv = window.location.hostname === 'localhost' || 
                    window.location.hostname === '127.0.0.1' || 
                    window.location.protocol === 'file:';
-const BACKEND_URL = isLocalEnv ? 'http://127.0.0.1:7860' : 'https://smarttong-backend.onrender.com';
+const BACKEND_URL      = isLocalEnv ? 'http://127.0.0.1:7860' : 'https://ninjayy-smarttong-ai.hf.space';
+const BACKEND_FALLBACK = 'https://smarttong-backend.onrender.com'; // Render fallback
 
 //  Gemini API with Google Search Grounding (RAG pipeline) 
 // Get your FREE key from: https://aistudio.google.com/app/apikey
@@ -3467,21 +3470,59 @@ async function captureClassify() {
 
   try{
     const base64Data = dataUrl.split(',')[1];
-    const r=await fetch(`${BACKEND_URL}/predict`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ image: base64Data })
-    });
-    
-    if(!r.ok) throw new Error('Model Server offline');
-    
-    const data=await r.json();
-    document.getElementById('scan-load').style.display='none';
-    
-    // Direct passthrough to renderARMResult like dashboard
-    renderARMResult(data);
+
+    // 1️⃣ Primary: HF Space (pure Keras model, no Gemini)
+    let predDone = false;
+    try {
+      const r = await fetch(`${BACKEND_URL}/predict`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ image: base64Data }),
+        signal: AbortSignal.timeout(25000)
+      });
+      if (r.ok) {
+        const data = await r.json();
+        if (data.class) {
+          document.getElementById('scan-load').style.display='none';
+          renderARMResult(data);
+          predDone = true;
+        }
+      }
+    } catch(e1) {
+      console.warn('[Scanner] HF Space unreachable, trying Render fallback...', e1);
+    }
+
+    if (predDone) return;
+
+    // 2️⃣ Secondary fallback: Render backend
+    if (!isLocalEnv) {
+      try {
+        const r2 = await fetch(`${BACKEND_FALLBACK}/predict`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ image: base64Data }),
+          signal: AbortSignal.timeout(20000)
+        });
+        if (r2.ok) {
+          const data2 = await r2.json();
+          if (data2.class) {
+            document.getElementById('scan-load').style.display='none';
+            renderARMResult(data2);
+            predDone = true;
+          }
+        }
+      } catch(e2) {
+        console.warn('[Scanner] Render also offline, using Gemini Vision AI...', e2);
+      }
+    }
+
+    if (predDone) return;
+
+    // 3️⃣ Last resort: Gemini Vision API (browser-side)
+    throw new Error('Both backends offline');
+
   }catch(e){
-    console.warn('[Cam Scanner] Local python server offline/Vercel. Using Gemini 2.5 Flash Vision AI API...', e);
+    console.warn('[Cam Scanner] All backends offline. Using Gemini 2.5 Flash Vision AI API...', e);
     try {
       const base64Data = dataUrl.split(',')[1];
       const visionUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
