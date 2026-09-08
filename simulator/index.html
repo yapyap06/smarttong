@@ -731,34 +731,38 @@
       frameMesh.position.set(0, 2.02, 0.6);
       group.add(frameMesh);
 
-      // Hollow intake cavity
+      // Hollow intake cavity (placed behind the flap door inside the chamber)
       const cavity = new THREE.Mesh(
-        new THREE.BoxGeometry(slotWidth - 0.1, 0.42, 0.2),
-        new THREE.MeshBasicMaterial({ color: 0x0f172a })
+        new THREE.BoxGeometry(slotWidth - 0.1, 0.42, 0.35),
+        new THREE.MeshBasicMaterial({ color: 0x0a0f1d })
       );
-      cavity.position.set(0, 2.02, 0.55);
+      cavity.position.set(0, 2.02, 0.40); // Safely inside cavity behind flap door
       group.add(cavity);
 
       // Flap Hinge Pivot (rotates on top edge to open/close)
       const hinge = new THREE.Group();
-      hinge.position.set(0, 2.22, 0.59);
+      hinge.position.set(0, 2.22, 0.60);
       group.add(hinge);
 
-      // Intake Flap Door (White door as drawn in sketch)
+      // Intake Flap Door (White door with handle as drawn in user's sketch)
       const flapDoor = new THREE.Mesh(
         new THREE.BoxGeometry(slotWidth - 0.12, 0.40, 0.02),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.15 })
+        new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          roughness: 0.25,
+          metalness: 0.1
+        })
       );
-      flapDoor.position.set(0, -0.20, 0);
+      flapDoor.position.set(0, -0.20, 0.01);
       flapDoor.castShadow = true;
       hinge.add(flapDoor);
 
       // Flap handle / accent line
       const flapHandle = new THREE.Mesh(
-        new THREE.BoxGeometry(0.24, 0.015, 0.03),
-        new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.4 })
+        new THREE.BoxGeometry(0.26, 0.018, 0.02),
+        new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.3 })
       );
-      flapHandle.position.set(0, -0.32, 0.01);
+      flapHandle.position.set(0, -0.32, 0.02);
       hinge.add(flapHandle);
 
       flaps[cfg.key] = {
