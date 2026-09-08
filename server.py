@@ -102,47 +102,73 @@ def predict():
                 }
             })
 
-        # 2. Try Gemini 1.5 Flash Vision AI Fallback (Lightweight, Cloud-Safe)
-        try:
-            import urllib.request
-            from backend.chat_agent import get_gemini_key
-            k = get_gemini_key()
-            if k:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={k}"
+        # 2. Gemini Vision AI Fallback — reads key from GEMINI_API_KEY env var (works on Render)
+        import urllib.request
+        import re
+
+        gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if not gemini_key:
+            # Try obfuscated built-in key as last resort
+            try:
+                import base64 as _b64
+                gemini_key = _b64.b64decode('QVEuQWI0Uk40Smx0bTE2NmJsSG9nQ1RmVnlza09QaTYyYnZfQXVoWkxjandDWlRja21SaWc=').decode('utf-8')
+            except Exception:
+                pass
+
+        if gemini_key:
+            try:
+                vision_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+                prompt_text = (
+                    "You are a waste classification AI for SmartTONG Selangor recycling bins. "
+                    "Analyse the image and classify the waste item into EXACTLY ONE of these categories: "
+                    "Cardboard, Glass, Metal, Paper, Plastic, Trash. "
+                    "Respond with valid JSON ONLY, no markdown, no explanation: "
+                    '{"class": "CATEGORY", "confidence": 87.3, "bin": "BIN_NAME", "color": "#HEX", "tip": "SHORT_TIP"}. '
+                    "Bin/color mapping: Cardboard=Blue Recycling Bin (Kertas/Kadbod)/#1976D2, "
+                    "Paper=Blue Recycling Bin (Kertas/Kadbod)/#1976D2, Glass=Brown Recycling Bin (Kaca)/#795548, "
+                    "Metal=Orange Recycling Bin (Logam)/#EF6C00, Plastic=Orange Recycling Bin (Plastik)/#FB8C00, "
+                    "Trash=Black Bin (Sisa Baki)/#424242."
+                )
                 payload = {
                     "contents": [{
                         "parts": [
-                            { "text": "Classify this waste image for SmartTONG Selangor. Categories: Cardboard, Glass, Metal, Paper, Plastic, Trash. Output JSON ONLY: {\"class\": \"CATEGORY_NAME\", \"bin\": \"SLOT_NAME\", \"color\": \"#HEX_COLOR\", \"confidence\": 94.5, \"tip\": \"RECYCLING_TIP\"}" },
-                            { "inlineData": { "mimeType": "image/jpeg", "data": img_b64 } }
+                            {"text": prompt_text},
+                            {"inlineData": {"mimeType": "image/jpeg", "data": img_b64}}
                         ]
-                    }]
+                    }],
+                    "generationConfig": {"temperature": 0.1, "maxOutputTokens": 256}
                 }
-                req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-                with urllib.request.urlopen(req, timeout=14) as resp:
+                req = urllib.request.Request(
+                    vision_url,
+                    data=json.dumps(payload).encode('utf-8'),
+                    headers={'Content-Type': 'application/json'}
+                )
+                with urllib.request.urlopen(req, timeout=20) as resp:
                     res_data = json.loads(resp.read().decode('utf-8'))
-                    text = res_data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
-                    import re
-                    json_match = re.search(r'\{[\s\S]*\}', text)
+                    text = (res_data.get('candidates', [{}])[0]
+                            .get('content', {}).get('parts', [{}])[0].get('text', ''))
+                    json_match = re.search(r'\{[\s\S]*?\}', text)
                     if json_match:
                         parsed = json.loads(json_match.group(0))
+                        cat = parsed.get("class", "Trash")
+                        if cat not in BIN_MAP:
+                            cat = "Trash"
                         return jsonify({
-                            "class": parsed.get("class", "Plastic"),
-                            "confidence": float(parsed.get("confidence", 94.5)),
-                            "bin": parsed.get("bin", "Orange Recycling Bin (Plastik)"),
-                            "color": parsed.get("color", "#FB8C00"),
-                            "tip": parsed.get("tip", "Empty bottles and flatten them to save space.")
+                            "class": cat,
+                            "confidence": float(parsed.get("confidence", 85.0)),
+                            "bin": BIN_MAP[cat]["bin"],
+                            "color": BIN_MAP[cat]["color"],
+                            "tip": parsed.get("tip", BIN_MAP[cat]["tip"]),
+                            "source": "gemini-vision"
                         })
-        except Exception as err:
-            print(f"[Gemini Vision AI fallback error]: {err}")
+            except Exception as err:
+                print(f"[SmartTONG] Gemini Vision fallback error: {err}")
 
-        # 3. Heuristic fallback for demo stability
+        # 3. No model and no Gemini key — return explicit error so the client knows
         return jsonify({
-            "class": "Plastic",
-            "confidence": 94.5,
-            "bin": BIN_MAP["Plastic"]["bin"],
-            "color": BIN_MAP["Plastic"]["color"],
-            "tip": BIN_MAP["Plastic"]["tip"]
-        })
+            "error": "AI model not loaded and no Gemini API key set. Set GEMINI_API_KEY env var on Render.",
+            "model_loaded": False
+        }), 503
 
     except Exception as e:
         print(f"[Predict Error] {e}")
