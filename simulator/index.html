@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SmartTONG AI — 3D Digital Twin &amp; Hardware Simulator</title>
-  <meta name="description" content="Simulator perkakasan 3D digital twin interaktif untuk kiosk kitar semula pintar SmartTONG Selangor." />
+  <title>SmartTONG AI — 3D Digital Twin &amp; Circuit Simulator</title>
+  <meta name="description" content="Simulator perkakasan 3D digital twin interaktif mengikut lakaran reka bentuk SmartTONG Selangor dengan litar elektronik dan mekanikal dalaman." />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
 
-  <!-- Three.js & OrbitControls for Pure WebGL 3D -->
+  <!-- Three.js & OrbitControls -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
@@ -21,17 +21,16 @@
 
   <style>
     :root {
-      --bg: #f5f7fa;
+      --bg: #f8fafc;
       --card-bg: rgba(255, 255, 255, 0.94);
-      --card-border: rgba(218, 224, 233, 0.8);
-      --text: #1a202c;
+      --card-border: #e2e8f0;
+      --text: #0f172a;
       --text-muted: #64748b;
-      --primary: #1b5e20;
-      --primary-light: #2e7d32;
-      --slot-paper: #1976D2;
-      --slot-plastic: #FB8C00;
-      --slot-metal: #EF6C00;
-      --slot-trash: #546E7A;
+      --green-top: #22c55e;
+      --slot-orange: #f59e0b;
+      --slot-blue: #0284c7;
+      --slot-brown: #854d0e;
+      --slot-black: #18181b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -46,7 +45,7 @@
       user-select: none;
     }
 
-    /* 3D Canvas Viewport */
+    /* 3D Viewport */
     #webgl-canvas {
       position: absolute;
       top: 0;
@@ -60,7 +59,7 @@
     /* Top Floating Header */
     header {
       position: absolute;
-      top: 16px;
+      top: 14px;
       left: 20px;
       right: 20px;
       z-index: 10;
@@ -75,33 +74,30 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       padding: 10px 18px;
-      border-radius: 14px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       gap: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+      backdrop-filter: blur(10px);
     }
-    .brand-icon {
-      width: 38px;
-      height: 38px;
-      background: linear-gradient(135deg, #1b5e20, #2e7d32);
-      border-radius: 10px;
+    .brand-badge {
+      width: 36px;
+      height: 36px;
+      background: #166534;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
-      box-shadow: 0 4px 10px rgba(27, 94, 32, 0.25);
     }
     .brand-title {
       font-size: 16px;
       font-weight: 800;
       color: #0f172a;
-      letter-spacing: -0.3px;
     }
     .brand-sub {
       font-size: 11px;
-      font-weight: 500;
       color: var(--text-muted);
     }
 
@@ -113,16 +109,16 @@
     }
     .badge-sync {
       background: #ffffff;
-      border: 1px solid #dcfce7;
+      border: 1px solid #bbf7d0;
       padding: 8px 14px;
       border-radius: 10px;
       font-size: 12px;
       font-weight: 600;
-      color: #166534;
+      color: #15803d;
       display: flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
     }
     .sync-dot {
       width: 8px;
@@ -137,7 +133,7 @@
       50% { opacity: 0.4; transform: scale(0.85); }
     }
 
-    .nav-btn-light {
+    .nav-btn {
       background: #ffffff;
       border: 1px solid var(--card-border);
       padding: 8px 14px;
@@ -149,170 +145,125 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
       transition: all 0.2s;
     }
-    .nav-btn-light:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
+    .nav-btn:hover {
+      background: #f1f5f9;
       transform: translateY(-1px);
     }
 
-    /* Left Side: Virtual OLED Display & Sensors Telemetry */
+    /* Left Side: Circuit Legend & Telemetry */
     .left-panel {
       position: absolute;
-      top: 86px;
+      top: 80px;
       left: 20px;
-      width: 320px;
+      width: 310px;
       z-index: 10;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       pointer-events: none;
     }
     .widget-glass {
       pointer-events: auto;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 16px;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.05);
-      backdrop-filter: blur(12px);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      backdrop-filter: blur(10px);
     }
 
-    /* Virtual OLED Screen (Emulated Light Pixel Screen) */
+    .circuit-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+    .circuit-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #334155;
+    }
+    .wire-line {
+      width: 16px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    /* Right Side: Actuation Status & Event Log */
+    .right-panel {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      width: 310px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
     .oled-box {
       background: #0f172a;
       border: 2px solid #334155;
       border-radius: 8px;
-      padding: 12px;
+      padding: 10px;
       font-family: 'JetBrains Mono', monospace;
       color: #38bdf8;
-      box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
     }
     .oled-top {
       display: flex;
       justify-content: space-between;
-      font-size: 10px;
+      font-size: 9px;
       color: #94a3b8;
       border-bottom: 1px solid rgba(56, 189, 248, 0.2);
-      padding-bottom: 4px;
-      margin-bottom: 8px;
+      padding-bottom: 3px;
+      margin-bottom: 6px;
     }
-    .oled-content {
-      font-size: 13px;
+    .oled-main {
+      font-size: 12px;
       font-weight: 700;
       line-height: 1.4;
-      min-height: 40px;
-      color: #e0f2fe;
+      min-height: 36px;
+      color: #f0f9ff;
     }
 
-    /* Telemetry Data Grid */
-    .tele-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 6px;
-    }
-    .tele-item {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 10px;
-    }
-    .tele-lbl {
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 2px;
-    }
-    .tele-num {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 15px;
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    /* Right Side: Slot Capacities & Live Logs */
-    .right-panel {
-      position: absolute;
-      top: 86px;
-      right: 20px;
-      width: 320px;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      pointer-events: none;
-    }
-
-    .slots-summary {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .slot-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 10px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 12px;
-    }
-    .slot-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-right: 6px;
-      display: inline-block;
-    }
-    .slot-state-badge {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: #e2e8f0;
-    }
-    .slot-state-badge.open {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    /* Live Event Log */
-    .log-container {
-      max-height: 140px;
+    .log-box {
+      max-height: 120px;
       overflow-y: auto;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 10px;
       color: #475569;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       background: #f8fafc;
       padding: 8px;
-      border-radius: 8px;
+      border-radius: 6px;
       border: 1px solid #e2e8f0;
     }
 
     /* Bottom Control Bar */
     .bottom-bar {
       position: absolute;
-      bottom: 20px;
+      bottom: 18px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 10px 18px;
+      border-radius: 14px;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-      backdrop-filter: blur(12px);
+      gap: 10px;
+      box-shadow: 0 8px 26px rgba(0,0,0,0.08);
+      backdrop-filter: blur(10px);
       flex-wrap: wrap;
       justify-content: center;
     }
@@ -320,7 +271,7 @@
     .btn-tool {
       background: #ffffff;
       border: 1px solid #cbd5e1;
-      padding: 8px 14px;
+      padding: 7px 12px;
       border-radius: 8px;
       font-size: 12px;
       font-weight: 600;
@@ -328,24 +279,22 @@
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       transition: all 0.15s;
     }
     .btn-tool:hover {
       background: #f1f5f9;
-      border-color: #94a3b8;
       transform: translateY(-1px);
     }
-    .btn-tool.active-toggle {
-      background: #1b5e20;
-      border-color: #1b5e20;
+    .btn-tool.active-xray {
+      background: #0284c7;
+      border-color: #0284c7;
       color: #ffffff;
     }
 
     .btn-demo {
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      padding: 8px 12px;
+      border: 1px solid;
+      padding: 7px 12px;
       border-radius: 8px;
       font-size: 12px;
       font-weight: 700;
@@ -356,36 +305,25 @@
       transition: all 0.15s;
     }
     .btn-demo:hover {
-      background: #f1f5f9;
-      border-color: #0f172a;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
+    .btn-orange { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+    .btn-blue   { background: #f0f9ff; border-color: #bae6fd; color: #0369a1; }
+    .btn-brown  { background: #fefce8; border-color: #fef08a; color: #854d0e; }
+    .btn-black  { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
 
-    .btn-crit {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #b91c1c;
-    }
-    .btn-crit:hover {
-      background: #fee2e2;
-      border-color: #ef4444;
-    }
+    .divider { width: 1px; height: 22px; background: #cbd5e1; }
 
-    .divider {
-      width: 1px;
-      height: 24px;
-      background: #cbd5e1;
-    }
-
-    /* 3D Instructions Tip Overlay */
     .orbit-tip {
       position: absolute;
-      bottom: 84px;
+      bottom: 76px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 5;
-      background: rgba(15, 23, 42, 0.7);
+      background: rgba(15, 23, 42, 0.65);
       color: #ffffff;
-      padding: 5px 12px;
+      padding: 4px 12px;
       border-radius: 20px;
       font-size: 11px;
       font-weight: 500;
@@ -399,10 +337,10 @@
   <!-- WebGL 3D Canvas -->
   <canvas id="webgl-canvas"></canvas>
 
-  <!-- Top Floating Header -->
+  <!-- Top Header -->
   <header>
     <div class="brand-glass">
-      <div class="brand-icon">
+      <div class="brand-badge">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="3 6 5 6 21 6"></polyline>
           <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
@@ -410,105 +348,94 @@
         </svg>
       </div>
       <div>
-        <div class="brand-title">SmartTONG Digital Twin 3D</div>
-        <div class="brand-sub">Simulasi Mekanikal Kiosk Fizikal Selangor (AINS 2026)</div>
+        <div class="brand-title">SmartTONG 3D Simulator</div>
+        <div class="brand-sub">Model Mengikut Lakaran Reka Bentuk + Litar Elektronik &amp; Mekanikal</div>
       </div>
     </div>
 
     <div class="top-actions">
       <div class="badge-sync">
         <div class="sync-dot"></div>
-        <span id="sync-lbl">Cloud Sync: Terhubung (Live)</span>
+        <span id="sync-lbl">Cloud Sync: Terhubung</span>
       </div>
-      <a href="/citizen-app/" target="_blank" class="nav-btn-light">📱 Citizen App</a>
-      <a href="/dashboard/" target="_blank" class="nav-btn-light">🏛️ Dashboard PBT</a>
+      <a href="/citizen-app/" target="_blank" class="nav-btn">📱 Citizen App</a>
+      <a href="/dashboard/" target="_blank" class="nav-btn">🏛️ Dashboard PBT</a>
     </div>
   </header>
 
-  <!-- Left Side: OLED Screen & Telemetry -->
+  <!-- Left Side: Circuit Legend & Telemetry -->
   <div class="left-panel">
     <div class="widget-glass">
-      <div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
-        <span>📟 Skrin OLED SSD1306 Kiosk</span>
+      <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;">
+        🔌 Ilustrasi Litar Dalaman (Circuit)
+      </div>
+      <div class="circuit-legend">
+        <div class="circuit-item">
+          <span class="wire-line" style="background:#22c55e;"></span>
+          <span><strong>ESP32 Node</strong>: Papan Mikropengawal Utama</span>
+        </div>
+        <div class="circuit-item">
+          <span class="wire-line" style="background:#0284c7;"></span>
+          <span><strong>4x Servo SG90</strong>: Kawalan Pintu Flap</span>
+        </div>
+        <div class="circuit-item">
+          <span class="wire-line" style="background:#94a3b8;"></span>
+          <span><strong>4x HC-SR04</strong>: Sensor Ultrasonik Ruang</span>
+        </div>
+        <div class="circuit-item">
+          <span class="wire-line" style="background:#ea580c;"></span>
+          <span><strong>MQ-135</strong>: Pengesan Gas &amp; Bau Sisa</span>
+        </div>
+        <div class="circuit-item">
+          <span class="wire-line" style="background:#ef4444;"></span>
+          <span><strong>Kabel Pendawaian</strong>: VCC (Merah), GND (Hitam), Signal (Kuning/Biru)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget-glass">
+      <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;">
+        📡 Sensor Telemetri Masa Nyata
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;">
+        <div style="background:#f8fafc;padding:6px 8px;border-radius:6px;border:1px solid #e2e8f0;">
+          <div style="color:#64748b;font-size:9px;">Sensor Gas MQ-135</div>
+          <div style="font-weight:700;color:#16a34a;font-family:'JetBrains Mono';" id="val-gas">88 ppm (Normal)</div>
+        </div>
+        <div style="background:#f8fafc;padding:6px 8px;border-radius:6px;border:1px solid #e2e8f0;">
+          <div style="color:#64748b;font-size:9px;">Status Kunci Flap</div>
+          <div style="font-weight:700;color:#16a34a;font-family:'JetBrains Mono';" id="val-lock">ALL LOCKED</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Virtual OLED & Event Logs -->
+  <div class="right-panel">
+    <div class="widget-glass">
+      <div style="font-size:12px;font-weight:700;margin-bottom:6px;">
+        📟 Paparan OLED Kiosk (SSD1306)
       </div>
       <div class="oled-box">
         <div class="oled-top">
           <span>[SMARTTONG-AI B01]</span>
           <span>🔋 92% SOLAR</span>
         </div>
-        <div class="oled-content" id="oled-disp">
-          SYSTEM READY...<br/>Sedia Menerima Imbasan
-        </div>
-      </div>
-
-      <div class="tele-grid">
-        <div class="tele-item">
-          <div class="tele-lbl">📡 JSN Ultrasonik</div>
-          <div class="tele-num" id="val-ultrasonic">36 cm</div>
-        </div>
-        <div class="tele-item">
-          <div class="tele-lbl">💨 MQ-135 Gas</div>
-          <div class="tele-num" id="val-gas" style="color:#16a34a;">85 ppm</div>
-        </div>
-        <div class="tele-item">
-          <div class="tele-lbl">⚙️ Status Kunci</div>
-          <div class="tele-num" id="val-lock" style="color:#16a34a;">LOCKED</div>
-        </div>
-        <div class="tele-item">
-          <div class="tele-lbl">⚡ Voltan Node</div>
-          <div class="tele-num" style="color:#2563eb;">4.14 V</div>
+        <div class="oled-main" id="oled-disp">
+          SYSTEM STANDBY...<br/>Sedia Menerima Imbasan Sisa
         </div>
       </div>
     </div>
 
     <div class="widget-glass">
-      <div style="font-size:12px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;">
-        <span>Log Peristiwa Masa Nyata</span>
-        <span style="color:#2563eb;font-size:10px;cursor:pointer;" onclick="clearLogs()">Padam</span>
+      <div style="font-size:12px;font-weight:700;margin-bottom:4px;display:flex;justify-content:space-between;">
+        <span>Log Peristiwa (Hardware Events)</span>
+        <span style="color:#0284c7;font-size:10px;cursor:pointer;" onclick="clearLogs()">Padam</span>
       </div>
-      <div class="log-container" id="log-box">
-        <div>[00:00:01] Inisialisasi model 3D SmartTONG selesai.</div>
-        <div>[00:00:02] Sensor ultrasonik &amp; 4 motor servo sedia.</div>
-        <div style="color:#16a34a;font-weight:700;">[00:00:03] Menunggu imbasan daripada telefon pintar...</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Right Side: 4 Slots Summary -->
-  <div class="right-panel">
-    <div class="widget-glass">
-      <div style="font-size:12px;font-weight:700;margin-bottom:10px;">
-        <span>Status 4 Ruang Pengasingan</span>
-      </div>
-      <div class="slots-summary">
-        <div class="slot-row" id="row-paper">
-          <div><span class="slot-dot" style="background:var(--slot-paper);"></span><strong>Kertas / Kadbod</strong></div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span id="cap-paper" style="font-size:11px;color:#64748b;">40% Penuh</span>
-            <span class="slot-state-badge" id="badge-paper">0° Kunci</span>
-          </div>
-        </div>
-        <div class="slot-row" id="row-plastic">
-          <div><span class="slot-dot" style="background:var(--slot-plastic);"></span><strong>Plastik</strong></div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span id="cap-plastic" style="font-size:11px;color:#64748b;">55% Penuh</span>
-            <span class="slot-state-badge" id="badge-plastic">0° Kunci</span>
-          </div>
-        </div>
-        <div class="slot-row" id="row-metal">
-          <div><span class="slot-dot" style="background:var(--slot-metal);"></span><strong>Logam (Tin)</strong></div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span id="cap-metal" style="font-size:11px;color:#64748b;">35% Penuh</span>
-            <span class="slot-state-badge" id="badge-metal">0° Kunci</span>
-          </div>
-        </div>
-        <div class="slot-row" id="row-trash">
-          <div><span class="slot-dot" style="background:var(--slot-trash);"></span><strong>Sisa Baki</strong></div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span id="cap-trash" style="font-size:11px;color:#64748b;">20% Penuh</span>
-            <span class="slot-state-badge" id="badge-trash">0° Kunci</span>
-          </div>
-        </div>
+      <div class="log-box" id="log-box">
+        <div>[00:00:01] Inisialisasi 4 ruang tong sedia.</div>
+        <div>[00:00:02] Motor servo 1-4 ditentukur 0° kunci.</div>
+        <div style="color:#16a34a;font-weight:700;">[00:00:03] Sedia terima arahan imbasan web app.</div>
       </div>
     </div>
   </div>
@@ -520,34 +447,31 @@
 
   <!-- Bottom Control Bar -->
   <div class="bottom-bar">
-    <!-- Camera Angles -->
-    <button class="btn-tool" onclick="setCameraView('front')">Depan</button>
-    <button class="btn-tool" onclick="setCameraView('top')">Atas (Corong)</button>
-    <button class="btn-tool" onclick="setCameraView('internal')">Mekanikal</button>
-    
+    <button class="btn-tool" onclick="setCameraAngle('front')">Pandangan Hadapan</button>
+    <button class="btn-tool" onclick="setCameraAngle('top')">Pandangan Atas</button>
     <button class="btn-tool" id="btn-xray" onclick="toggleXRay()">
-      <span>🔍 Mod X-Ray Dalaman</span>
+      <span>🔍 Mod Litar &amp; Mekanikal (X-Ray)</span>
     </button>
 
     <div class="divider"></div>
 
-    <!-- Live Presentation Test Buttons -->
-    <span style="font-size:11px;font-weight:700;color:#64748b;">Ujian 1-Klik:</span>
-    <button class="btn-demo" onclick="triggerActuationBySlot('metal', 'Metal', '#EF6C00')">
-      🥫 Tin Milo
+    <!-- Live 1-Click Simulation Buttons matching the 4 bins -->
+    <span style="font-size:11px;font-weight:700;color:#64748b;">Uji Imbasan:</span>
+    <button class="btn-demo btn-orange" onclick="triggerActuation('orange', 'Plastik / Logam', 'milo_tin')">
+      🥫 Plastic / Metal
     </button>
-    <button class="btn-demo" onclick="triggerActuationBySlot('plastic', 'Plastic', '#FB8C00')">
-      🧴 Botol Plastik
+    <button class="btn-demo btn-blue" onclick="triggerActuation('blue', 'Kertas (Paper)', 'paper_sheet')">
+      📄 Paper
     </button>
-    <button class="btn-demo" onclick="triggerActuationBySlot('paper', 'Paper', '#1976D2')">
-      📦 Kotak Kertas
+    <button class="btn-demo btn-brown" onclick="triggerActuation('brown', 'Kaca (Glass)', 'glass_bottle')">
+      🍾 Glass
     </button>
-    <button class="btn-demo btn-crit" onclick="simulateCriticalAlarm()">
-      🚨 Alarm 95%
+    <button class="btn-demo btn-black" onclick="triggerActuation('black', 'Sisa Baki (General)', 'trash_bag')">
+      🗑️ General Waste
     </button>
   </div>
 
-  <!-- Audio Synthesis for Mechanical Servo & Tone -->
+  <!-- Audio Synthesis -->
   <script>
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
@@ -575,29 +499,29 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(180, audioCtx.currentTime);
-        osc.frequency.linearRampToValueAtTime(320, audioCtx.currentTime + 0.3);
+        osc.frequency.setValueAtTime(190, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(360, audioCtx.currentTime + 0.28);
         gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.28);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
+        osc.stop(audioCtx.currentTime + 0.28);
       } catch (e) {}
     }
   </script>
 
-  <!-- Three.js 3D Engine Implementation -->
+  <!-- Three.js 3D Construction matching user's sketch -->
   <script>
-    // 1. Scene, Camera, Renderer Setup
+    // 1. Scene & Setup
     const canvas = document.getElementById('webgl-canvas');
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf1f5f9);
 
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 3.8, 6.2);
+    camera.position.set(0, 2.8, 6.0);
 
-    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
@@ -606,419 +530,549 @@
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.maxPolarAngle = Math.PI / 2 + 0.05; // Don't go underneath floor
-    controls.minDistance = 2.5;
-    controls.maxDistance = 12;
+    controls.maxPolarAngle = Math.PI / 2 + 0.02;
+    controls.minDistance = 2.0;
+    controls.maxDistance = 10;
     controls.target.set(0, 1.4, 0);
 
-    // 2. Lighting Setup (Clean bright engineering studio)
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xe2e8f0, 0.85);
+    // 2. Lighting Setup (Crisp white studio)
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xe2e8f0, 0.9);
     scene.add(hemiLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-    dirLight.position.set(5, 10, 7);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+    dirLight.position.set(4, 9, 6);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 25;
-    dirLight.shadow.camera.left = -5;
-    dirLight.shadow.camera.right = 5;
-    dirLight.shadow.camera.top = 5;
-    dirLight.shadow.camera.bottom = -5;
+    dirLight.shadow.camera.left = -4;
+    dirLight.shadow.camera.right = 4;
+    dirLight.shadow.camera.top = 4;
+    dirLight.shadow.camera.bottom = -4;
     dirLight.shadow.bias = -0.0005;
     scene.add(dirLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
-    fillLight.position.set(-6, 6, -5);
-    scene.add(fillLight);
+    const backLight = new THREE.DirectionalLight(0xffffff, 0.4);
+    backLight.position.set(-5, 6, -5);
+    scene.add(backLight);
 
-    // Neopixel PointLight (mounted at top of bin)
-    const neoPointLight = new THREE.PointLight(0x22c55e, 1.2, 5);
-    neoPointLight.position.set(0, 2.7, 0.9);
-    scene.add(neoPointLight);
-
-    // 3. Ground Plane
-    const floorGeo = new THREE.PlaneGeometry(30, 30);
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.8,
-      metalness: 0.1
-    });
-    const floor = new THREE.Mesh(floorGeo, floorMat);
+    // Studio Floor
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(24, 24),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0.1 })
+    );
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Subtle Grid Floor
-    const grid = new THREE.GridHelper(30, 30, 0xcbd5e1, 0xe2e8f0);
-    grid.position.y = 0.002;
+    const grid = new THREE.GridHelper(24, 24, 0xd1d5db, 0xe5e7eb);
+    grid.position.y = 0.001;
     scene.add(grid);
 
-    // 4. Kiosk Chassis Materials (Clean White Studio Theme)
-    const whiteChassisMat = new THREE.MeshStandardMaterial({
-      color: 0xf8fafc,
+    // Helper: Generate Crisp Recycling Icon + Label Texture on Canvas
+    function createBinFrontTexture(bgColorHex, labelText, isDoubleLine = false) {
+      const cvs = document.createElement('canvas');
+      cvs.width = 512;
+      cvs.height = 700;
+      const ctx = cvs.getContext('2d');
+
+      // Background
+      ctx.fillStyle = bgColorHex;
+      ctx.fillRect(0, 0, 512, 700);
+
+      // Draw Recycling Symbol (White outline arrows)
+      ctx.strokeStyle = '#ffffff';
+      ctx.fillStyle = '#ffffff';
+      ctx.lineWidth = 14;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      const cx = 256, cy = 300, r = 110;
+
+      // Draw standard Mobius 3-chase arrows
+      for (let i = 0; i < 3; i++) {
+        const ang = (i * 2 * Math.PI) / 3 - Math.PI / 2;
+        const x1 = cx + Math.cos(ang) * r;
+        const y1 = cy + Math.sin(ang) * r;
+
+        const nextAng = ((i + 1) * 2 * Math.PI) / 3 - Math.PI / 2;
+        const x2 = cx + Math.cos(nextAng) * r;
+        const y2 = cy + Math.sin(nextAng) * r;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, ang + 0.25, nextAng - 0.25);
+        ctx.stroke();
+
+        // Arrow head
+        ctx.beginPath();
+        const headX = cx + Math.cos(nextAng - 0.25) * r;
+        const headY = cy + Math.sin(nextAng - 0.25) * r;
+        const arrowAngle = nextAng - 0.25 + Math.PI / 2;
+        ctx.moveTo(headX, headY);
+        ctx.lineTo(headX - Math.cos(arrowAngle - 0.5) * 32, headY - Math.sin(arrowAngle - 0.5) * 32);
+        ctx.lineTo(headX - Math.cos(arrowAngle + 0.5) * 32, headY - Math.sin(arrowAngle + 0.5) * 32);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Draw Crisp Text Label below symbol
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 36px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.letterSpacing = '1px';
+
+      if (isDoubleLine) {
+        ctx.fillText('plastic /', 256, 490);
+        ctx.fillText('metal', 256, 535);
+      } else if (labelText === 'general waste') {
+        ctx.fillText('general', 256, 490);
+        ctx.fillText('waste', 256, 535);
+      } else {
+        ctx.fillText(labelText, 256, 510);
+      }
+
+      const tex = new THREE.CanvasTexture(cvs);
+      tex.anisotropy = 8;
+      return tex;
+    }
+
+    // 3. Construct the Exact SmartTONG Kiosk Model from User's Sketch
+    const kiosk = new THREE.Group();
+    scene.add(kiosk);
+
+    // Bottom White Base Plinth (y: 0 to 0.15)
+    const baseMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(3.9, 0.15, 1.25),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.1 })
+    );
+    baseMesh.position.y = 0.075;
+    baseMesh.castShadow = true;
+    baseMesh.receiveShadow = true;
+    kiosk.add(baseMesh);
+
+    // Kiosk Dimensions: 4 equal chambers
+    // Bin 1: plastic/metal (Orange: #f59e0b)
+    // Bin 2: paper (Blue: #0284c7)
+    // Bin 3: glass (Brown: #854d0e)
+    // Bin 4: general waste (Black: #18181b)
+    const binConfigs = [
+      { key: 'orange', name: 'plastic/metal', color: '#f59e0b', hex: 0xf59e0b, posX: -1.425, double: true },
+      { key: 'blue',   name: 'paper',         color: '#0284c7', hex: 0x0284c7, posX: -0.475, double: false },
+      { key: 'brown',  name: 'glass',         color: '#854d0e', hex: 0x854d0e, posX:  0.475, double: false },
+      { key: 'black',  name: 'general waste', color: '#18181b', hex: 0x18181b, posX:  1.425, double: false }
+    ];
+
+    const slotWidth = 0.94;
+    const bodyHeight = 1.6; // y: 0.15 to 1.75
+    const binMeshes = {};
+    const binChambers = {};
+    const flaps = {};
+    const servos = {};
+    const linkages = {};
+    const ultrasonics = {};
+    const wasteLevels = {};
+
+    binConfigs.forEach(cfg => {
+      const group = new THREE.Group();
+      group.position.set(cfg.posX, 0, 0);
+      kiosk.add(group);
+
+      // Main Bin Body (Colored front with recycling logo and label)
+      const frontTex = createBinFrontTexture(cfg.color, cfg.name, cfg.double);
+      const bodyMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: frontTex,
+        roughness: 0.4,
+        metalness: 0.15
+      });
+
+      const bodyGeo = new THREE.BoxGeometry(slotWidth, bodyHeight, 1.2);
+      const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+      bodyMesh.position.y = 0.15 + (bodyHeight / 2);
+      bodyMesh.castShadow = true;
+      bodyMesh.receiveShadow = true;
+      group.add(bodyMesh);
+      binMeshes[cfg.key] = bodyMesh;
+
+      // Internal Chamber (visible when X-ray active)
+      const chamberGeo = new THREE.BoxGeometry(slotWidth - 0.06, bodyHeight - 0.1, 1.1);
+      const chamberMat = new THREE.MeshStandardMaterial({
+        color: cfg.hex,
+        roughness: 0.5,
+        transparent: true,
+        opacity: 0.15
+      });
+      const chamberMesh = new THREE.Mesh(chamberGeo, chamberMat);
+      chamberMesh.position.y = 0.15 + (bodyHeight / 2);
+      group.add(chamberMesh);
+      binChambers[cfg.key] = chamberMesh;
+
+      // Internal Waste Level Block in each compartment
+      const initHeight = cfg.key === 'blue' ? 0.5 : (cfg.key === 'orange' ? 0.4 : (cfg.key === 'brown' ? 0.3 : 0.2));
+      const wasteFill = new THREE.Mesh(
+        new THREE.BoxGeometry(slotWidth - 0.1, initHeight, 1.05),
+        new THREE.MeshStandardMaterial({ color: cfg.hex, roughness: 0.6 })
+      );
+      wasteFill.position.set(0, 0.2 + (initHeight / 2), 0);
+      group.add(wasteFill);
+      wasteLevels[cfg.key] = { mesh: wasteFill, height: initHeight };
+
+      // ─── Intake Flap Row (White with border, right above colored bin) ───
+      // Flap frame (White border casing)
+      const frameMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(slotWidth, 0.52, 0.08),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25, metalness: 0.1 })
+      );
+      frameMesh.position.set(0, 2.02, 0.6);
+      group.add(frameMesh);
+
+      // Hollow intake cavity
+      const cavity = new THREE.Mesh(
+        new THREE.BoxGeometry(slotWidth - 0.1, 0.42, 0.2),
+        new THREE.MeshBasicMaterial({ color: 0x0f172a })
+      );
+      cavity.position.set(0, 2.02, 0.55);
+      group.add(cavity);
+
+      // Flap Hinge Pivot (rotates on top edge to open/close)
+      const hinge = new THREE.Group();
+      hinge.position.set(0, 2.22, 0.59);
+      group.add(hinge);
+
+      // Intake Flap Door (White door as drawn in sketch)
+      const flapDoor = new THREE.Mesh(
+        new THREE.BoxGeometry(slotWidth - 0.12, 0.40, 0.02),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.15 })
+      );
+      flapDoor.position.set(0, -0.20, 0);
+      flapDoor.castShadow = true;
+      hinge.add(flapDoor);
+
+      // Flap handle / accent line
+      const flapHandle = new THREE.Mesh(
+        new THREE.BoxGeometry(0.24, 0.015, 0.03),
+        new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.4 })
+      );
+      flapHandle.position.set(0, -0.32, 0.01);
+      hinge.add(flapHandle);
+
+      flaps[cfg.key] = {
+        hinge: hinge,
+        currentAngle: 0,
+        targetAngle: 0
+      };
+
+      // ─── Circuit & Mechanical Components Inside ───
+      // 1. Servo Motor (SG90 Blue body)
+      const servoBody = new THREE.Mesh(
+        new THREE.BoxGeometry(0.14, 0.22, 0.14),
+        new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.4 })
+      );
+      servoBody.position.set(0.3, 2.22, 0.3);
+      group.add(servoBody);
+
+      // Rotating Servo Horn
+      const servoHornPivot = new THREE.Group();
+      servoHornPivot.position.set(0.3, 2.32, 0.3);
+      group.add(servoHornPivot);
+
+      const servoHorn = new THREE.Mesh(
+        new THREE.BoxGeometry(0.04, 0.16, 0.02),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 })
+      );
+      servoHorn.position.set(0, 0.07, 0);
+      servoHornPivot.add(servoHorn);
+      servos[cfg.key] = servoHornPivot;
+
+      // Brass Linkage Pushrod
+      const pushrod = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.012, 0.012, 0.3, 8),
+        new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.2, metalness: 0.85 })
+      );
+      pushrod.position.set(0.22, 2.26, 0.45);
+      pushrod.rotation.x = Math.PI / 4;
+      group.add(pushrod);
+      linkages[cfg.key] = pushrod;
+
+      // 2. Ultrasonic Sensor HC-SR04 (Mounted on roof of each chamber)
+      const ultraPcb = new THREE.Mesh(
+        new THREE.BoxGeometry(0.24, 0.02, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.4 })
+      );
+      ultraPcb.position.set(0, 1.72, 0);
+      group.add(ultraPcb);
+
+      const cyl1 = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.035, 0.035, 0.06, 14),
+        new THREE.MeshStandardMaterial({ color: 0xc0c7d0, roughness: 0.15, metalness: 0.9 })
+      );
+      cyl1.position.set(-0.06, 1.69, 0);
+      group.add(cyl1);
+
+      const cyl2 = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.035, 0.035, 0.06, 14),
+        new THREE.MeshStandardMaterial({ color: 0xc0c7d0, roughness: 0.15, metalness: 0.9 })
+      );
+      cyl2.position.set(0.06, 1.69, 0);
+      group.add(cyl2);
+    });
+
+    // ─── Green Top Header Strip (Matching user's sketch) ───
+    const greenTopGeo = new THREE.BoxGeometry(3.9, 0.36, 1.25);
+    const greenTopMat = new THREE.MeshStandardMaterial({
+      color: 0x22c55e, // Vivid Green
+      roughness: 0.3,
+      metalness: 0.1
+    });
+    const greenTopMesh = new THREE.Mesh(greenTopGeo, greenTopMat);
+    greenTopMesh.position.y = 2.46;
+    greenTopMesh.castShadow = true;
+    kiosk.add(greenTopMesh);
+
+    // Subtle purple outline border on top green lid as drawn in sketch
+    const greenBorder = new THREE.LineSegments(
+      new THREE.EdgesGeometry(greenTopGeo),
+      new THREE.LineBasicMaterial({ color: 0xa855f7, linewidth: 2 })
+    );
+    greenBorder.position.y = 2.46;
+    kiosk.add(greenBorder);
+
+    // ─── Central Camera Box (Green Block on Top Center) ───
+    const topCamBlockGeo = new THREE.BoxGeometry(0.36, 0.4, 0.36);
+    const topCamBlockMat = new THREE.MeshStandardMaterial({
+      color: 0x166534, // Darker green block as in sketch
       roughness: 0.35,
       metalness: 0.15
     });
+    const topCamBlock = new THREE.Mesh(topCamBlockGeo, topCamBlockMat);
+    topCamBlock.position.set(0, 2.84, 0);
+    topCamBlock.castShadow = true;
+    kiosk.add(topCamBlock);
 
-    const brushedSteelMat = new THREE.MeshStandardMaterial({
-      color: 0xe2e8f0,
-      roughness: 0.25,
-      metalness: 0.7
+    // Camera Lens on Front of top block
+    const lensRing = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.09, 0.09, 0.04, 20),
+      new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.2, metalness: 0.8 })
+    );
+    lensRing.rotation.x = Math.PI / 2;
+    lensRing.position.set(0, 2.84, 0.19);
+    kiosk.add(lensRing);
+
+    const lensGlass = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.06, 0.06, 0.05, 16),
+      new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1, metalness: 0.9 })
+    );
+    lensGlass.rotation.x = Math.PI / 2;
+    lensGlass.position.set(0, 2.84, 0.2);
+    kiosk.add(lensGlass);
+
+    // ─── Central Illustrated Electronic Circuit Inside (ESP32 PCB + Wires) ───
+    const circuitGroup = new THREE.Group();
+    circuitGroup.position.set(0, 2.46, 0);
+    kiosk.add(circuitGroup);
+
+    // Main ESP32 PCB (Green board)
+    const espPcb = new THREE.Mesh(
+      new THREE.BoxGeometry(0.48, 0.03, 0.32),
+      new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.35 })
+    );
+    circuitGroup.add(espPcb);
+
+    // ESP32 Chip & USB
+    const espChip = new THREE.Mesh(
+      new THREE.BoxGeometry(0.18, 0.04, 0.18),
+      new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.4 })
+    );
+    espChip.position.set(-0.06, 0.02, 0);
+    circuitGroup.add(espChip);
+
+    // Active Diagnostic Blue Blinking LED
+    const diagLed = new THREE.Mesh(
+      new THREE.BoxGeometry(0.04, 0.04, 0.04),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+    );
+    diagLed.position.set(0.14, 0.03, 0.08);
+    circuitGroup.add(diagLed);
+
+    // MQ-135 Gas Sensor Module
+    const mqSensor = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.05, 0.08, 16),
+      new THREE.MeshStandardMaterial({ color: 0xc0c7d0, metalness: 0.8, roughness: 0.2 })
+    );
+    mqSensor.position.set(0.14, 0.04, -0.06);
+    circuitGroup.add(mqSensor);
+
+    // Color-Coded Illustrated Wiring Harness connecting ESP32 to the 4 Servos
+    binConfigs.forEach(cfg => {
+      // Wire curve from ESP32 to each servo
+      const wireCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 2.46, 0),
+        new THREE.Vector3(cfg.posX * 0.5, 2.44, 0.15),
+        new THREE.Vector3(cfg.posX + 0.3, 2.24, 0.3)
+      ]);
+      const wireGeo = new THREE.TubeGeometry(wireCurve, 16, 0.012, 6, false);
+      const wireMat = new THREE.MeshStandardMaterial({
+        color: cfg.key === 'orange' ? 0xea580c : (cfg.key === 'blue' ? 0x0284c7 : (cfg.key === 'brown' ? 0xd97706 : 0x475569)),
+        roughness: 0.5
+      });
+      const wireMesh = new THREE.Mesh(wireGeo, wireMat);
+      kiosk.add(wireMesh);
     });
 
-    const darkTrimMat = new THREE.MeshStandardMaterial({
-      color: 0x334155,
-      roughness: 0.4,
-      metalness: 0.5
-    });
+    // ─── 3D Waste Items to Animate Being Thrown In ───
+    // 1. Paper (Folded Paper Sheet / Crumpled Box)
+    const paperGeo = new THREE.BoxGeometry(0.3, 0.02, 0.24);
+    const paperMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+    const paperItem = new THREE.Mesh(paperGeo, paperMat);
+    paperItem.visible = false;
+    scene.add(paperItem);
 
-    // 4 Flap Slot Materials
-    const slotColors = {
-      paper:   new THREE.MeshStandardMaterial({ color: 0x1976D2, roughness: 0.4, metalness: 0.2 }),
-      plastic: new THREE.MeshStandardMaterial({ color: 0xFB8C00, roughness: 0.4, metalness: 0.2 }),
-      metal:   new THREE.MeshStandardMaterial({ color: 0xEF6C00, roughness: 0.4, metalness: 0.3 }),
-      trash:   new THREE.MeshStandardMaterial({ color: 0x546E7A, roughness: 0.5, metalness: 0.2 })
-    };
+    // 2. Milo Tin / Can
+    const canGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.18, 18);
+    const canMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.8, roughness: 0.2 });
+    const tinItem = new THREE.Mesh(canGeo, canMat);
+    tinItem.visible = false;
+    scene.add(tinItem);
 
-    // Internal Accessories Materials
-    const servoBodyMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.5 }); // Mini-servo Blue
-    const brassRodMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.2, metalness: 0.8 }); // Brass linkage
-    const pcbMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.3 }); // Green ESP32 PCB
-    const sensorCylinderMat = new THREE.MeshStandardMaterial({ color: 0xc0c7d0, roughness: 0.15, metalness: 0.85 }); // Ultrasonic silver cylinders
+    // 3. Glass Bottle
+    const glassGeo = new THREE.CylinderGeometry(0.06, 0.07, 0.22, 16);
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0x854d0e, transparent: true, opacity: 0.7, roughness: 0.1 });
+    const glassItem = new THREE.Mesh(glassGeo, glassMat);
+    glassItem.visible = false;
+    scene.add(glassItem);
 
-    // 5. Construct 3D SmartTONG Kiosk Model
-    const kioskGroup = new THREE.Group();
-    scene.add(kioskGroup);
+    // 4. General Waste Bag
+    const trashGeo = new THREE.SphereGeometry(0.12, 12, 10);
+    const trashMat = new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.9 });
+    const trashItem = new THREE.Mesh(trashGeo, trashMat);
+    trashItem.visible = false;
+    scene.add(trashItem);
 
-    // Main Kiosk Pedestal / Base
-    const baseGeo = new THREE.BoxGeometry(3.6, 0.12, 1.3);
-    const baseMesh = new THREE.Mesh(baseGeo, darkTrimMat);
-    baseMesh.position.y = 0.06;
-    baseMesh.castShadow = true;
-    baseMesh.receiveShadow = true;
-    kioskGroup.add(baseMesh);
-
-    // Kiosk Body Outer Shell (Clean White)
-    const shellGeo = new THREE.BoxGeometry(3.5, 2.3, 1.2);
-    const shellMesh = new THREE.Mesh(shellGeo, whiteChassisMat);
-    shellMesh.position.y = 1.25;
-    shellMesh.castShadow = true;
-    shellMesh.receiveShadow = true;
-    kioskGroup.add(shellMesh);
-
-    // Top Header Cap
-    const capGeo = new THREE.BoxGeometry(3.55, 0.15, 1.25);
-    const capMesh = new THREE.Mesh(capGeo, brushedSteelMat);
-    capMesh.position.y = 2.45;
-    capMesh.castShadow = true;
-    kioskGroup.add(capMesh);
-
-    // Top OV2640 AI Camera Module Turret
-    const camHousing = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.2, 0.25, 24), darkTrimMat);
-    camHousing.position.set(0, 2.65, 0.2);
-    camHousing.castShadow = true;
-    kioskGroup.add(camHousing);
-
-    const camLens = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.05, 16), new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.1, metalness: 0.9 }));
-    camLens.rotation.x = Math.PI / 2;
-    camLens.position.set(0, 2.65, 0.32);
-    kioskGroup.add(camLens);
-
-    // Top Neopixel Indicator Bar
-    const neoBarGeo = new THREE.BoxGeometry(1.2, 0.06, 0.06);
-    const neoBarMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
-    const neoBarMesh = new THREE.Mesh(neoBarGeo, neoBarMat);
-    neoBarMesh.position.set(0, 2.45, 0.64);
-    kioskGroup.add(neoBarMesh);
-
-    // Internal Mechanical Accessories & 4 Slots
-    const slotKeys = ['paper', 'plastic', 'metal', 'trash'];
-    const slotXPositions = [-1.26, -0.42, 0.42, 1.26];
-    const slotObjects = {};
-
-    slotKeys.forEach((key, idx) => {
-      const posX = slotXPositions[idx];
-      const slotGroup = new THREE.Group();
-      slotGroup.position.set(posX, 0, 0);
-      kioskGroup.add(slotGroup);
-
-      // Chute Inset Opening
-      const chuteFrame = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.52, 0.08), darkTrimMat);
-      chuteFrame.position.set(0, 1.9, 0.6);
-      slotGroup.add(chuteFrame);
-
-      const chuteCavity = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.44, 0.2), new THREE.MeshBasicMaterial({ color: 0x0f172a }));
-      chuteCavity.position.set(0, 1.9, 0.56);
-      slotGroup.add(chuteCavity);
-
-      // 3D Servo Motor Hinge Pivot (Mounted at top of chute)
-      const hingePivot = new THREE.Group();
-      hingePivot.position.set(0, 2.1, 0.6);
-      slotGroup.add(hingePivot);
-
-      // Flap Door attached to hinge
-      const flapMesh = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.42, 0.03), slotColors[key]);
-      flapMesh.position.set(0, -0.21, 0);
-      flapMesh.castShadow = true;
-      hingePivot.add(flapMesh);
-
-      // Door Handle
-      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.02, 0.03), brushedSteelMat);
-      handle.position.set(0, -0.32, 0.02);
-      hingePivot.add(handle);
-
-      // ⚙️ Mechanical Servo Motor Component (Internal)
-      const servoBody = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.2, 0.12), servoBodyMat);
-      servoBody.position.set(0.3, 2.1, 0.35);
-      slotGroup.add(servoBody);
-
-      // Servo Rotating Horn / Arm
-      const servoHornPivot = new THREE.Group();
-      servoHornPivot.position.set(0.3, 2.18, 0.35);
-      slotGroup.add(servoHornPivot);
-
-      const servoHorn = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.14, 0.02), brushedSteelMat);
-      servoHorn.position.set(0, 0.06, 0);
-      servoHornPivot.add(servoHorn);
-
-      // Brass Linkage Rod connecting servo horn to door
-      const linkageRod = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.28, 8), brassRodMat);
-      linkageRod.position.set(0.24, 2.14, 0.48);
-      linkageRod.rotation.x = Math.PI / 4;
-      slotGroup.add(linkageRod);
-
-      // 📡 Ultrasonic Sensor HC-SR04 (Internal Roof)
-      const ultraPcb = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.02, 0.1), pcbMat);
-      ultraPcb.position.set(0, 2.25, 0);
-      slotGroup.add(ultraPcb);
-
-      const ultraCyl1 = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.06, 12), sensorCylinderMat);
-      ultraCyl1.position.set(-0.06, 2.22, 0);
-      slotGroup.add(ultraCyl1);
-
-      const ultraCyl2 = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.06, 12), sensorCylinderMat);
-      ultraCyl2.position.set(0.06, 2.22, 0);
-      slotGroup.add(ultraCyl2);
-
-      // Internal Waste Accumulation Chamber
-      const chamberMesh = new THREE.Mesh(new THREE.BoxGeometry(0.72, 1.3, 0.9), new THREE.MeshStandardMaterial({
-        color: 0xf1f5f9,
-        roughness: 0.6,
-        metalness: 0.1,
-        transparent: true,
-        opacity: 0.35
-      }));
-      chamberMesh.position.set(0, 0.8, 0);
-      slotGroup.add(chamberMesh);
-
-      // Dynamic Waste Level Block in compartment
-      const initialFillHeight = idx === 0 ? 0.5 : (idx === 1 ? 0.7 : (idx === 2 ? 0.45 : 0.25));
-      const wasteFill = new THREE.Mesh(new THREE.BoxGeometry(0.68, initialFillHeight, 0.86), slotColors[key]);
-      wasteFill.position.set(0, 0.15 + (initialFillHeight / 2), 0);
-      slotGroup.add(wasteFill);
-
-      slotObjects[key] = {
-        hinge: hingePivot,
-        servoHorn: servoHornPivot,
-        wasteFill: wasteFill,
-        fillHeight: initialFillHeight,
-        currentAngle: 0,
-        targetAngle: 0,
-        color: slotColors[key]
-      };
-    });
-
-    // 🧠 Central Control Box & ESP32 Microcontroller (Mounted centrally inside)
-    const controlBox = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.35, 0.15), darkTrimMat);
-    controlBox.position.set(0, 1.25, 0.45);
-    kioskGroup.add(controlBox);
-
-    const esp32Pcb = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.2, 0.03), pcbMat);
-    esp32Pcb.position.set(0, 1.25, 0.54);
-    kioskGroup.add(esp32Pcb);
-
-    // ESP32 Status Blinking LED
-    const espLed = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.02), new THREE.MeshBasicMaterial({ color: 0x3b82f6 }));
-    espLed.position.set(0.12, 1.3, 0.56);
-    kioskGroup.add(espLed);
-
-    // MQ-135 Gas Sensor (Metallic mesh cap)
-    const mqSensor = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.06, 16), sensorCylinderMat);
-    mqSensor.position.set(-0.12, 1.25, 0.56);
-    mqSensor.rotation.x = Math.PI / 2;
-    kioskGroup.add(mqSensor);
-
-    // 3D Animated Falling Waste Item (appears when actuated)
-    const fallingItemGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.18, 16);
-    const fallingItemMat = new THREE.MeshStandardMaterial({ color: 0xEF6C00, metalness: 0.8, roughness: 0.2 }); // Milo tin cylinder
-    const fallingItem = new THREE.Mesh(fallingItemGeo, fallingItemMat);
-    fallingItem.visible = false;
-    scene.add(fallingItem);
-
-    // 6. X-Ray Mode Toggle
+    // 4. X-Ray / Circuit Transparency Toggle
     let isXRay = false;
     function toggleXRay() {
       isXRay = !isXRay;
       const btn = document.getElementById('btn-xray');
+
+      binConfigs.forEach(cfg => {
+        const mesh = binMeshes[cfg.key];
+        if (mesh) {
+          if (isXRay) {
+            mesh.material.transparent = true;
+            mesh.material.opacity = 0.28;
+          } else {
+            mesh.material.transparent = false;
+            mesh.material.opacity = 1.0;
+          }
+        }
+      });
+
       if (isXRay) {
-        btn.classList.add('active-toggle');
-        btn.innerHTML = '<span>🔍 Mod X-Ray: AKTIF</span>';
-        shellMesh.material = new THREE.MeshStandardMaterial({
-          color: 0xe2e8f0,
-          roughness: 0.1,
-          metalness: 0.1,
-          transparent: true,
-          opacity: 0.25
-        });
-        addLog('Mod X-Ray diaktifkan: Memaparkan motor servo, rod linkage, dan papan ESP32.');
+        btn.classList.add('active-xray');
+        btn.innerHTML = '<span>🔍 Mod Litar: AKTIF (Tembus Pandang)</span>';
+        greenTopMesh.material.transparent = true;
+        greenTopMesh.material.opacity = 0.4;
+        addLog('Mod X-Ray diaktifkan: Memaparkan pendawaian litar ESP32 &amp; motor servo.');
       } else {
-        btn.classList.remove('active-toggle');
-        btn.innerHTML = '<span>🔍 Mod X-Ray Dalaman</span>';
-        shellMesh.material = whiteChassisMat;
-        addLog('Mod X-Ray dinyahaktifkan: Kembali ke casis putih pepejal.');
+        btn.classList.remove('active-xray');
+        btn.innerHTML = '<span>🔍 Mod Litar &amp; Mekanikal (X-Ray)</span>';
+        greenTopMesh.material.transparent = false;
+        greenTopMesh.material.opacity = 1.0;
+        addLog('Mod X-Ray dinyahaktifkan: Kembali ke pandangan fizikal pepejal.');
       }
     }
 
-    // 7. Camera View Presets
-    function setCameraView(preset) {
-      if (preset === 'front') {
-        gsapAnimateCam(0, 2.0, 5.5, 0, 1.3, 0);
-      } else if (preset === 'top') {
-        gsapAnimateCam(0, 5.2, 2.5, 0, 1.8, 0.4);
-      } else if (preset === 'internal') {
-        if (!isXRay) toggleXRay();
-        gsapAnimateCam(0.8, 2.2, 3.2, 0.4, 1.5, 0);
+    function setCameraAngle(angle) {
+      if (angle === 'front') {
+        camera.position.set(0, 2.0, 5.2);
+        controls.target.set(0, 1.4, 0);
+      } else if (angle === 'top') {
+        camera.position.set(0, 5.0, 3.2);
+        controls.target.set(0, 2.0, 0.4);
       }
     }
 
-    function gsapAnimateCam(cx, cy, cz, tx, ty, tz) {
-      camera.position.set(cx, cy, cz);
-      controls.target.set(tx, ty, tz);
-    }
-
-    // 8. Actuation Physics & Animation Logic
-    let activeAnimation = null;
-
-    function triggerActuationBySlot(slotKey, className, hexColor) {
-      const slot = slotObjects[slotKey];
-      if (!slot) return;
+    // 5. Actuation Animation: Open Flap & Throw Stimulated Waste In
+    function triggerActuation(slotKey, title, itemType) {
+      const flap = flaps[slotKey];
+      const servo = servos[slotKey];
+      if (!flap) return;
 
       playBeep(659, 0.08);
       setTimeout(() => playBeep(880, 0.12), 100);
       playServoSound();
 
-      // Open servo flap & rotate horn (0 to 75 degrees)
-      slot.targetAngle = -1.3; // -75 deg in radians
+      // Rotate Flap on top hinge (opens to inside: -75 deg)
+      flap.targetAngle = -1.3;
 
       // Update OLED Text
-      document.getElementById('oled-disp').innerHTML = `SLOT <span style="color:#fff;">${className.toUpperCase()}</span> TERBUKA!<br/>+5 Eco-Points Dikreditkan ✓`;
-      document.getElementById('val-lock').textContent = 'UNLOCKED';
+      document.getElementById('oled-disp').innerHTML = `INTAKE FLAP <span style="color:#fff;">[${title.toUpperCase()}]</span> OPEN!<br/>Item Sisa Dimasukkan (+5 Mata)`;
+      document.getElementById('val-lock').textContent = `${slotKey.toUpperCase()} UNLOCKED`;
       document.getElementById('val-lock').style.color = '#ea580c';
 
-      // Update slot badge
-      const badge = document.getElementById(`badge-${slotKey}`);
-      if (badge) {
-        badge.textContent = '75° Terbuka';
-        badge.classList.add('open');
-      }
+      addLog(`Arahan diterima: Pintu intake flap [${title}] dibuka oleh motor servo.`);
 
-      // Update Neopixel bar color
-      neoBarMesh.material.color.set(hexColor);
-      neoPointLight.color.set(hexColor);
+      // Pick 3D item to throw into flap
+      let activeItem = tinItem;
+      if (itemType === 'paper_sheet') activeItem = paperItem;
+      else if (itemType === 'glass_bottle') activeItem = glassItem;
+      else if (itemType === 'trash_bag') activeItem = trashItem;
 
-      addLog(`Arahan Actuation: Motor servo ${slotKey.toUpperCase()} berputar 75°. Pintu dibuka.`);
+      const cfg = binConfigs.find(c => c.key === slotKey);
+      animateItemThrow(activeItem, cfg ? cfg.posX : 0, slotKey);
 
-      // Animate 3D item falling into slot
-      animateFallingWaste(slotObjects[slotKey], slotKey, hexColor);
-
-      // Increase waste fill height
+      // Auto-Close after 4 seconds
       setTimeout(() => {
-        slot.fillHeight = Math.min(1.15, slot.fillHeight + 0.08);
-        slot.wasteFill.scale.y = slot.fillHeight / 0.5;
-        slot.wasteFill.position.y = 0.15 + (slot.fillHeight / 2);
-
-        const currentPct = Math.min(100, Math.round((slot.fillHeight / 1.2) * 100));
-        const capEl = document.getElementById(`cap-${slotKey}`);
-        if (capEl) capEl.textContent = `${currentPct}% Penuh`;
-        addLog(`Sensor ultrasonik mengesan paras sisa baharu: ${currentPct}%.`);
-      }, 700);
-
-      // Auto-Close after 4.5 seconds
-      setTimeout(() => {
-        closeSlot(slotKey);
-      }, 4500);
+        closeFlap(slotKey);
+      }, 4200);
     }
 
-    function closeSlot(slotKey) {
-      const slot = slotObjects[slotKey];
-      if (!slot) return;
+    function closeFlap(slotKey) {
+      const flap = flaps[slotKey];
+      if (!flap) return;
       playServoSound();
-      slot.targetAngle = 0; // Return to closed
+      flap.targetAngle = 0; // Return to closed
 
-      const badge = document.getElementById(`badge-${slotKey}`);
-      if (badge) {
-        badge.textContent = '0° Kunci';
-        badge.classList.remove('open');
-      }
-
-      document.getElementById('val-lock').textContent = 'LOCKED';
+      document.getElementById('val-lock').textContent = 'ALL LOCKED';
       document.getElementById('val-lock').style.color = '#16a34a';
-      document.getElementById('oled-disp').innerHTML = `SISA BERJAYA DIMASUKKAN<br/>Pintu Dikunci Semula (Standby)`;
-      neoBarMesh.material.color.set(0x22c55e);
-      neoPointLight.color.set(0x22c55e);
-      addLog(`Servo ${slotKey.toUpperCase()} kembali ke 0°. Flap dikunci selamat.`);
+      document.getElementById('oled-disp').innerHTML = `SISA BERJAYA DIMASUKKAN<br/>Flap Dikunci Semula (Standby)`;
+      addLog(`Motor servo ${slotKey.toUpperCase()} kembali ke 0°. Intake flap dikunci rapat.`);
 
       setTimeout(() => {
-        document.getElementById('oled-disp').innerHTML = `SYSTEM READY...<br/>Sedia Menerima Imbasan`;
-      }, 3000);
+        document.getElementById('oled-disp').innerHTML = `SYSTEM STANDBY...<br/>Sedia Menerima Imbasan Sisa`;
+      }, 2500);
     }
 
-    function animateFallingWaste(slot, slotKey, hexColor) {
-      const posX = slotKeys.indexOf(slotKey) !== -1 ? slotXPositions[slotKeys.indexOf(slotKey)] : 0;
-      fallingItem.position.set(posX, 2.5, 0.6);
-      fallingItem.material.color.set(hexColor);
-      fallingItem.visible = true;
+    function animateItemThrow(itemMesh, targetX, slotKey) {
+      // Start above intake flap
+      itemMesh.position.set(targetX, 3.1, 1.1);
+      itemMesh.visible = true;
 
-      let startY = 2.5;
       const startTime = performance.now();
-
-      function stepFall(now) {
+      function stepThrow(now) {
         const elapsed = (now - startTime) / 1000;
-        if (elapsed < 0.6) {
-          fallingItem.position.y = startY - (elapsed * 2.2);
-          fallingItem.position.z = 0.6 - (elapsed * 0.7); // Tumble inside
-          fallingItem.rotation.x += 0.1;
-          fallingItem.rotation.y += 0.05;
-          requestAnimationFrame(stepFall);
+        if (elapsed < 0.75) {
+          // Arc trajectory into the opening intake flap
+          itemMesh.position.y = 3.1 - (elapsed * 2.1);
+          itemMesh.position.z = 1.1 - (elapsed * 1.3); // Fly inside cavity
+          itemMesh.rotation.x += 0.08;
+          itemMesh.rotation.y += 0.06;
+          requestAnimationFrame(stepThrow);
         } else {
-          fallingItem.visible = false;
+          itemMesh.visible = false;
+          // Increase waste height in compartment
+          const waste = wasteLevels[slotKey];
+          if (waste) {
+            waste.height = Math.min(1.3, waste.height + 0.09);
+            waste.mesh.scale.y = waste.height / 0.5;
+            waste.mesh.position.y = 0.2 + (waste.height / 2);
+            addLog(`Sensor ultrasonik mengesan pertambahan isipadu dalam slot ${slotKey.toUpperCase()}.`);
+          }
         }
       }
-      requestAnimationFrame(stepFall);
+      requestAnimationFrame(stepThrow);
     }
 
-    function simulateCriticalAlarm() {
-      playBeep(440, 0.2);
-      setTimeout(() => playBeep(330, 0.3), 250);
-      document.getElementById('oled-disp').innerHTML = `<span style="color:#ef4444;">🚨 AMARAN: TONG PENUH (95%)</span><br/>Menghantar Isyarat Lori KDEB`;
-      document.getElementById('val-gas').textContent = '420 ppm (Tinggi)';
-      document.getElementById('val-gas').style.color = '#ef4444';
-      neoBarMesh.material.color.set(0xef4444);
-      neoPointLight.color.set(0xef4444);
-      addLog('AMARAN KRITIKAL: Kapasiti tong mencapai 95%. Isyarat kecemasan dihantar ke Dashboard PBT KDEBWM.', true);
-
-      setTimeout(() => {
-        document.getElementById('val-gas').textContent = '85 ppm';
-        document.getElementById('val-gas').style.color = '#16a34a';
-        neoBarMesh.material.color.set(0x22c55e);
-        neoPointLight.color.set(0x22c55e);
-        document.getElementById('oled-disp').innerHTML = `SYSTEM READY...<br/>Sedia Menerima Imbasan`;
-      }, 7000);
-    }
-
-    // 9. Real-time Firebase Firestore Sync
+    // 6. Realtime Firebase Firestore & BroadcastChannel Sync
     let db = null;
     try {
       if (typeof firebase !== 'undefined') {
@@ -1040,7 +1094,7 @@
     const bc = new BroadcastChannel('smarttong_channel');
     bc.onmessage = (e) => {
       if (e.data && e.data.type === 'ACTUATION') {
-        handleIncomingActuation(e.data.payload, 'BroadcastChannel (Telefon Pintar)');
+        handleIncomingScan(e.data.payload, 'Citizen App (Masa Nyata)');
       }
     };
 
@@ -1048,7 +1102,7 @@
       if (e.key === 'smarttong_latest_actuation' && e.newValue) {
         try {
           const payload = JSON.parse(e.newValue);
-          handleIncomingActuation(payload, 'Cross-Tab Storage');
+          handleIncomingScan(payload, 'Cross-Tab Storage');
         } catch(err){}
       }
     });
@@ -1060,7 +1114,7 @@
           if (doc.exists) {
             const data = doc.data();
             if (data && data.timestamp && (Date.now() - data.timestamp < 30000)) {
-              handleIncomingActuation(data, 'Firebase Firestore (Awan)');
+              handleIncomingScan(data, 'Firebase Firestore (Awan)');
             }
           }
         }, (err) => {
@@ -1069,38 +1123,38 @@
         });
     }
 
-    let lastTime = 0;
-    function handleIncomingActuation(data, source) {
+    let lastScanTime = 0;
+    function handleIncomingScan(data, source) {
       const now = Date.now();
-      if (now - lastTime < 1500) return;
-      lastTime = now;
+      if (now - lastScanTime < 1500) return;
+      lastScanTime = now;
 
-      const slotRaw = (data.slot || data.class || 'metal').toLowerCase();
-      let slotKey = 'metal';
-      let hexColor = '#EF6C00';
+      const rawClass = (data.class || data.slot || '').toLowerCase();
+      addLog(`Imbasan diterima daripada ${source}: [${rawClass.toUpperCase()}]`);
 
-      if (slotRaw.includes('kertas') || slotRaw.includes('paper') || slotRaw.includes('cardboard')) {
-        slotKey = 'paper'; hexColor = '#1976D2';
-      } else if (slotRaw.includes('plastik') || slotRaw.includes('plastic')) {
-        slotKey = 'plastic'; hexColor = '#FB8C00';
-      } else if (slotRaw.includes('logam') || slotRaw.includes('metal')) {
-        slotKey = 'metal'; hexColor = '#EF6C00';
+      // Match Scan Result to the exact 4 Bins from user's sketch:
+      if (rawClass.includes('paper') || rawClass.includes('kertas') || rawClass.includes('cardboard') || rawClass.includes('kadbod')) {
+        // BLUE BIN: PAPER
+        triggerActuation('blue', 'Kertas (Paper)', 'paper_sheet');
+      } else if (rawClass.includes('plastic') || rawClass.includes('plastik') || rawClass.includes('metal') || rawClass.includes('logam') || rawClass.includes('tin')) {
+        // ORANGE BIN: PLASTIC/METAL
+        triggerActuation('orange', 'Plastik / Logam', 'milo_tin');
+      } else if (rawClass.includes('glass') || rawClass.includes('kaca')) {
+        // BROWN BIN: GLASS
+        triggerActuation('brown', 'Kaca (Glass)', 'glass_bottle');
       } else {
-        slotKey = 'trash'; hexColor = '#546E7A';
+        // BLACK BIN: GENERAL WASTE
+        triggerActuation('black', 'Sisa Baki (General)', 'trash_bag');
       }
-
-      addLog(`Arahan Awan diterima daripada ${source}: [${slotKey.toUpperCase()}]`);
-      triggerActuationBySlot(slotKey, data.class || slotKey, hexColor);
     }
 
-    function addLog(msg, isWarn = false) {
+    function addLog(msg) {
       const box = document.getElementById('log-box');
       if (!box) return;
       const now = new Date();
       const timeStr = `[${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}]`;
       const div = document.createElement('div');
-      if (isWarn) div.style.color = '#dc2626';
-      div.innerHTML = `<span style="color:#2563eb;">${timeStr}</span> ${msg}`;
+      div.innerHTML = `<span style="color:#0284c7;">${timeStr}</span> ${msg}`;
       box.appendChild(div);
       box.scrollTop = box.scrollHeight;
     }
@@ -1111,7 +1165,7 @@
       addLog('Log dikosongkan.');
     }
 
-    // 10. Render Loop
+    // 7. Render Loop
     let clock = new THREE.Clock();
     function animate() {
       requestAnimationFrame(animate);
@@ -1119,25 +1173,28 @@
       const delta = clock.getDelta();
       const elapsedTime = clock.getElapsedTime();
 
-      // Smoothly interpolate servo angle & horn rotation
-      slotKeys.forEach(key => {
-        const slot = slotObjects[key];
-        if (slot) {
-          slot.currentAngle += (slot.targetAngle - slot.currentAngle) * 0.12;
-          slot.hinge.rotation.x = slot.currentAngle;
-          slot.servoHorn.rotation.z = slot.currentAngle * 0.9;
+      // Smooth Flap & Servo Arm Rotation
+      binConfigs.forEach(cfg => {
+        const flap = flaps[cfg.key];
+        const servo = servos[cfg.key];
+        if (flap) {
+          flap.currentAngle += (flap.targetAngle - flap.currentAngle) * 0.14;
+          flap.hinge.rotation.x = flap.currentAngle;
+          if (servo) {
+            servo.rotation.z = flap.currentAngle * 0.85;
+          }
         }
       });
 
-      // ESP32 Diagnostic LED Blinking
-      espLed.material.color.set(Math.sin(elapsedTime * 6) > 0 ? 0x3b82f6 : 0x0f172a);
+      // ESP32 Diagnostic Blinking LED
+      diagLed.material.color.set(Math.sin(elapsedTime * 8) > 0 ? 0x38bdf8 : 0x0369a1);
 
       controls.update();
       renderer.render(scene, camera);
     }
     animate();
 
-    // Window Resize handling
+    // Responsive Resize
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
