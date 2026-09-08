@@ -3,108 +3,133 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SmartTONG AI — Digital Twin & Hardware Simulator</title>
-  <meta name="description" content="Simulator perkakasan maya dan digital twin untuk tong kitar semula pintar SmartTONG Selangor." />
+  <title>SmartTONG AI — 3D Digital Twin &amp; Hardware Simulator</title>
+  <meta name="description" content="Simulator perkakasan 3D digital twin interaktif untuk kiosk kitar semula pintar SmartTONG Selangor." />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
 
-  <!-- Firebase SDK (Firestore) for Real-time Cloud Sync -->
+  <!-- Three.js & OrbitControls for Pure WebGL 3D -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Firebase SDK for Real-time Cloud Sync -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
   <style>
     :root {
-      --bg: #0d1117;
-      --card-bg: rgba(22, 27, 34, 0.85);
-      --card-border: rgba(48, 54, 61, 0.8);
-      --text: #f0f6fc;
-      --text-muted: #8b949e;
-      --accent: #2ea043;
-      --blue: #2f81f7;
-      --orange: #f0883e;
-      --amber: #d29922;
-      --red: #f85149;
+      --bg: #f5f7fa;
+      --card-bg: rgba(255, 255, 255, 0.94);
+      --card-border: rgba(218, 224, 233, 0.8);
+      --text: #1a202c;
+      --text-muted: #64748b;
+      --primary: #1b5e20;
+      --primary-light: #2e7d32;
       --slot-paper: #1976D2;
       --slot-plastic: #FB8C00;
       --slot-metal: #EF6C00;
-      --slot-trash: #424242;
+      --slot-trash: #546E7A;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(46, 160, 67, 0.15) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(47, 129, 247, 0.12) 0px, transparent 50%),
-        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-      background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
       color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      user-select: none;
     }
 
-    /* Header */
+    /* 3D Canvas Viewport */
+    #webgl-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      outline: none;
+    }
+
+    /* Top Floating Header */
     header {
-      padding: 16px 28px;
+      position: absolute;
+      top: 16px;
+      left: 20px;
+      right: 20px;
+      z-index: 10;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--card-border);
-      background: rgba(13, 17, 23, 0.8);
-      backdrop-filter: blur(12px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      pointer-events: none;
     }
-    .brand {
+
+    .brand-glass {
+      pointer-events: auto;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 10px 18px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       gap: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      backdrop-filter: blur(12px);
     }
-    .brand-logo {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #2ea043, #238636);
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #1b5e20, #2e7d32);
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 15px rgba(46, 160, 67, 0.4);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(27, 94, 32, 0.25);
     }
     .brand-title {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 800;
-      letter-spacing: -0.5px;
+      color: #0f172a;
+      letter-spacing: -0.3px;
     }
     .brand-sub {
       font-size: 11px;
+      font-weight: 500;
       color: var(--text-muted);
     }
 
-    .sync-badge {
+    .top-actions {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge-sync {
+      background: #ffffff;
+      border: 1px solid #dcfce7;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #166534;
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 14px;
-      background: rgba(46, 160, 67, 0.12);
-      border: 1px solid rgba(46, 160, 67, 0.3);
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #3fb950;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
     }
     .sync-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #3fb950;
-      box-shadow: 0 0 8px #3fb950;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
       animation: pulse 1.8s infinite;
     }
     @keyframes pulse {
@@ -112,742 +137,429 @@
       50% { opacity: 0.4; transform: scale(0.85); }
     }
 
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .nav-btn {
-      padding: 8px 14px;
-      background: rgba(255, 255, 255, 0.05);
+    .nav-btn-light {
+      background: #ffffff;
       border: 1px solid var(--card-border);
-      border-radius: 8px;
-      color: var(--text);
-      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 10px;
       font-size: 12px;
       font-weight: 600;
+      color: #334155;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
       transition: all 0.2s;
     }
-    .nav-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.3);
+    .nav-btn-light:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
     }
 
-    /* Main Container Grid */
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 24px;
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 24px;
-      width: 100%;
-    }
-
-    @media (max-width: 1024px) {
-      .container { grid-template-columns: 1fr; }
-    }
-
-    /* Card Panels */
-    .panel {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    /* Left Side: Virtual OLED Display & Sensors Telemetry */
+    .left-panel {
+      position: absolute;
+      top: 86px;
+      left: 20px;
+      width: 320px;
+      z-index: 10;
       display: flex;
       flex-direction: column;
-      gap: 20px;
-    }
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 14px;
-    }
-    .panel-title {
-      font-size: 16px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* ─── KIOSK VISUAL SIMULATOR ─── */
-    .kiosk-chassis {
-      background: linear-gradient(180deg, #1c2128 0%, #161b22 100%);
-      border: 2px solid #30363d;
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.05), 0 12px 36px rgba(0, 0, 0, 0.5);
-      position: relative;
-    }
-
-    /* Kiosk Top Display: Camera & LED Ring */
-    .kiosk-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      padding-bottom: 18px;
-      border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-    }
-    .kiosk-cam-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #0d1117;
-      border: 1px solid #30363d;
-      padding: 6px 12px;
-      border-radius: 30px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-    .cam-lens {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #238636;
-      box-shadow: 0 0 10px #2ea043;
-      border: 2px solid #fff;
-    }
-
-    .neopixel-ring {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .neopixel-led {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #30363d;
-      box-shadow: 0 0 2px rgba(0,0,0,0.5);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .neopixel-led.active-blue { background: #2f81f7; box-shadow: 0 0 14px #2f81f7; }
-    .neopixel-led.active-orange { background: #f0883e; box-shadow: 0 0 14px #f0883e; }
-    .neopixel-led.active-green { background: #3fb950; box-shadow: 0 0 14px #3fb950; }
-    .neopixel-led.active-red { background: #f85149; box-shadow: 0 0 14px #f85149; }
-
-    /* SSD1306 Virtual OLED Screen */
-    .oled-screen {
-      background: #000;
-      border: 3px solid #30363d;
-      border-radius: 8px;
-      padding: 14px 18px;
-      font-family: 'JetBrains Mono', monospace;
-      color: #79c0ff;
-      text-shadow: 0 0 4px rgba(121, 192, 255, 0.6);
-      margin-bottom: 24px;
-      box-shadow: inset 0 0 15px rgba(47, 129, 247, 0.15);
-      position: relative;
-      overflow: hidden;
-    }
-    .oled-screen::after {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 2px);
+      gap: 12px;
       pointer-events: none;
     }
-    .oled-header {
+    .widget-glass {
+      pointer-events: auto;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.05);
+      backdrop-filter: blur(12px);
+    }
+
+    /* Virtual OLED Screen (Emulated Light Pixel Screen) */
+    .oled-box {
+      background: #0f172a;
+      border: 2px solid #334155;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #38bdf8;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .oled-top {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
-      border-bottom: 1px solid rgba(121, 192, 255, 0.3);
+      font-size: 10px;
+      color: #94a3b8;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
       padding-bottom: 4px;
       margin-bottom: 8px;
     }
-    .oled-main {
-      font-size: 15px;
+    .oled-content {
+      font-size: 13px;
       font-weight: 700;
       line-height: 1.4;
-      min-height: 44px;
-    }
-    .oled-sub {
-      font-size: 11px;
-      color: #a5d6ff;
-      margin-top: 4px;
+      min-height: 40px;
+      color: #e0f2fe;
     }
 
-    /* 4 Slots Grid */
-    .slots-grid {
+    /* Telemetry Data Grid */
+    .tele-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 6px;
     }
-    @media (max-width: 680px) {
-      .slots-grid { grid-template-columns: repeat(2, 1fr); }
+    .tele-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px;
     }
-
-    .slot-unit {
-      background: #0d1117;
-      border: 2px solid #30363d;
-      border-radius: 14px;
-      padding: 16px 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      position: relative;
-      transition: all 0.3s;
-    }
-    .slot-unit.active {
-      border-color: var(--slot-color);
-      box-shadow: 0 0 20px var(--slot-color-glow);
-    }
-
-    /* Servo Animated Flap */
-    .servo-housing {
-      width: 100%;
-      height: 90px;
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 10px;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .chute-hole {
-      position: absolute;
-      width: 80%;
-      height: 70%;
-      background: #000;
-      border-radius: 6px;
-      box-shadow: inset 0 6px 14px rgba(0,0,0,0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .tele-lbl {
       font-size: 10px;
-      color: rgba(255,255,255,0.2);
-    }
-    .servo-flap {
-      position: absolute;
-      width: 84%;
-      height: 74%;
-      background: linear-gradient(135deg, #30363d, #21262d);
-      border: 2px solid #484f58;
-      border-radius: 6px;
-      transform-origin: top center;
-      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
-      cursor: pointer;
-    }
-    .servo-flap.open {
-      transform: perspective(300px) rotateX(-75deg);
-      border-color: var(--slot-color);
-    }
-    .flap-handle {
-      width: 24px;
-      height: 4px;
-      background: #8b949e;
-      border-radius: 2px;
-      margin-bottom: 4px;
-    }
-    .flap-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: #c9d1d9;
-    }
-
-    /* Servo Angle Gauge */
-    .servo-status {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-weight: 600;
       color: var(--text-muted);
+      margin-bottom: 2px;
     }
-    .servo-badge {
+    .tele-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Right Side: Slot Capacities & Live Logs */
+    .right-panel {
+      position: absolute;
+      top: 86px;
+      right: 20px;
+      width: 320px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .slots-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .slot-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    .slot-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      display: inline-block;
+    }
+    .slot-state-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
       padding: 2px 6px;
       border-radius: 4px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid #30363d;
-      font-weight: 700;
+      background: #e2e8f0;
     }
-    .servo-badge.opened {
-      color: #3fb950;
-      background: rgba(46, 160, 67, 0.15);
-      border-color: #2ea043;
+    .slot-state-badge.open {
+      background: #dcfce7;
+      color: #166534;
     }
 
-    /* Fill Level Bar (Ultrasonic) */
-    .fill-wrapper {
-      width: 100%;
+    /* Live Event Log */
+    .log-container {
+      max-height: 140px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #475569;
       display: flex;
       flex-direction: column;
       gap: 4px;
-    }
-    .fill-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 10px;
-      color: var(--text-muted);
-    }
-    .fill-bar-bg {
-      width: 100%;
-      height: 8px;
-      background: #21262d;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .fill-bar-fg {
-      height: 100%;
-      width: 35%;
-      background: var(--slot-color);
-      border-radius: 4px;
-      transition: width 0.5s ease;
+      background: #f8fafc;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
     }
 
-    /* Slot Title */
-    .slot-title {
-      font-size: 13px;
-      font-weight: 800;
-      text-align: center;
-      color: var(--slot-color);
-      margin-top: 2px;
-    }
-    .slot-sub {
-      font-size: 10px;
-      color: var(--text-muted);
-      text-align: center;
-    }
-
-    /* ─── TELEMETRY & CONTROLS (RIGHT PANEL) ─── */
-    .telemetry-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .telemetry-card {
-      background: #0d1117;
+    /* Bottom Control Bar */
+    .bottom-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .tele-label {
-      font-size: 11px;
-      color: var(--text-muted);
+      border-radius: 16px;
+      padding: 10px 18px;
       display: flex;
       align-items: center;
-      gap: 6px;
-    }
-    .tele-val {
-      font-size: 20px;
-      font-weight: 800;
-      font-family: 'JetBrains Mono', monospace;
-    }
-    .tele-status {
-      font-size: 10px;
-      color: #3fb950;
+      gap: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      backdrop-filter: blur(12px);
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
-    /* Interactive Demo Control Board */
-    .control-board {
-      background: rgba(46, 160, 67, 0.05);
-      border: 1px solid rgba(46, 160, 67, 0.2);
-      border-radius: 12px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .control-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #3fb950;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .btn-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-    .btn-action {
-      background: #21262d;
-      border: 1px solid #30363d;
-      color: var(--text);
-      padding: 10px 12px;
+    .btn-tool {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 8px 14px;
       border-radius: 8px;
       font-size: 12px;
       font-weight: 600;
+      color: #1e293b;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       transition: all 0.15s;
     }
-    .btn-action:hover {
-      background: #30363d;
-      border-color: #8b949e;
+    .btn-tool:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
       transform: translateY(-1px);
     }
-    .btn-action:active {
-      transform: translateY(1px);
+    .btn-tool.active-toggle {
+      background: #1b5e20;
+      border-color: #1b5e20;
+      color: #ffffff;
     }
 
-    /* Live Event Logs */
-    .logs-box {
-      background: #05070a;
-      border: 1px solid #30363d;
-      border-radius: 10px;
-      padding: 12px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      height: 160px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .log-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      color: #8b949e;
-      line-height: 1.4;
-    }
-    .log-time { color: #58a6ff; flex-shrink: 0; }
-    .log-msg { color: #c9d1d9; }
-    .log-msg.highlight { color: #3fb950; font-weight: 600; }
-    .log-msg.warn { color: #f0883e; }
-
-    /* Footer */
-    footer {
-      padding: 16px;
-      text-align: center;
+    .btn-demo {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      padding: 8px 12px;
+      border-radius: 8px;
       font-size: 12px;
-      color: var(--text-muted);
-      border-top: 1px solid var(--card-border);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .btn-demo:hover {
+      background: #f1f5f9;
+      border-color: #0f172a;
+    }
+
+    .btn-crit {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+    }
+    .btn-crit:hover {
+      background: #fee2e2;
+      border-color: #ef4444;
+    }
+
+    .divider {
+      width: 1px;
+      height: 24px;
+      background: #cbd5e1;
+    }
+
+    /* 3D Instructions Tip Overlay */
+    .orbit-tip {
+      position: absolute;
+      bottom: 84px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      background: rgba(15, 23, 42, 0.7);
+      color: #ffffff;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Header -->
+  <!-- WebGL 3D Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- Top Floating Header -->
   <header>
-    <div class="brand">
-      <div class="brand-logo">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <div class="brand-glass">
+      <div class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="3 6 5 6 21 6"></polyline>
           <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
           <path d="M10 11v6M14 11v6"></path>
         </svg>
       </div>
       <div>
-        <div class="brand-title">SmartTONG Digital Twin</div>
-        <div class="brand-sub">Hardware &amp; Firmware Kiosk Simulator (AINS 2026)</div>
+        <div class="brand-title">SmartTONG Digital Twin 3D</div>
+        <div class="brand-sub">Simulasi Mekanikal Kiosk Fizikal Selangor (AINS 2026)</div>
       </div>
     </div>
 
-    <div style="display:flex;align-items:center;gap:16px;">
-      <div class="sync-badge" id="sync-status">
+    <div class="top-actions">
+      <div class="badge-sync">
         <div class="sync-dot"></div>
-        <span id="sync-text">Cloud Sync: Terhubung (Live)</span>
+        <span id="sync-lbl">Cloud Sync: Terhubung (Live)</span>
       </div>
-      <div class="nav-links">
-        <a href="/citizen-app/" class="nav-btn" target="_blank">📱 Buka Citizen App</a>
-        <a href="/dashboard/" class="nav-btn" target="_blank">🏛️ Buka Dashboard PBT</a>
-      </div>
+      <a href="/citizen-app/" target="_blank" class="nav-btn-light">📱 Citizen App</a>
+      <a href="/dashboard/" target="_blank" class="nav-btn-light">🏛️ Dashboard PBT</a>
     </div>
   </header>
 
-  <!-- Main Simulator Container -->
-  <div class="container">
-    
-    <!-- LEFT PANEL: KIOSK PHYSICAL DIGITAL TWIN -->
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-          Kiosk Kitar Semula 4-Ruang (Unit: B01 — Subang Jaya)
+  <!-- Left Side: OLED Screen & Telemetry -->
+  <div class="left-panel">
+    <div class="widget-glass">
+      <div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+        <span>📟 Skrin OLED SSD1306 Kiosk</span>
+      </div>
+      <div class="oled-box">
+        <div class="oled-top">
+          <span>[SMARTTONG-AI B01]</span>
+          <span>🔋 92% SOLAR</span>
         </div>
-        <div style="font-size:12px;color:var(--text-muted);">
-          ESP32 + Keras AI Actuation
+        <div class="oled-content" id="oled-disp">
+          SYSTEM READY...<br/>Sedia Menerima Imbasan
         </div>
       </div>
 
-      <!-- Kiosk Physical Box -->
-      <div class="kiosk-chassis">
-        <!-- Top Bar: Cam Sensor & Neopixel RGB Ring -->
-        <div class="kiosk-head">
-          <div class="kiosk-cam-badge">
-            <div class="cam-lens"></div>
-            <span>OV2640 Virtual AI Camera</span>
-          </div>
-
-          <!-- 6-LED Virtual Neopixel Ring -->
-          <div class="neopixel-ring" id="neo-ring" title="Lampu Neopixel RGB Indikator">
-            <div class="neopixel-led" id="led-1"></div>
-            <div class="neopixel-led" id="led-2"></div>
-            <div class="neopixel-led" id="led-3"></div>
-            <div class="neopixel-led" id="led-4"></div>
-            <div class="neopixel-led" id="led-5"></div>
-            <div class="neopixel-led" id="led-6"></div>
-          </div>
+      <div class="tele-grid">
+        <div class="tele-item">
+          <div class="tele-lbl">📡 JSN Ultrasonik</div>
+          <div class="tele-num" id="val-ultrasonic">36 cm</div>
         </div>
-
-        <!-- SSD1306 OLED Screen -->
-        <div class="oled-screen" id="oled-screen">
-          <div class="oled-header">
-            <span>[SMARTTONG-AI B01]</span>
-            <span id="oled-batt">🔋 88% (Solar)</span>
-          </div>
-          <div class="oled-main" id="oled-text">
-            SYSTEM STANDBY...<br/>Sedia Menerima Imbasan Sisa
-          </div>
-          <div class="oled-sub" id="oled-footer">
-            GPS: USJ 1 · KDEBWM Selangor · Akta 672
-          </div>
+        <div class="tele-item">
+          <div class="tele-lbl">💨 MQ-135 Gas</div>
+          <div class="tele-num" id="val-gas" style="color:#16a34a;">85 ppm</div>
         </div>
-
-        <!-- 4 Compartment Slots with Servo Flaps -->
-        <div class="slots-grid">
-          
-          <!-- Slot 1: Kertas (Blue) -->
-          <div class="slot-unit" id="slot-paper" style="--slot-color: var(--slot-paper); --slot-color-glow: rgba(25, 118, 210, 0.4);">
-            <div class="servo-housing">
-              <div class="chute-hole">SLOT INTAKE</div>
-              <div class="servo-flap" id="flap-paper" onclick="triggerManualActuation('Kertas', 'Paper', '#1976D2')">
-                <div class="flap-handle"></div>
-                <div class="flap-label">KERTAS</div>
-              </div>
-            </div>
-            <div class="servo-status">
-              <span>Servo 1:</span>
-              <span class="servo-badge" id="servo-deg-paper">0° (Kunci)</span>
-            </div>
-            <div class="fill-wrapper">
-              <div class="fill-header">
-                <span>Paras Penuh</span>
-                <span id="fill-pct-paper">45%</span>
-              </div>
-              <div class="fill-bar-bg">
-                <div class="fill-bar-fg" id="fill-bar-paper" style="width: 45%;"></div>
-              </div>
-            </div>
-            <div class="slot-title">Kertas / Kadbod</div>
-            <div class="slot-sub">Kotak &amp; Majalah</div>
-          </div>
-
-          <!-- Slot 2: Plastik (Orange) -->
-          <div class="slot-unit" id="slot-plastic" style="--slot-color: var(--slot-plastic); --slot-color-glow: rgba(251, 140, 0, 0.4);">
-            <div class="servo-housing">
-              <div class="chute-hole">SLOT INTAKE</div>
-              <div class="servo-flap" id="flap-plastic" onclick="triggerManualActuation('Plastik', 'Plastic', '#FB8C00')">
-                <div class="flap-handle"></div>
-                <div class="flap-label">PLASTIK</div>
-              </div>
-            </div>
-            <div class="servo-status">
-              <span>Servo 2:</span>
-              <span class="servo-badge" id="servo-deg-plastic">0° (Kunci)</span>
-            </div>
-            <div class="fill-wrapper">
-              <div class="fill-header">
-                <span>Paras Penuh</span>
-                <span id="fill-pct-plastic">60%</span>
-              </div>
-              <div class="fill-bar-bg">
-                <div class="fill-bar-fg" id="fill-bar-plastic" style="width: 60%;"></div>
-              </div>
-            </div>
-            <div class="slot-title">Plastik</div>
-            <div class="slot-sub">Botol &amp; Bekas</div>
-          </div>
-
-          <!-- Slot 3: Logam (Deep Orange) -->
-          <div class="slot-unit" id="slot-metal" style="--slot-color: var(--slot-metal); --slot-color-glow: rgba(239, 108, 0, 0.4);">
-            <div class="servo-housing">
-              <div class="chute-hole">SLOT INTAKE</div>
-              <div class="servo-flap" id="flap-metal" onclick="triggerManualActuation('Logam', 'Metal', '#EF6C00')">
-                <div class="flap-handle"></div>
-                <div class="flap-label">LOGAM</div>
-              </div>
-            </div>
-            <div class="servo-status">
-              <span>Servo 3:</span>
-              <span class="servo-badge" id="servo-deg-metal">0° (Kunci)</span>
-            </div>
-            <div class="fill-wrapper">
-              <div class="fill-header">
-                <span>Paras Penuh</span>
-                <span id="fill-pct-metal">35%</span>
-              </div>
-              <div class="fill-bar-bg">
-                <div class="fill-bar-fg" id="fill-bar-metal" style="width: 35%;"></div>
-              </div>
-            </div>
-            <div class="slot-title">Logam / Tin</div>
-            <div class="slot-sub">Tin Milo &amp; Minuman</div>
-          </div>
-
-          <!-- Slot 4: Sisa Baki (Dark) -->
-          <div class="slot-unit" id="slot-trash" style="--slot-color: #8b949e; --slot-color-glow: rgba(139, 148, 158, 0.3);">
-            <div class="servo-housing">
-              <div class="chute-hole">SLOT INTAKE</div>
-              <div class="servo-flap" id="flap-trash" onclick="triggerManualActuation('Sisa Baki', 'Trash', '#424242')">
-                <div class="flap-handle"></div>
-                <div class="flap-label">SISA BAKI</div>
-              </div>
-            </div>
-            <div class="servo-status">
-              <span>Servo 4:</span>
-              <span class="servo-badge" id="servo-deg-trash">0° (Kunci)</span>
-            </div>
-            <div class="fill-wrapper">
-              <div class="fill-header">
-                <span>Paras Penuh</span>
-                <span id="fill-pct-trash">20%</span>
-              </div>
-              <div class="fill-bar-bg">
-                <div class="fill-bar-fg" id="fill-bar-trash" style="width: 20%; background:#8b949e;"></div>
-              </div>
-            </div>
-            <div class="slot-title">Sisa Baki</div>
-            <div class="slot-sub">Tisu &amp; Kotor</div>
-          </div>
-
+        <div class="tele-item">
+          <div class="tele-lbl">⚙️ Status Kunci</div>
+          <div class="tele-num" id="val-lock" style="color:#16a34a;">LOCKED</div>
+        </div>
+        <div class="tele-item">
+          <div class="tele-lbl">⚡ Voltan Node</div>
+          <div class="tele-num" style="color:#2563eb;">4.14 V</div>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT PANEL: TELEMETRY SENSORS & DEMO CONTROL BOARD -->
-    <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-          Telemetri Perkakasan &amp; Kawalan Demo
-        </div>
-        <div style="font-size:12px;color:var(--text-muted);">
-          Sensor ESP32 Node
-        </div>
+    <div class="widget-glass">
+      <div style="font-size:12px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;">
+        <span>Log Peristiwa Masa Nyata</span>
+        <span style="color:#2563eb;font-size:10px;cursor:pointer;" onclick="clearLogs()">Padam</span>
       </div>
-
-      <!-- Telemetry Cards -->
-      <div class="telemetry-grid">
-        <div class="telemetry-card">
-          <div class="tele-label">
-            <span>📡 JSN-SR04T Ultrasonik</span>
-          </div>
-          <div class="tele-val" id="tele-dist">38 cm</div>
-          <div class="tele-status">Isipadu Purata: 44%</div>
-        </div>
-
-        <div class="telemetry-card">
-          <div class="tele-label">
-            <span>💨 MQ-135 Sensor Gas</span>
-          </div>
-          <div class="tele-val" id="tele-gas" style="color:#3fb950;">88 ppm</div>
-          <div class="tele-status">Udara Normal (Bersih)</div>
-        </div>
-
-        <div class="telemetry-card">
-          <div class="tele-label">
-            <span>⚡ Voltan Bateri Solar</span>
-          </div>
-          <div class="tele-val" style="color:#2f81f7;">4.12 V</div>
-          <div class="tele-status">Kuasa Mencukupi (92%)</div>
-        </div>
-
-        <div class="telemetry-card">
-          <div class="tele-label">
-            <span>⚙️ Status Kunci Elektrik</span>
-          </div>
-          <div class="tele-val" id="tele-lock" style="color:#3fb950;">LOCKED</div>
-          <div class="tele-status">Anti-Vandalisme Aktif</div>
-        </div>
+      <div class="log-container" id="log-box">
+        <div>[00:00:01] Inisialisasi model 3D SmartTONG selesai.</div>
+        <div>[00:00:02] Sensor ultrasonik &amp; 4 motor servo sedia.</div>
+        <div style="color:#16a34a;font-weight:700;">[00:00:03] Menunggu imbasan daripada telefon pintar...</div>
       </div>
-
-      <!-- Live Presentation Control Board -->
-      <div class="control-board">
-        <div class="control-title">
-          <span>🎮 Panel Simulasi Pembentangan Juri</span>
-          <span style="font-size:11px;font-weight:400;color:var(--text-muted);">1-Click Demo Trigger</span>
-        </div>
-
-        <div class="btn-grid">
-          <button class="btn-action" onclick="triggerManualActuation('Logam', 'Metal (Tin Milo)', '#EF6C00')">
-            🥫 <span>Uji Imbas: Tin Milo (Logam)</span>
-          </button>
-          <button class="btn-action" onclick="triggerManualActuation('Plastik', 'Plastic (Botol)', '#FB8C00')">
-            🧴 <span>Uji Imbas: Botol Plastik</span>
-          </button>
-          <button class="btn-action" onclick="triggerManualActuation('Kertas', 'Cardboard / Paper', '#1976D2')">
-            📦 <span>Uji Imbas: Kotak Kertas</span>
-          </button>
-          <button class="btn-action" onclick="triggerManualActuation('Sisa Baki', 'Trash (Tisu/Kotor)', '#424242')">
-            🗑️ <span>Uji Imbas: Sisa Baki</span>
-          </button>
-          <button class="btn-action" onclick="simulateFullBin()" style="grid-column: span 2; background: rgba(248, 81, 73, 0.1); border-color: rgba(248, 81, 73, 0.4); color: #ff7b72;">
-            🚨 <span>Simulasikan Tong Penuh (Kritikal 95% → Lori KDEB Dikerah)</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Live Event Terminal Logs -->
-      <div>
-        <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--text-muted);display:flex;justify-content:space-between;">
-          <span>Terminal Peristiwa Perkakasan (Live Event Logs)</span>
-          <span style="cursor:pointer;color:#58a6ff;" onclick="clearLogs()">Kosongkan</span>
-        </div>
-        <div class="logs-box" id="logs-box">
-          <div class="log-item">
-            <span class="log-time">[00:00:01]</span>
-            <span class="log-msg">Inisialisasi modul ESP32 SmartTONG selesai.</span>
-          </div>
-          <div class="log-item">
-            <span class="log-time">[00:00:02]</span>
-            <span class="log-msg">Sensor ultrasonik &amp; gas ditentukur pada paras optimum.</span>
-          </div>
-          <div class="log-item">
-            <span class="log-time">[00:00:03]</span>
-            <span class="log-msg highlight">Sedia menerima arahan imbasan masa nyata daripada Telefon Pintar.</span>
-          </div>
-        </div>
-      </div>
-
     </div>
-
   </div>
 
-  <!-- Footer -->
-  <footer>
-    SmartTONG AI © 2026 — Ekosistem Pengurusan Sisa Pintar Berautonomi Selangor. Dibina untuk Anugerah Inovasi Negeri Selangor (AINS).
-  </footer>
+  <!-- Right Side: 4 Slots Summary -->
+  <div class="right-panel">
+    <div class="widget-glass">
+      <div style="font-size:12px;font-weight:700;margin-bottom:10px;">
+        <span>Status 4 Ruang Pengasingan</span>
+      </div>
+      <div class="slots-summary">
+        <div class="slot-row" id="row-paper">
+          <div><span class="slot-dot" style="background:var(--slot-paper);"></span><strong>Kertas / Kadbod</strong></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span id="cap-paper" style="font-size:11px;color:#64748b;">40% Penuh</span>
+            <span class="slot-state-badge" id="badge-paper">0° Kunci</span>
+          </div>
+        </div>
+        <div class="slot-row" id="row-plastic">
+          <div><span class="slot-dot" style="background:var(--slot-plastic);"></span><strong>Plastik</strong></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span id="cap-plastic" style="font-size:11px;color:#64748b;">55% Penuh</span>
+            <span class="slot-state-badge" id="badge-plastic">0° Kunci</span>
+          </div>
+        </div>
+        <div class="slot-row" id="row-metal">
+          <div><span class="slot-dot" style="background:var(--slot-metal);"></span><strong>Logam (Tin)</strong></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span id="cap-metal" style="font-size:11px;color:#64748b;">35% Penuh</span>
+            <span class="slot-state-badge" id="badge-metal">0° Kunci</span>
+          </div>
+        </div>
+        <div class="slot-row" id="row-trash">
+          <div><span class="slot-dot" style="background:var(--slot-trash);"></span><strong>Sisa Baki</strong></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span id="cap-trash" style="font-size:11px;color:#64748b;">20% Penuh</span>
+            <span class="slot-state-badge" id="badge-trash">0° Kunci</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <!-- Audio Context for Servo & Beep sound effects (Pure Web Audio API, Zero external assets) -->
+  <!-- Instruction Tip -->
+  <div class="orbit-tip">
+    🖱️ Klik &amp; Seret untuk Pusing 360° | Scroll untuk Zum | Klik Kanan untuk Pan
+  </div>
+
+  <!-- Bottom Control Bar -->
+  <div class="bottom-bar">
+    <!-- Camera Angles -->
+    <button class="btn-tool" onclick="setCameraView('front')">Depan</button>
+    <button class="btn-tool" onclick="setCameraView('top')">Atas (Corong)</button>
+    <button class="btn-tool" onclick="setCameraView('internal')">Mekanikal</button>
+    
+    <button class="btn-tool" id="btn-xray" onclick="toggleXRay()">
+      <span>🔍 Mod X-Ray Dalaman</span>
+    </button>
+
+    <div class="divider"></div>
+
+    <!-- Live Presentation Test Buttons -->
+    <span style="font-size:11px;font-weight:700;color:#64748b;">Ujian 1-Klik:</span>
+    <button class="btn-demo" onclick="triggerActuationBySlot('metal', 'Metal', '#EF6C00')">
+      🥫 Tin Milo
+    </button>
+    <button class="btn-demo" onclick="triggerActuationBySlot('plastic', 'Plastic', '#FB8C00')">
+      🧴 Botol Plastik
+    </button>
+    <button class="btn-demo" onclick="triggerActuationBySlot('paper', 'Paper', '#1976D2')">
+      📦 Kotak Kertas
+    </button>
+    <button class="btn-demo btn-crit" onclick="simulateCriticalAlarm()">
+      🚨 Alarm 95%
+    </button>
+  </div>
+
+  <!-- Audio Synthesis for Mechanical Servo & Tone -->
   <script>
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx = null;
 
-    function playBeep(freq = 880, duration = 0.12, type = 'sine') {
+    function playBeep(freq = 800, duration = 0.1) {
       try {
         if (!audioCtx) audioCtx = new AudioContext();
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.type = type;
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -863,21 +575,450 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-        osc.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.25);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(320, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.25);
+        osc.stop(audioCtx.currentTime + 0.3);
       } catch (e) {}
     }
   </script>
 
-  <!-- Digital Twin Actuation & Firebase Sync Logic -->
+  <!-- Three.js 3D Engine Implementation -->
   <script>
-    // 1. Firebase Initialization for Realtime Sync
+    // 1. Scene, Camera, Renderer Setup
+    const canvas = document.getElementById('webgl-canvas');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf1f5f9);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 3.8, 6.2);
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.maxPolarAngle = Math.PI / 2 + 0.05; // Don't go underneath floor
+    controls.minDistance = 2.5;
+    controls.maxDistance = 12;
+    controls.target.set(0, 1.4, 0);
+
+    // 2. Lighting Setup (Clean bright engineering studio)
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0xe2e8f0, 0.85);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    dirLight.position.set(5, 10, 7);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 25;
+    dirLight.shadow.camera.left = -5;
+    dirLight.shadow.camera.right = 5;
+    dirLight.shadow.camera.top = 5;
+    dirLight.shadow.camera.bottom = -5;
+    dirLight.shadow.bias = -0.0005;
+    scene.add(dirLight);
+
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
+    fillLight.position.set(-6, 6, -5);
+    scene.add(fillLight);
+
+    // Neopixel PointLight (mounted at top of bin)
+    const neoPointLight = new THREE.PointLight(0x22c55e, 1.2, 5);
+    neoPointLight.position.set(0, 2.7, 0.9);
+    scene.add(neoPointLight);
+
+    // 3. Ground Plane
+    const floorGeo = new THREE.PlaneGeometry(30, 30);
+    const floorMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.8,
+      metalness: 0.1
+    });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Subtle Grid Floor
+    const grid = new THREE.GridHelper(30, 30, 0xcbd5e1, 0xe2e8f0);
+    grid.position.y = 0.002;
+    scene.add(grid);
+
+    // 4. Kiosk Chassis Materials (Clean White Studio Theme)
+    const whiteChassisMat = new THREE.MeshStandardMaterial({
+      color: 0xf8fafc,
+      roughness: 0.35,
+      metalness: 0.15
+    });
+
+    const brushedSteelMat = new THREE.MeshStandardMaterial({
+      color: 0xe2e8f0,
+      roughness: 0.25,
+      metalness: 0.7
+    });
+
+    const darkTrimMat = new THREE.MeshStandardMaterial({
+      color: 0x334155,
+      roughness: 0.4,
+      metalness: 0.5
+    });
+
+    // 4 Flap Slot Materials
+    const slotColors = {
+      paper:   new THREE.MeshStandardMaterial({ color: 0x1976D2, roughness: 0.4, metalness: 0.2 }),
+      plastic: new THREE.MeshStandardMaterial({ color: 0xFB8C00, roughness: 0.4, metalness: 0.2 }),
+      metal:   new THREE.MeshStandardMaterial({ color: 0xEF6C00, roughness: 0.4, metalness: 0.3 }),
+      trash:   new THREE.MeshStandardMaterial({ color: 0x546E7A, roughness: 0.5, metalness: 0.2 })
+    };
+
+    // Internal Accessories Materials
+    const servoBodyMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.5 }); // Mini-servo Blue
+    const brassRodMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.2, metalness: 0.8 }); // Brass linkage
+    const pcbMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.3 }); // Green ESP32 PCB
+    const sensorCylinderMat = new THREE.MeshStandardMaterial({ color: 0xc0c7d0, roughness: 0.15, metalness: 0.85 }); // Ultrasonic silver cylinders
+
+    // 5. Construct 3D SmartTONG Kiosk Model
+    const kioskGroup = new THREE.Group();
+    scene.add(kioskGroup);
+
+    // Main Kiosk Pedestal / Base
+    const baseGeo = new THREE.BoxGeometry(3.6, 0.12, 1.3);
+    const baseMesh = new THREE.Mesh(baseGeo, darkTrimMat);
+    baseMesh.position.y = 0.06;
+    baseMesh.castShadow = true;
+    baseMesh.receiveShadow = true;
+    kioskGroup.add(baseMesh);
+
+    // Kiosk Body Outer Shell (Clean White)
+    const shellGeo = new THREE.BoxGeometry(3.5, 2.3, 1.2);
+    const shellMesh = new THREE.Mesh(shellGeo, whiteChassisMat);
+    shellMesh.position.y = 1.25;
+    shellMesh.castShadow = true;
+    shellMesh.receiveShadow = true;
+    kioskGroup.add(shellMesh);
+
+    // Top Header Cap
+    const capGeo = new THREE.BoxGeometry(3.55, 0.15, 1.25);
+    const capMesh = new THREE.Mesh(capGeo, brushedSteelMat);
+    capMesh.position.y = 2.45;
+    capMesh.castShadow = true;
+    kioskGroup.add(capMesh);
+
+    // Top OV2640 AI Camera Module Turret
+    const camHousing = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.2, 0.25, 24), darkTrimMat);
+    camHousing.position.set(0, 2.65, 0.2);
+    camHousing.castShadow = true;
+    kioskGroup.add(camHousing);
+
+    const camLens = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.05, 16), new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.1, metalness: 0.9 }));
+    camLens.rotation.x = Math.PI / 2;
+    camLens.position.set(0, 2.65, 0.32);
+    kioskGroup.add(camLens);
+
+    // Top Neopixel Indicator Bar
+    const neoBarGeo = new THREE.BoxGeometry(1.2, 0.06, 0.06);
+    const neoBarMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
+    const neoBarMesh = new THREE.Mesh(neoBarGeo, neoBarMat);
+    neoBarMesh.position.set(0, 2.45, 0.64);
+    kioskGroup.add(neoBarMesh);
+
+    // Internal Mechanical Accessories & 4 Slots
+    const slotKeys = ['paper', 'plastic', 'metal', 'trash'];
+    const slotXPositions = [-1.26, -0.42, 0.42, 1.26];
+    const slotObjects = {};
+
+    slotKeys.forEach((key, idx) => {
+      const posX = slotXPositions[idx];
+      const slotGroup = new THREE.Group();
+      slotGroup.position.set(posX, 0, 0);
+      kioskGroup.add(slotGroup);
+
+      // Chute Inset Opening
+      const chuteFrame = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.52, 0.08), darkTrimMat);
+      chuteFrame.position.set(0, 1.9, 0.6);
+      slotGroup.add(chuteFrame);
+
+      const chuteCavity = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.44, 0.2), new THREE.MeshBasicMaterial({ color: 0x0f172a }));
+      chuteCavity.position.set(0, 1.9, 0.56);
+      slotGroup.add(chuteCavity);
+
+      // 3D Servo Motor Hinge Pivot (Mounted at top of chute)
+      const hingePivot = new THREE.Group();
+      hingePivot.position.set(0, 2.1, 0.6);
+      slotGroup.add(hingePivot);
+
+      // Flap Door attached to hinge
+      const flapMesh = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.42, 0.03), slotColors[key]);
+      flapMesh.position.set(0, -0.21, 0);
+      flapMesh.castShadow = true;
+      hingePivot.add(flapMesh);
+
+      // Door Handle
+      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.02, 0.03), brushedSteelMat);
+      handle.position.set(0, -0.32, 0.02);
+      hingePivot.add(handle);
+
+      // ⚙️ Mechanical Servo Motor Component (Internal)
+      const servoBody = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.2, 0.12), servoBodyMat);
+      servoBody.position.set(0.3, 2.1, 0.35);
+      slotGroup.add(servoBody);
+
+      // Servo Rotating Horn / Arm
+      const servoHornPivot = new THREE.Group();
+      servoHornPivot.position.set(0.3, 2.18, 0.35);
+      slotGroup.add(servoHornPivot);
+
+      const servoHorn = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.14, 0.02), brushedSteelMat);
+      servoHorn.position.set(0, 0.06, 0);
+      servoHornPivot.add(servoHorn);
+
+      // Brass Linkage Rod connecting servo horn to door
+      const linkageRod = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.28, 8), brassRodMat);
+      linkageRod.position.set(0.24, 2.14, 0.48);
+      linkageRod.rotation.x = Math.PI / 4;
+      slotGroup.add(linkageRod);
+
+      // 📡 Ultrasonic Sensor HC-SR04 (Internal Roof)
+      const ultraPcb = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.02, 0.1), pcbMat);
+      ultraPcb.position.set(0, 2.25, 0);
+      slotGroup.add(ultraPcb);
+
+      const ultraCyl1 = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.06, 12), sensorCylinderMat);
+      ultraCyl1.position.set(-0.06, 2.22, 0);
+      slotGroup.add(ultraCyl1);
+
+      const ultraCyl2 = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.06, 12), sensorCylinderMat);
+      ultraCyl2.position.set(0.06, 2.22, 0);
+      slotGroup.add(ultraCyl2);
+
+      // Internal Waste Accumulation Chamber
+      const chamberMesh = new THREE.Mesh(new THREE.BoxGeometry(0.72, 1.3, 0.9), new THREE.MeshStandardMaterial({
+        color: 0xf1f5f9,
+        roughness: 0.6,
+        metalness: 0.1,
+        transparent: true,
+        opacity: 0.35
+      }));
+      chamberMesh.position.set(0, 0.8, 0);
+      slotGroup.add(chamberMesh);
+
+      // Dynamic Waste Level Block in compartment
+      const initialFillHeight = idx === 0 ? 0.5 : (idx === 1 ? 0.7 : (idx === 2 ? 0.45 : 0.25));
+      const wasteFill = new THREE.Mesh(new THREE.BoxGeometry(0.68, initialFillHeight, 0.86), slotColors[key]);
+      wasteFill.position.set(0, 0.15 + (initialFillHeight / 2), 0);
+      slotGroup.add(wasteFill);
+
+      slotObjects[key] = {
+        hinge: hingePivot,
+        servoHorn: servoHornPivot,
+        wasteFill: wasteFill,
+        fillHeight: initialFillHeight,
+        currentAngle: 0,
+        targetAngle: 0,
+        color: slotColors[key]
+      };
+    });
+
+    // 🧠 Central Control Box & ESP32 Microcontroller (Mounted centrally inside)
+    const controlBox = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.35, 0.15), darkTrimMat);
+    controlBox.position.set(0, 1.25, 0.45);
+    kioskGroup.add(controlBox);
+
+    const esp32Pcb = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.2, 0.03), pcbMat);
+    esp32Pcb.position.set(0, 1.25, 0.54);
+    kioskGroup.add(esp32Pcb);
+
+    // ESP32 Status Blinking LED
+    const espLed = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.02), new THREE.MeshBasicMaterial({ color: 0x3b82f6 }));
+    espLed.position.set(0.12, 1.3, 0.56);
+    kioskGroup.add(espLed);
+
+    // MQ-135 Gas Sensor (Metallic mesh cap)
+    const mqSensor = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.06, 16), sensorCylinderMat);
+    mqSensor.position.set(-0.12, 1.25, 0.56);
+    mqSensor.rotation.x = Math.PI / 2;
+    kioskGroup.add(mqSensor);
+
+    // 3D Animated Falling Waste Item (appears when actuated)
+    const fallingItemGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.18, 16);
+    const fallingItemMat = new THREE.MeshStandardMaterial({ color: 0xEF6C00, metalness: 0.8, roughness: 0.2 }); // Milo tin cylinder
+    const fallingItem = new THREE.Mesh(fallingItemGeo, fallingItemMat);
+    fallingItem.visible = false;
+    scene.add(fallingItem);
+
+    // 6. X-Ray Mode Toggle
+    let isXRay = false;
+    function toggleXRay() {
+      isXRay = !isXRay;
+      const btn = document.getElementById('btn-xray');
+      if (isXRay) {
+        btn.classList.add('active-toggle');
+        btn.innerHTML = '<span>🔍 Mod X-Ray: AKTIF</span>';
+        shellMesh.material = new THREE.MeshStandardMaterial({
+          color: 0xe2e8f0,
+          roughness: 0.1,
+          metalness: 0.1,
+          transparent: true,
+          opacity: 0.25
+        });
+        addLog('Mod X-Ray diaktifkan: Memaparkan motor servo, rod linkage, dan papan ESP32.');
+      } else {
+        btn.classList.remove('active-toggle');
+        btn.innerHTML = '<span>🔍 Mod X-Ray Dalaman</span>';
+        shellMesh.material = whiteChassisMat;
+        addLog('Mod X-Ray dinyahaktifkan: Kembali ke casis putih pepejal.');
+      }
+    }
+
+    // 7. Camera View Presets
+    function setCameraView(preset) {
+      if (preset === 'front') {
+        gsapAnimateCam(0, 2.0, 5.5, 0, 1.3, 0);
+      } else if (preset === 'top') {
+        gsapAnimateCam(0, 5.2, 2.5, 0, 1.8, 0.4);
+      } else if (preset === 'internal') {
+        if (!isXRay) toggleXRay();
+        gsapAnimateCam(0.8, 2.2, 3.2, 0.4, 1.5, 0);
+      }
+    }
+
+    function gsapAnimateCam(cx, cy, cz, tx, ty, tz) {
+      camera.position.set(cx, cy, cz);
+      controls.target.set(tx, ty, tz);
+    }
+
+    // 8. Actuation Physics & Animation Logic
+    let activeAnimation = null;
+
+    function triggerActuationBySlot(slotKey, className, hexColor) {
+      const slot = slotObjects[slotKey];
+      if (!slot) return;
+
+      playBeep(659, 0.08);
+      setTimeout(() => playBeep(880, 0.12), 100);
+      playServoSound();
+
+      // Open servo flap & rotate horn (0 to 75 degrees)
+      slot.targetAngle = -1.3; // -75 deg in radians
+
+      // Update OLED Text
+      document.getElementById('oled-disp').innerHTML = `SLOT <span style="color:#fff;">${className.toUpperCase()}</span> TERBUKA!<br/>+5 Eco-Points Dikreditkan ✓`;
+      document.getElementById('val-lock').textContent = 'UNLOCKED';
+      document.getElementById('val-lock').style.color = '#ea580c';
+
+      // Update slot badge
+      const badge = document.getElementById(`badge-${slotKey}`);
+      if (badge) {
+        badge.textContent = '75° Terbuka';
+        badge.classList.add('open');
+      }
+
+      // Update Neopixel bar color
+      neoBarMesh.material.color.set(hexColor);
+      neoPointLight.color.set(hexColor);
+
+      addLog(`Arahan Actuation: Motor servo ${slotKey.toUpperCase()} berputar 75°. Pintu dibuka.`);
+
+      // Animate 3D item falling into slot
+      animateFallingWaste(slotObjects[slotKey], slotKey, hexColor);
+
+      // Increase waste fill height
+      setTimeout(() => {
+        slot.fillHeight = Math.min(1.15, slot.fillHeight + 0.08);
+        slot.wasteFill.scale.y = slot.fillHeight / 0.5;
+        slot.wasteFill.position.y = 0.15 + (slot.fillHeight / 2);
+
+        const currentPct = Math.min(100, Math.round((slot.fillHeight / 1.2) * 100));
+        const capEl = document.getElementById(`cap-${slotKey}`);
+        if (capEl) capEl.textContent = `${currentPct}% Penuh`;
+        addLog(`Sensor ultrasonik mengesan paras sisa baharu: ${currentPct}%.`);
+      }, 700);
+
+      // Auto-Close after 4.5 seconds
+      setTimeout(() => {
+        closeSlot(slotKey);
+      }, 4500);
+    }
+
+    function closeSlot(slotKey) {
+      const slot = slotObjects[slotKey];
+      if (!slot) return;
+      playServoSound();
+      slot.targetAngle = 0; // Return to closed
+
+      const badge = document.getElementById(`badge-${slotKey}`);
+      if (badge) {
+        badge.textContent = '0° Kunci';
+        badge.classList.remove('open');
+      }
+
+      document.getElementById('val-lock').textContent = 'LOCKED';
+      document.getElementById('val-lock').style.color = '#16a34a';
+      document.getElementById('oled-disp').innerHTML = `SISA BERJAYA DIMASUKKAN<br/>Pintu Dikunci Semula (Standby)`;
+      neoBarMesh.material.color.set(0x22c55e);
+      neoPointLight.color.set(0x22c55e);
+      addLog(`Servo ${slotKey.toUpperCase()} kembali ke 0°. Flap dikunci selamat.`);
+
+      setTimeout(() => {
+        document.getElementById('oled-disp').innerHTML = `SYSTEM READY...<br/>Sedia Menerima Imbasan`;
+      }, 3000);
+    }
+
+    function animateFallingWaste(slot, slotKey, hexColor) {
+      const posX = slotKeys.indexOf(slotKey) !== -1 ? slotXPositions[slotKeys.indexOf(slotKey)] : 0;
+      fallingItem.position.set(posX, 2.5, 0.6);
+      fallingItem.material.color.set(hexColor);
+      fallingItem.visible = true;
+
+      let startY = 2.5;
+      const startTime = performance.now();
+
+      function stepFall(now) {
+        const elapsed = (now - startTime) / 1000;
+        if (elapsed < 0.6) {
+          fallingItem.position.y = startY - (elapsed * 2.2);
+          fallingItem.position.z = 0.6 - (elapsed * 0.7); // Tumble inside
+          fallingItem.rotation.x += 0.1;
+          fallingItem.rotation.y += 0.05;
+          requestAnimationFrame(stepFall);
+        } else {
+          fallingItem.visible = false;
+        }
+      }
+      requestAnimationFrame(stepFall);
+    }
+
+    function simulateCriticalAlarm() {
+      playBeep(440, 0.2);
+      setTimeout(() => playBeep(330, 0.3), 250);
+      document.getElementById('oled-disp').innerHTML = `<span style="color:#ef4444;">🚨 AMARAN: TONG PENUH (95%)</span><br/>Menghantar Isyarat Lori KDEB`;
+      document.getElementById('val-gas').textContent = '420 ppm (Tinggi)';
+      document.getElementById('val-gas').style.color = '#ef4444';
+      neoBarMesh.material.color.set(0xef4444);
+      neoPointLight.color.set(0xef4444);
+      addLog('AMARAN KRITIKAL: Kapasiti tong mencapai 95%. Isyarat kecemasan dihantar ke Dashboard PBT KDEBWM.', true);
+
+      setTimeout(() => {
+        document.getElementById('val-gas').textContent = '85 ppm';
+        document.getElementById('val-gas').style.color = '#16a34a';
+        neoBarMesh.material.color.set(0x22c55e);
+        neoPointLight.color.set(0x22c55e);
+        document.getElementById('oled-disp').innerHTML = `SYSTEM READY...<br/>Sedia Menerima Imbasan`;
+      }, 7000);
+    }
+
+    // 9. Real-time Firebase Firestore Sync
     let db = null;
     try {
       if (typeof firebase !== 'undefined') {
@@ -893,232 +1034,115 @@
         initFirebaseSync();
       }
     } catch(e) {
-      console.warn("Firebase Init notice:", e);
+      console.warn("Firebase notice:", e);
     }
 
-    // 2. BroadcastChannel for Instant Same-Browser Tabs Sync
     const bc = new BroadcastChannel('smarttong_channel');
-    bc.onmessage = (event) => {
-      if (event.data && event.data.type === 'ACTUATION') {
-        handleIncomingActuation(event.data.payload, 'BroadcastChannel (Masa Nyata)');
+    bc.onmessage = (e) => {
+      if (e.data && e.data.type === 'ACTUATION') {
+        handleIncomingActuation(e.data.payload, 'BroadcastChannel (Telefon Pintar)');
       }
     };
 
-    // Listen to localStorage events for Cross-Tab Sync fallback
     window.addEventListener('storage', (e) => {
       if (e.key === 'smarttong_latest_actuation' && e.newValue) {
         try {
           const payload = JSON.parse(e.newValue);
-          handleIncomingActuation(payload, 'Local Storage (Cross-Tab)');
+          handleIncomingActuation(payload, 'Cross-Tab Storage');
         } catch(err){}
       }
     });
 
     function initFirebaseSync() {
       if (!db) return;
-      // Listen to latest actuation command for Bin B01
       db.collection('smarttong_actuations').doc('B01')
         .onSnapshot((doc) => {
           if (doc.exists) {
             const data = doc.data();
-            // Only trigger if command is recent (within last 30 seconds)
             if (data && data.timestamp && (Date.now() - data.timestamp < 30000)) {
               handleIncomingActuation(data, 'Firebase Firestore (Awan)');
             }
           }
         }, (err) => {
-          console.warn("Firestore listener error:", err);
-          document.getElementById('sync-text').textContent = 'Cloud Sync: Mod Sandaran Tempatan';
+          console.warn("Firestore error:", err);
+          document.getElementById('sync-lbl').textContent = 'Cloud Sync: Mod Sandaran';
         });
     }
 
-    // State Variables
-    let lastActuationTime = 0;
-    let autoCloseTimer = null;
-
-    // Handle Actuation from Phone or Local Control
-    function handleIncomingActuation(data, source = 'Cloud') {
+    let lastTime = 0;
+    function handleIncomingActuation(data, source) {
       const now = Date.now();
-      if (now - lastActuationTime < 1500) return; // Debounce rapid calls
-      lastActuationTime = now;
+      if (now - lastTime < 1500) return;
+      lastTime = now;
 
-      const slotName = (data.slot || data.class || 'Logam').toLowerCase();
-      const color = data.color || '#EF6C00';
-      const className = data.class || data.slot || 'Bahan Kitar Semula';
+      const slotRaw = (data.slot || data.class || 'metal').toLowerCase();
+      let slotKey = 'metal';
+      let hexColor = '#EF6C00';
 
-      addLog(`Menerima arahan buka slot [${className.toUpperCase()}] daripada ${source}`, true);
-
-      // 1. Play Sound
-      playBeep(659, 0.1);
-      setTimeout(() => playBeep(880, 0.15), 120);
-      playServoSound();
-
-      // 2. Update OLED Display
-      const oledText = document.getElementById('oled-text');
-      oledText.innerHTML = `SLOT <span style="color:#fff;">${className.toUpperCase()}</span> TERBUKA!<br/>+5 Eco-Points Dikreditkan ✓`;
-      document.getElementById('tele-lock').textContent = 'UNLOCKED';
-      document.getElementById('tele-lock').style.color = '#f0883e';
-
-      // 3. Update Neopixel Ring
-      setNeopixelColor(slotName);
-
-      // 4. Open Servo Flap
-      resetAllFlaps();
-      let targetFlapId = 'flap-metal';
-      let targetServoId = 'servo-deg-metal';
-      let targetUnitId = 'slot-metal';
-      let targetFillBarId = 'fill-bar-metal';
-      let targetFillPctId = 'fill-pct-metal';
-
-      if (slotName.includes('kertas') || slotName.includes('paper') || slotName.includes('cardboard')) {
-        targetFlapId = 'flap-paper'; targetServoId = 'servo-deg-paper'; targetUnitId = 'slot-paper';
-        targetFillBarId = 'fill-bar-paper'; targetFillPctId = 'fill-pct-paper';
-      } else if (slotName.includes('plastik') || slotName.includes('plastic')) {
-        targetFlapId = 'flap-plastic'; targetServoId = 'servo-deg-plastic'; targetUnitId = 'slot-plastic';
-        targetFillBarId = 'fill-bar-plastic'; targetFillPctId = 'fill-pct-plastic';
-      } else if (slotName.includes('logam') || slotName.includes('metal')) {
-        targetFlapId = 'flap-metal'; targetServoId = 'servo-deg-metal'; targetUnitId = 'slot-metal';
-        targetFillBarId = 'fill-bar-metal'; targetFillPctId = 'fill-pct-metal';
+      if (slotRaw.includes('kertas') || slotRaw.includes('paper') || slotRaw.includes('cardboard')) {
+        slotKey = 'paper'; hexColor = '#1976D2';
+      } else if (slotRaw.includes('plastik') || slotRaw.includes('plastic')) {
+        slotKey = 'plastic'; hexColor = '#FB8C00';
+      } else if (slotRaw.includes('logam') || slotRaw.includes('metal')) {
+        slotKey = 'metal'; hexColor = '#EF6C00';
       } else {
-        targetFlapId = 'flap-trash'; targetServoId = 'servo-deg-trash'; targetUnitId = 'slot-trash';
-        targetFillBarId = 'fill-bar-trash'; targetFillPctId = 'fill-pct-trash';
+        slotKey = 'trash'; hexColor = '#546E7A';
       }
 
-      const flap = document.getElementById(targetFlapId);
-      const servoDeg = document.getElementById(targetServoId);
-      const unit = document.getElementById(targetUnitId);
-
-      if (flap) flap.classList.add('open');
-      if (servoDeg) {
-        servoDeg.textContent = '90° (Terbuka)';
-        servoDeg.classList.add('opened');
-      }
-      if (unit) unit.classList.add('active');
-
-      // 5. Increment Fill level by +5%
-      const fillBar = document.getElementById(targetFillBarId);
-      const fillPct = document.getElementById(targetFillPctId);
-      if (fillBar && fillPct) {
-        let current = parseInt(fillPct.textContent) || 40;
-        let updated = Math.min(100, current + 5);
-        fillPct.textContent = `${updated}%`;
-        fillBar.style.width = `${updated}%`;
-        addLog(`Sensor ultrasonik mengesan pertambahan isipadu sisa: ${current}% → ${updated}%`);
-      }
-
-      // 6. Auto-Close Flap after 5 seconds
-      if (autoCloseTimer) clearTimeout(autoCloseTimer);
-      autoCloseTimer = setTimeout(() => {
-        closeAllFlaps();
-      }, 5000);
+      addLog(`Arahan Awan diterima daripada ${source}: [${slotKey.toUpperCase()}]`);
+      triggerActuationBySlot(slotKey, data.class || slotKey, hexColor);
     }
 
-    function resetAllFlaps() {
-      ['paper', 'plastic', 'metal', 'trash'].forEach(id => {
-        const f = document.getElementById(`flap-${id}`);
-        const s = document.getElementById(`servo-deg-${id}`);
-        const u = document.getElementById(`slot-${id}`);
-        if (f) f.classList.remove('open');
-        if (s) { s.textContent = '0° (Kunci)'; s.classList.remove('opened'); }
-        if (u) u.classList.remove('active');
-      });
-    }
-
-    function closeAllFlaps() {
-      playServoSound();
-      resetAllFlaps();
-      document.getElementById('oled-text').innerHTML = `SISA BERJAYA DIMASUKKAN<br/>Pintu Dikunci Semula (Standby)`;
-      document.getElementById('tele-lock').textContent = 'LOCKED';
-      document.getElementById('tele-lock').style.color = '#3fb950';
-      resetNeopixel();
-      addLog('Motor servo berpusing kembali ke 0°. Flap ditutup dan dikunci selamat.');
-      setTimeout(() => {
-        document.getElementById('oled-text').innerHTML = `SYSTEM STANDBY...<br/>Sedia Menerima Imbasan Sisa`;
-      }, 3500);
-    }
-
-    function setNeopixelColor(slot) {
-      let colorClass = 'active-green';
-      if (slot.includes('kertas') || slot.includes('paper')) colorClass = 'active-blue';
-      else if (slot.includes('plastik') || slot.includes('logam') || slot.includes('metal')) colorClass = 'active-orange';
-      
-      for (let i = 1; i <= 6; i++) {
-        const led = document.getElementById(`led-${i}`);
-        if (led) {
-          led.className = `neopixel-led ${colorClass}`;
-        }
-      }
-    }
-
-    function resetNeopixel() {
-      for (let i = 1; i <= 6; i++) {
-        const led = document.getElementById(`led-${i}`);
-        if (led) led.className = 'neopixel-led';
-      }
-    }
-
-    // Manual Testing Trigger
-    function triggerManualActuation(slot, cls, color) {
-      const payload = {
-        slot: slot,
-        class: cls,
-        color: color,
-        timestamp: Date.now()
-      };
-      // Broadcast to any listening tabs
-      bc.postMessage({ type: 'ACTUATION', payload: payload });
-      localStorage.setItem('smarttong_latest_actuation', JSON.stringify(payload));
-      handleIncomingActuation(payload, 'Panel Simulasi Manual');
-    }
-
-    // Simulate Full Bin Alarm
-    function simulateFullBin() {
-      playBeep(440, 0.2, 'sawtooth');
-      setTimeout(() => playBeep(330, 0.3, 'sawtooth'), 250);
-      document.getElementById('oled-text').innerHTML = `<span style="color:#f85149;">🚨 AMARAN: TONG PENUH (95%)</span><br/>Menghantar Isyarat Lori KDEB`;
-      
-      // Set all LEDs red
-      for (let i = 1; i <= 6; i++) {
-        const led = document.getElementById(`led-${i}`);
-        if (led) led.className = 'neopixel-led active-red';
-      }
-
-      ['paper', 'plastic', 'metal', 'trash'].forEach(id => {
-        const b = document.getElementById(`fill-bar-${id}`);
-        const p = document.getElementById(`fill-pct-${id}`);
-        if (b && p) { b.style.width = '95%'; p.textContent = '95%'; }
-      });
-
-      document.getElementById('tele-gas').textContent = '415 ppm (Tinggi)';
-      document.getElementById('tele-gas').style.color = '#f85149';
-      addLog('AMARAN KRITIKAL: Kapasiti tong mencapai 95%. Notifikasi dispatch dihantar ke unit KDEBWM.', false, true);
-
-      setTimeout(() => {
-        resetNeopixel();
-        document.getElementById('tele-gas').textContent = '88 ppm';
-        document.getElementById('tele-gas').style.color = '#3fb950';
-        document.getElementById('oled-text').innerHTML = `SYSTEM STANDBY...<br/>Sedia Menerima Imbasan Sisa`;
-      }, 8000);
-    }
-
-    // Event Log Helper
-    function addLog(msg, isHighlight = false, isWarn = false) {
-      const box = document.getElementById('logs-box');
+    function addLog(msg, isWarn = false) {
+      const box = document.getElementById('log-box');
       if (!box) return;
       const now = new Date();
       const timeStr = `[${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}]`;
       const div = document.createElement('div');
-      div.className = 'log-item';
-      div.innerHTML = `<span class="log-time">${timeStr}</span> <span class="log-msg ${isHighlight ? 'highlight' : ''} ${isWarn ? 'warn' : ''}">${msg}</span>`;
+      if (isWarn) div.style.color = '#dc2626';
+      div.innerHTML = `<span style="color:#2563eb;">${timeStr}</span> ${msg}`;
       box.appendChild(div);
       box.scrollTop = box.scrollHeight;
     }
 
     function clearLogs() {
-      const box = document.getElementById('logs-box');
+      const box = document.getElementById('log-box');
       if (box) box.innerHTML = '';
       addLog('Log dikosongkan.');
     }
+
+    // 10. Render Loop
+    let clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const delta = clock.getDelta();
+      const elapsedTime = clock.getElapsedTime();
+
+      // Smoothly interpolate servo angle & horn rotation
+      slotKeys.forEach(key => {
+        const slot = slotObjects[key];
+        if (slot) {
+          slot.currentAngle += (slot.targetAngle - slot.currentAngle) * 0.12;
+          slot.hinge.rotation.x = slot.currentAngle;
+          slot.servoHorn.rotation.z = slot.currentAngle * 0.9;
+        }
+      });
+
+      // ESP32 Diagnostic LED Blinking
+      espLed.material.color.set(Math.sin(elapsedTime * 6) > 0 ? 0x3b82f6 : 0x0f172a);
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Window Resize handling
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
 </body>
 </html>
