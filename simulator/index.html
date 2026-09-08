@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartTONG AI — Digital Twin & Hardware Simulator</title>
+  <meta name="description" content="Simulator perkakasan maya dan digital twin untuk tong kitar semula pintar SmartTONG Selangor." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Firebase SDK (Firestore) for Real-time Cloud Sync -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: rgba(22, 27, 34, 0.85);
+      --card-border: rgba(48, 54, 61, 0.8);
+      --text: #f0f6fc;
+      --text-muted: #8b949e;
+      --accent: #2ea043;
+      --blue: #2f81f7;
+      --orange: #f0883e;
+      --amber: #d29922;
+      --red: #f85149;
+      --slot-paper: #1976D2;
+      --slot-plastic: #FB8C00;
+      --slot-metal: #EF6C00;
+      --slot-trash: #424242;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(46, 160, 67, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(47, 129, 247, 0.12) 0px, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(13, 17, 23, 0.8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #2ea043, #238636);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(46, 160, 67, 0.4);
+    }
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .sync-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(46, 160, 67, 0.12);
+      border: 1px solid rgba(46, 160, 67, 0.3);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #3fb950;
+    }
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #3fb950;
+      box-shadow: 0 0 8px #3fb950;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-btn {
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Main Container Grid */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      width: 100%;
+    }
+
+    @media (max-width: 1024px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    /* Card Panels */
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 14px;
+    }
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ─── KIOSK VISUAL SIMULATOR ─── */
+    .kiosk-chassis {
+      background: linear-gradient(180deg, #1c2128 0%, #161b22 100%);
+      border: 2px solid #30363d;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.05), 0 12px 36px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+
+    /* Kiosk Top Display: Camera & LED Ring */
+    .kiosk-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+    .kiosk-cam-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      padding: 6px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .cam-lens {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #238636;
+      box-shadow: 0 0 10px #2ea043;
+      border: 2px solid #fff;
+    }
+
+    .neopixel-ring {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .neopixel-led {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #30363d;
+      box-shadow: 0 0 2px rgba(0,0,0,0.5);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .neopixel-led.active-blue { background: #2f81f7; box-shadow: 0 0 14px #2f81f7; }
+    .neopixel-led.active-orange { background: #f0883e; box-shadow: 0 0 14px #f0883e; }
+    .neopixel-led.active-green { background: #3fb950; box-shadow: 0 0 14px #3fb950; }
+    .neopixel-led.active-red { background: #f85149; box-shadow: 0 0 14px #f85149; }
+
+    /* SSD1306 Virtual OLED Screen */
+    .oled-screen {
+      background: #000;
+      border: 3px solid #30363d;
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #79c0ff;
+      text-shadow: 0 0 4px rgba(121, 192, 255, 0.6);
+      margin-bottom: 24px;
+      box-shadow: inset 0 0 15px rgba(47, 129, 247, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+    .oled-screen::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 2px);
+      pointer-events: none;
+    }
+    .oled-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      border-bottom: 1px solid rgba(121, 192, 255, 0.3);
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+    .oled-main {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.4;
+      min-height: 44px;
+    }
+    .oled-sub {
+      font-size: 11px;
+      color: #a5d6ff;
+      margin-top: 4px;
+    }
+
+    /* 4 Slots Grid */
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 680px) {
+      .slots-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .slot-unit {
+      background: #0d1117;
+      border: 2px solid #30363d;
+      border-radius: 14px;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      transition: all 0.3s;
+    }
+    .slot-unit.active {
+      border-color: var(--slot-color);
+      box-shadow: 0 0 20px var(--slot-color-glow);
+    }
+
+    /* Servo Animated Flap */
+    .servo-housing {
+      width: 100%;
+      height: 90px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chute-hole {
+      position: absolute;
+      width: 80%;
+      height: 70%;
+      background: #000;
+      border-radius: 6px;
+      box-shadow: inset 0 6px 14px rgba(0,0,0,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: rgba(255,255,255,0.2);
+    }
+    .servo-flap {
+      position: absolute;
+      width: 84%;
+      height: 74%;
+      background: linear-gradient(135deg, #30363d, #21262d);
+      border: 2px solid #484f58;
+      border-radius: 6px;
+      transform-origin: top center;
+      transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+      cursor: pointer;
+    }
+    .servo-flap.open {
+      transform: perspective(300px) rotateX(-75deg);
+      border-color: var(--slot-color);
+    }
+    .flap-handle {
+      width: 24px;
+      height: 4px;
+      background: #8b949e;
+      border-radius: 2px;
+      margin-bottom: 4px;
+    }
+    .flap-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #c9d1d9;
+    }
+
+    /* Servo Angle Gauge */
+    .servo-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    .servo-badge {
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid #30363d;
+      font-weight: 700;
+    }
+    .servo-badge.opened {
+      color: #3fb950;
+      background: rgba(46, 160, 67, 0.15);
+      border-color: #2ea043;
+    }
+
+    /* Fill Level Bar (Ultrasonic) */
+    .fill-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .fill-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    .fill-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #21262d;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .fill-bar-fg {
+      height: 100%;
+      width: 35%;
+      background: var(--slot-color);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    /* Slot Title */
+    .slot-title {
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+      color: var(--slot-color);
+      margin-top: 2px;
+    }
+    .slot-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* ─── TELEMETRY & CONTROLS (RIGHT PANEL) ─── */
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .telemetry-card {
+      background: #0d1117;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .tele-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tele-val {
+      font-size: 20px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tele-status {
+      font-size: 10px;
+      color: #3fb950;
+    }
+
+    /* Interactive Demo Control Board */
+    .control-board {
+      background: rgba(46, 160, 67, 0.05);
+      border: 1px solid rgba(46, 160, 67, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .control-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #3fb950;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .btn-action {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+    .btn-action:hover {
+      background: #30363d;
+      border-color: #8b949e;
+      transform: translateY(-1px);
+    }
+    .btn-action:active {
+      transform: translateY(1px);
+    }
+
+    /* Live Event Logs */
+    .logs-box {
+      background: #05070a;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      height: 160px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .log-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      color: #8b949e;
+      line-height: 1.4;
+    }
+    .log-time { color: #58a6ff; flex-shrink: 0; }
+    .log-msg { color: #c9d1d9; }
+    .log-msg.highlight { color: #3fb950; font-weight: 600; }
+    .log-msg.warn { color: #f0883e; }
+
+    /* Footer */
+    footer {
+      padding: 16px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--card-border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"></polyline>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+          <path d="M10 11v6M14 11v6"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">SmartTONG Digital Twin</div>
+        <div class="brand-sub">Hardware &amp; Firmware Kiosk Simulator (AINS 2026)</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="sync-badge" id="sync-status">
+        <div class="sync-dot"></div>
+        <span id="sync-text">Cloud Sync: Terhubung (Live)</span>
+      </div>
+      <div class="nav-links">
+        <a href="/citizen-app/" class="nav-btn" target="_blank">📱 Buka Citizen App</a>
+        <a href="/dashboard/" class="nav-btn" target="_blank">🏛️ Buka Dashboard PBT</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Simulator Container -->
+  <div class="container">
+    
+    <!-- LEFT PANEL: KIOSK PHYSICAL DIGITAL TWIN -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          Kiosk Kitar Semula 4-Ruang (Unit: B01 — Subang Jaya)
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);">
+          ESP32 + Keras AI Actuation
+        </div>
+      </div>
+
+      <!-- Kiosk Physical Box -->
+      <div class="kiosk-chassis">
+        <!-- Top Bar: Cam Sensor & Neopixel RGB Ring -->
+        <div class="kiosk-head">
+          <div class="kiosk-cam-badge">
+            <div class="cam-lens"></div>
+            <span>OV2640 Virtual AI Camera</span>
+          </div>
+
+          <!-- 6-LED Virtual Neopixel Ring -->
+          <div class="neopixel-ring" id="neo-ring" title="Lampu Neopixel RGB Indikator">
+            <div class="neopixel-led" id="led-1"></div>
+            <div class="neopixel-led" id="led-2"></div>
+            <div class="neopixel-led" id="led-3"></div>
+            <div class="neopixel-led" id="led-4"></div>
+            <div class="neopixel-led" id="led-5"></div>
+            <div class="neopixel-led" id="led-6"></div>
+          </div>
+        </div>
+
+        <!-- SSD1306 OLED Screen -->
+        <div class="oled-screen" id="oled-screen">
+          <div class="oled-header">
+            <span>[SMARTTONG-AI B01]</span>
+            <span id="oled-batt">🔋 88% (Solar)</span>
+          </div>
+          <div class="oled-main" id="oled-text">
+            SYSTEM STANDBY...<br/>Sedia Menerima Imbasan Sisa
+          </div>
+          <div class="oled-sub" id="oled-footer">
+            GPS: USJ 1 · KDEBWM Selangor · Akta 672
+          </div>
+        </div>
+
+        <!-- 4 Compartment Slots with Servo Flaps -->
+        <div class="slots-grid">
+          
+          <!-- Slot 1: Kertas (Blue) -->
+          <div class="slot-unit" id="slot-paper" style="--slot-color: var(--slot-paper); --slot-color-glow: rgba(25, 118, 210, 0.4);">
+            <div class="servo-housing">
+              <div class="chute-hole">SLOT INTAKE</div>
+              <div class="servo-flap" id="flap-paper" onclick="triggerManualActuation('Kertas', 'Paper', '#1976D2')">
+                <div class="flap-handle"></div>
+                <div class="flap-label">KERTAS</div>
+              </div>
+            </div>
+            <div class="servo-status">
+              <span>Servo 1:</span>
+              <span class="servo-badge" id="servo-deg-paper">0° (Kunci)</span>
+            </div>
+            <div class="fill-wrapper">
+              <div class="fill-header">
+                <span>Paras Penuh</span>
+                <span id="fill-pct-paper">45%</span>
+              </div>
+              <div class="fill-bar-bg">
+                <div class="fill-bar-fg" id="fill-bar-paper" style="width: 45%;"></div>
+              </div>
+            </div>
+            <div class="slot-title">Kertas / Kadbod</div>
+            <div class="slot-sub">Kotak &amp; Majalah</div>
+          </div>
+
+          <!-- Slot 2: Plastik (Orange) -->
+          <div class="slot-unit" id="slot-plastic" style="--slot-color: var(--slot-plastic); --slot-color-glow: rgba(251, 140, 0, 0.4);">
+            <div class="servo-housing">
+              <div class="chute-hole">SLOT INTAKE</div>
+              <div class="servo-flap" id="flap-plastic" onclick="triggerManualActuation('Plastik', 'Plastic', '#FB8C00')">
+                <div class="flap-handle"></div>
+                <div class="flap-label">PLASTIK</div>
+              </div>
+            </div>
+            <div class="servo-status">
+              <span>Servo 2:</span>
+              <span class="servo-badge" id="servo-deg-plastic">0° (Kunci)</span>
+            </div>
+            <div class="fill-wrapper">
+              <div class="fill-header">
+                <span>Paras Penuh</span>
+                <span id="fill-pct-plastic">60%</span>
+              </div>
+              <div class="fill-bar-bg">
+                <div class="fill-bar-fg" id="fill-bar-plastic" style="width: 60%;"></div>
+              </div>
+            </div>
+            <div class="slot-title">Plastik</div>
+            <div class="slot-sub">Botol &amp; Bekas</div>
+          </div>
+
+          <!-- Slot 3: Logam (Deep Orange) -->
+          <div class="slot-unit" id="slot-metal" style="--slot-color: var(--slot-metal); --slot-color-glow: rgba(239, 108, 0, 0.4);">
+            <div class="servo-housing">
+              <div class="chute-hole">SLOT INTAKE</div>
+              <div class="servo-flap" id="flap-metal" onclick="triggerManualActuation('Logam', 'Metal', '#EF6C00')">
+                <div class="flap-handle"></div>
+                <div class="flap-label">LOGAM</div>
+              </div>
+            </div>
+            <div class="servo-status">
+              <span>Servo 3:</span>
+              <span class="servo-badge" id="servo-deg-metal">0° (Kunci)</span>
+            </div>
+            <div class="fill-wrapper">
+              <div class="fill-header">
+                <span>Paras Penuh</span>
+                <span id="fill-pct-metal">35%</span>
+              </div>
+              <div class="fill-bar-bg">
+                <div class="fill-bar-fg" id="fill-bar-metal" style="width: 35%;"></div>
+              </div>
+            </div>
+            <div class="slot-title">Logam / Tin</div>
+            <div class="slot-sub">Tin Milo &amp; Minuman</div>
+          </div>
+
+          <!-- Slot 4: Sisa Baki (Dark) -->
+          <div class="slot-unit" id="slot-trash" style="--slot-color: #8b949e; --slot-color-glow: rgba(139, 148, 158, 0.3);">
+            <div class="servo-housing">
+              <div class="chute-hole">SLOT INTAKE</div>
+              <div class="servo-flap" id="flap-trash" onclick="triggerManualActuation('Sisa Baki', 'Trash', '#424242')">
+                <div class="flap-handle"></div>
+                <div class="flap-label">SISA BAKI</div>
+              </div>
+            </div>
+            <div class="servo-status">
+              <span>Servo 4:</span>
+              <span class="servo-badge" id="servo-deg-trash">0° (Kunci)</span>
+            </div>
+            <div class="fill-wrapper">
+              <div class="fill-header">
+                <span>Paras Penuh</span>
+                <span id="fill-pct-trash">20%</span>
+              </div>
+              <div class="fill-bar-bg">
+                <div class="fill-bar-fg" id="fill-bar-trash" style="width: 20%; background:#8b949e;"></div>
+              </div>
+            </div>
+            <div class="slot-title">Sisa Baki</div>
+            <div class="slot-sub">Tisu &amp; Kotor</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: TELEMETRY SENSORS & DEMO CONTROL BOARD -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          Telemetri Perkakasan &amp; Kawalan Demo
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);">
+          Sensor ESP32 Node
+        </div>
+      </div>
+
+      <!-- Telemetry Cards -->
+      <div class="telemetry-grid">
+        <div class="telemetry-card">
+          <div class="tele-label">
+            <span>📡 JSN-SR04T Ultrasonik</span>
+          </div>
+          <div class="tele-val" id="tele-dist">38 cm</div>
+          <div class="tele-status">Isipadu Purata: 44%</div>
+        </div>
+
+        <div class="telemetry-card">
+          <div class="tele-label">
+            <span>💨 MQ-135 Sensor Gas</span>
+          </div>
+          <div class="tele-val" id="tele-gas" style="color:#3fb950;">88 ppm</div>
+          <div class="tele-status">Udara Normal (Bersih)</div>
+        </div>
+
+        <div class="telemetry-card">
+          <div class="tele-label">
+            <span>⚡ Voltan Bateri Solar</span>
+          </div>
+          <div class="tele-val" style="color:#2f81f7;">4.12 V</div>
+          <div class="tele-status">Kuasa Mencukupi (92%)</div>
+        </div>
+
+        <div class="telemetry-card">
+          <div class="tele-label">
+            <span>⚙️ Status Kunci Elektrik</span>
+          </div>
+          <div class="tele-val" id="tele-lock" style="color:#3fb950;">LOCKED</div>
+          <div class="tele-status">Anti-Vandalisme Aktif</div>
+        </div>
+      </div>
+
+      <!-- Live Presentation Control Board -->
+      <div class="control-board">
+        <div class="control-title">
+          <span>🎮 Panel Simulasi Pembentangan Juri</span>
+          <span style="font-size:11px;font-weight:400;color:var(--text-muted);">1-Click Demo Trigger</span>
+        </div>
+
+        <div class="btn-grid">
+          <button class="btn-action" onclick="triggerManualActuation('Logam', 'Metal (Tin Milo)', '#EF6C00')">
+            🥫 <span>Uji Imbas: Tin Milo (Logam)</span>
+          </button>
+          <button class="btn-action" onclick="triggerManualActuation('Plastik', 'Plastic (Botol)', '#FB8C00')">
+            🧴 <span>Uji Imbas: Botol Plastik</span>
+          </button>
+          <button class="btn-action" onclick="triggerManualActuation('Kertas', 'Cardboard / Paper', '#1976D2')">
+            📦 <span>Uji Imbas: Kotak Kertas</span>
+          </button>
+          <button class="btn-action" onclick="triggerManualActuation('Sisa Baki', 'Trash (Tisu/Kotor)', '#424242')">
+            🗑️ <span>Uji Imbas: Sisa Baki</span>
+          </button>
+          <button class="btn-action" onclick="simulateFullBin()" style="grid-column: span 2; background: rgba(248, 81, 73, 0.1); border-color: rgba(248, 81, 73, 0.4); color: #ff7b72;">
+            🚨 <span>Simulasikan Tong Penuh (Kritikal 95% → Lori KDEB Dikerah)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Event Terminal Logs -->
+      <div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:var(--text-muted);display:flex;justify-content:space-between;">
+          <span>Terminal Peristiwa Perkakasan (Live Event Logs)</span>
+          <span style="cursor:pointer;color:#58a6ff;" onclick="clearLogs()">Kosongkan</span>
+        </div>
+        <div class="logs-box" id="logs-box">
+          <div class="log-item">
+            <span class="log-time">[00:00:01]</span>
+            <span class="log-msg">Inisialisasi modul ESP32 SmartTONG selesai.</span>
+          </div>
+          <div class="log-item">
+            <span class="log-time">[00:00:02]</span>
+            <span class="log-msg">Sensor ultrasonik &amp; gas ditentukur pada paras optimum.</span>
+          </div>
+          <div class="log-item">
+            <span class="log-time">[00:00:03]</span>
+            <span class="log-msg highlight">Sedia menerima arahan imbasan masa nyata daripada Telefon Pintar.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    SmartTONG AI © 2026 — Ekosistem Pengurusan Sisa Pintar Berautonomi Selangor. Dibina untuk Anugerah Inovasi Negeri Selangor (AINS).
+  </footer>
+
+  <!-- Audio Context for Servo & Beep sound effects (Pure Web Audio API, Zero external assets) -->
+  <script>
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function playBeep(freq = 880, duration = 0.12, type = 'sine') {
+      try {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playServoSound() {
+      try {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } catch (e) {}
+    }
+  </script>
+
+  <!-- Digital Twin Actuation & Firebase Sync Logic -->
+  <script>
+    // 1. Firebase Initialization for Realtime Sync
+    let db = null;
+    try {
+      if (typeof firebase !== 'undefined') {
+        firebase.initializeApp({
+          apiKey: "AIzaSyByGcKKZ9WRbCv3kJu8sbb_BzRXUdZU1v4",
+          authDomain: "smarttong-selangor.firebaseapp.com",
+          projectId: "smarttong-selangor",
+          storageBucket: "smarttong-selangor.firebasestorage.app",
+          messagingSenderId: "729190756171",
+          appId: "1:729190756171:web:6eb913d8b4f0b040e782ce"
+        });
+        db = firebase.firestore();
+        initFirebaseSync();
+      }
+    } catch(e) {
+      console.warn("Firebase Init notice:", e);
+    }
+
+    // 2. BroadcastChannel for Instant Same-Browser Tabs Sync
+    const bc = new BroadcastChannel('smarttong_channel');
+    bc.onmessage = (event) => {
+      if (event.data && event.data.type === 'ACTUATION') {
+        handleIncomingActuation(event.data.payload, 'BroadcastChannel (Masa Nyata)');
+      }
+    };
+
+    // Listen to localStorage events for Cross-Tab Sync fallback
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'smarttong_latest_actuation' && e.newValue) {
+        try {
+          const payload = JSON.parse(e.newValue);
+          handleIncomingActuation(payload, 'Local Storage (Cross-Tab)');
+        } catch(err){}
+      }
+    });
+
+    function initFirebaseSync() {
+      if (!db) return;
+      // Listen to latest actuation command for Bin B01
+      db.collection('smarttong_actuations').doc('B01')
+        .onSnapshot((doc) => {
+          if (doc.exists) {
+            const data = doc.data();
+            // Only trigger if command is recent (within last 30 seconds)
+            if (data && data.timestamp && (Date.now() - data.timestamp < 30000)) {
+              handleIncomingActuation(data, 'Firebase Firestore (Awan)');
+            }
+          }
+        }, (err) => {
+          console.warn("Firestore listener error:", err);
+          document.getElementById('sync-text').textContent = 'Cloud Sync: Mod Sandaran Tempatan';
+        });
+    }
+
+    // State Variables
+    let lastActuationTime = 0;
+    let autoCloseTimer = null;
+
+    // Handle Actuation from Phone or Local Control
+    function handleIncomingActuation(data, source = 'Cloud') {
+      const now = Date.now();
+      if (now - lastActuationTime < 1500) return; // Debounce rapid calls
+      lastActuationTime = now;
+
+      const slotName = (data.slot || data.class || 'Logam').toLowerCase();
+      const color = data.color || '#EF6C00';
+      const className = data.class || data.slot || 'Bahan Kitar Semula';
+
+      addLog(`Menerima arahan buka slot [${className.toUpperCase()}] daripada ${source}`, true);
+
+      // 1. Play Sound
+      playBeep(659, 0.1);
+      setTimeout(() => playBeep(880, 0.15), 120);
+      playServoSound();
+
+      // 2. Update OLED Display
+      const oledText = document.getElementById('oled-text');
+      oledText.innerHTML = `SLOT <span style="color:#fff;">${className.toUpperCase()}</span> TERBUKA!<br/>+5 Eco-Points Dikreditkan ✓`;
+      document.getElementById('tele-lock').textContent = 'UNLOCKED';
+      document.getElementById('tele-lock').style.color = '#f0883e';
+
+      // 3. Update Neopixel Ring
+      setNeopixelColor(slotName);
+
+      // 4. Open Servo Flap
+      resetAllFlaps();
+      let targetFlapId = 'flap-metal';
+      let targetServoId = 'servo-deg-metal';
+      let targetUnitId = 'slot-metal';
+      let targetFillBarId = 'fill-bar-metal';
+      let targetFillPctId = 'fill-pct-metal';
+
+      if (slotName.includes('kertas') || slotName.includes('paper') || slotName.includes('cardboard')) {
+        targetFlapId = 'flap-paper'; targetServoId = 'servo-deg-paper'; targetUnitId = 'slot-paper';
+        targetFillBarId = 'fill-bar-paper'; targetFillPctId = 'fill-pct-paper';
+      } else if (slotName.includes('plastik') || slotName.includes('plastic')) {
+        targetFlapId = 'flap-plastic'; targetServoId = 'servo-deg-plastic'; targetUnitId = 'slot-plastic';
+        targetFillBarId = 'fill-bar-plastic'; targetFillPctId = 'fill-pct-plastic';
+      } else if (slotName.includes('logam') || slotName.includes('metal')) {
+        targetFlapId = 'flap-metal'; targetServoId = 'servo-deg-metal'; targetUnitId = 'slot-metal';
+        targetFillBarId = 'fill-bar-metal'; targetFillPctId = 'fill-pct-metal';
+      } else {
+        targetFlapId = 'flap-trash'; targetServoId = 'servo-deg-trash'; targetUnitId = 'slot-trash';
+        targetFillBarId = 'fill-bar-trash'; targetFillPctId = 'fill-pct-trash';
+      }
+
+      const flap = document.getElementById(targetFlapId);
+      const servoDeg = document.getElementById(targetServoId);
+      const unit = document.getElementById(targetUnitId);
+
+      if (flap) flap.classList.add('open');
+      if (servoDeg) {
+        servoDeg.textContent = '90° (Terbuka)';
+        servoDeg.classList.add('opened');
+      }
+      if (unit) unit.classList.add('active');
+
+      // 5. Increment Fill level by +5%
+      const fillBar = document.getElementById(targetFillBarId);
+      const fillPct = document.getElementById(targetFillPctId);
+      if (fillBar && fillPct) {
+        let current = parseInt(fillPct.textContent) || 40;
+        let updated = Math.min(100, current + 5);
+        fillPct.textContent = `${updated}%`;
+        fillBar.style.width = `${updated}%`;
+        addLog(`Sensor ultrasonik mengesan pertambahan isipadu sisa: ${current}% → ${updated}%`);
+      }
+
+      // 6. Auto-Close Flap after 5 seconds
+      if (autoCloseTimer) clearTimeout(autoCloseTimer);
+      autoCloseTimer = setTimeout(() => {
+        closeAllFlaps();
+      }, 5000);
+    }
+
+    function resetAllFlaps() {
+      ['paper', 'plastic', 'metal', 'trash'].forEach(id => {
+        const f = document.getElementById(`flap-${id}`);
+        const s = document.getElementById(`servo-deg-${id}`);
+        const u = document.getElementById(`slot-${id}`);
+        if (f) f.classList.remove('open');
+        if (s) { s.textContent = '0° (Kunci)'; s.classList.remove('opened'); }
+        if (u) u.classList.remove('active');
+      });
+    }
+
+    function closeAllFlaps() {
+      playServoSound();
+      resetAllFlaps();
+      document.getElementById('oled-text').innerHTML = `SISA BERJAYA DIMASUKKAN<br/>Pintu Dikunci Semula (Standby)`;
+      document.getElementById('tele-lock').textContent = 'LOCKED';
+      document.getElementById('tele-lock').style.color = '#3fb950';
+      resetNeopixel();
+      addLog('Motor servo berpusing kembali ke 0°. Flap ditutup dan dikunci selamat.');
+      setTimeout(() => {
+        document.getElementById('oled-text').innerHTML = `SYSTEM STANDBY...<br/>Sedia Menerima Imbasan Sisa`;
+      }, 3500);
+    }
+
+    function setNeopixelColor(slot) {
+      let colorClass = 'active-green';
+      if (slot.includes('kertas') || slot.includes('paper')) colorClass = 'active-blue';
+      else if (slot.includes('plastik') || slot.includes('logam') || slot.includes('metal')) colorClass = 'active-orange';
+      
+      for (let i = 1; i <= 6; i++) {
+        const led = document.getElementById(`led-${i}`);
+        if (led) {
+          led.className = `neopixel-led ${colorClass}`;
+        }
+      }
+    }
+
+    function resetNeopixel() {
+      for (let i = 1; i <= 6; i++) {
+        const led = document.getElementById(`led-${i}`);
+        if (led) led.className = 'neopixel-led';
+      }
+    }
+
+    // Manual Testing Trigger
+    function triggerManualActuation(slot, cls, color) {
+      const payload = {
+        slot: slot,
+        class: cls,
+        color: color,
+        timestamp: Date.now()
+      };
+      // Broadcast to any listening tabs
+      bc.postMessage({ type: 'ACTUATION', payload: payload });
+      localStorage.setItem('smarttong_latest_actuation', JSON.stringify(payload));
+      handleIncomingActuation(payload, 'Panel Simulasi Manual');
+    }
+
+    // Simulate Full Bin Alarm
+    function simulateFullBin() {
+      playBeep(440, 0.2, 'sawtooth');
+      setTimeout(() => playBeep(330, 0.3, 'sawtooth'), 250);
+      document.getElementById('oled-text').innerHTML = `<span style="color:#f85149;">🚨 AMARAN: TONG PENUH (95%)</span><br/>Menghantar Isyarat Lori KDEB`;
+      
+      // Set all LEDs red
+      for (let i = 1; i <= 6; i++) {
+        const led = document.getElementById(`led-${i}`);
+        if (led) led.className = 'neopixel-led active-red';
+      }
+
+      ['paper', 'plastic', 'metal', 'trash'].forEach(id => {
+        const b = document.getElementById(`fill-bar-${id}`);
+        const p = document.getElementById(`fill-pct-${id}`);
+        if (b && p) { b.style.width = '95%'; p.textContent = '95%'; }
+      });
+
+      document.getElementById('tele-gas').textContent = '415 ppm (Tinggi)';
+      document.getElementById('tele-gas').style.color = '#f85149';
+      addLog('AMARAN KRITIKAL: Kapasiti tong mencapai 95%. Notifikasi dispatch dihantar ke unit KDEBWM.', false, true);
+
+      setTimeout(() => {
+        resetNeopixel();
+        document.getElementById('tele-gas').textContent = '88 ppm';
+        document.getElementById('tele-gas').style.color = '#3fb950';
+        document.getElementById('oled-text').innerHTML = `SYSTEM STANDBY...<br/>Sedia Menerima Imbasan Sisa`;
+      }, 8000);
+    }
+
+    // Event Log Helper
+    function addLog(msg, isHighlight = false, isWarn = false) {
+      const box = document.getElementById('logs-box');
+      if (!box) return;
+      const now = new Date();
+      const timeStr = `[${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}]`;
+      const div = document.createElement('div');
+      div.className = 'log-item';
+      div.innerHTML = `<span class="log-time">${timeStr}</span> <span class="log-msg ${isHighlight ? 'highlight' : ''} ${isWarn ? 'warn' : ''}">${msg}</span>`;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function clearLogs() {
+      const box = document.getElementById('logs-box');
+      if (box) box.innerHTML = '';
+      addLog('Log dikosongkan.');
+    }
+  </script>
+</body>
+</html>

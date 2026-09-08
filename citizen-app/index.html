@@ -1281,6 +1281,15 @@ html,body {
     <!--  CITIZEN IMBAS  -->
     <div class="pg" id="pg-c-imbas">
       <div class="sec-hdr"><div><div class="sec-title">Imbas Item</div><div class="sec-sub">AI pengkelasan sisa — Gemini Vision</div></div></div>
+      
+      <!-- Simulator Companion Banner -->
+      <div style="margin:0 20px 12px; padding:10px 14px; background:rgba(46,160,67,0.1); border:1px solid rgba(46,160,67,0.3); border-radius:10px; display:flex; align-items:center; justify-content:space-between; font-size:12px;">
+        <span style="font-weight:600; color:var(--primary); display:flex; align-items:center; gap:6px;">
+          <span>🎮</span> Simulator Digital Twin (Skrin Laptop)
+        </span>
+        <a href="/simulator" target="_blank" style="padding:4px 10px; background:var(--primary); color:#fff; border-radius:6px; text-decoration:none; font-weight:700; font-size:11px;">Buka Simulator ↗</a>
+      </div>
+
       <div class="scan-card">
         <div class="scan-hdr">
           <div class="scan-hdr-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
@@ -1313,9 +1322,15 @@ html,body {
         <div id="arm-label" style="font-size:22px;font-weight:900;margin-bottom:2px;"></div>
         <div id="arm-reason" style="font-size:12px;color:var(--g600);"></div>
         <div id="arm-slot" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;"></div>
-        <button id="arm-act" style="display:none;width:100%;margin-top:12px;padding:10px;border-radius:8px;font-weight:600;font-size:13px;border:1px solid var(--border);background:var(--white);color:var(--dark);cursor:pointer;" onclick="armAct()">
+        
+        <!-- Interactive Actuation Button -->
+        <button id="arm-open-btn" style="display:none;width:100%;margin-top:12px;padding:12px;border-radius:8px;font-weight:700;font-size:14px;border:none;background:var(--primary);color:#fff;cursor:pointer;" onclick="triggerKioskOpen()">
+          🔓 Buka Pintu Slot Kiosk (+5 Mata)
+        </button>
+
+        <button id="arm-act" style="display:none;width:100%;margin-top:8px;padding:10px;border-radius:8px;font-weight:600;font-size:13px;border:1px solid var(--border);background:var(--white);color:var(--dark);cursor:pointer;" onclick="armAct()">
           <svg width="16" height="16" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-          Cuba Lagi
+          Imbas Seterusnya
         </button>
       </div>
       <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Kategori Sisa (AI Classes)</div>
@@ -3577,10 +3592,14 @@ function getConfidenceLabel(conf) {
   return 'Keyakinan: Sederhana';
 }
 
+let currentScanData = null;
+
 function renderARMResult(data) {
+  currentScanData = data;
   const res=document.getElementById('arm-res');
   const lbl=document.getElementById('arm-label'),slot=document.getElementById('arm-slot');
   const reason=document.getElementById('arm-reason'),act=document.getElementById('arm-act');
+  const openBtn = document.getElementById('arm-open-btn');
   res.style.display='block';
   
   if (data.class) {
@@ -3611,9 +3630,62 @@ function renderARMResult(data) {
     const confVal = (data.confidence && data.confidence <= 1) ? data.confidence * 100 : (data.confidence || 90);
     reason.textContent = `${getConfidenceLabel(confVal)} — ${data.reason || ''}`;
   }
+
+  // Setup actuation button
+  if (openBtn) {
+    openBtn.style.display = 'block';
+    openBtn.disabled = false;
+    openBtn.style.background = 'var(--primary)';
+    const slotTitle = data.class ? `Slot ${data.class.toUpperCase()}` : 'Slot Kiosk';
+    openBtn.innerHTML = `🔓 Buka Pintu ${slotTitle} (+5 Mata)`;
+  }
   
   act.style.display='block';
 }
+
+function triggerKioskOpen() {
+  if (!currentScanData) return;
+  const btn = document.getElementById('arm-open-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Menghantar Isyarat ke Tong...';
+  }
+
+  const payload = {
+    slot: currentScanData.bin || currentScanData.class || 'Logam',
+    class: currentScanData.class || currentScanData.label || 'Metal',
+    color: currentScanData.color || '#EF6C00',
+    bin: currentScanData.bin || 'Orange Recycling Bin (Logam)',
+    timestamp: Date.now()
+  };
+
+  // 1. Send to Firebase Firestore
+  try {
+    if (typeof db !== 'undefined' && db) {
+      db.collection('smarttong_actuations').doc('B01').set(payload);
+    }
+  } catch(e) {
+    console.warn('Firestore actuation error:', e);
+  }
+
+  // 2. BroadcastChannel & LocalStorage sync (Instant local & cross-tab)
+  try {
+    const bc = new BroadcastChannel('smarttong_channel');
+    bc.postMessage({ type: 'ACTUATION', payload: payload });
+  } catch(e){}
+  localStorage.setItem('smarttong_latest_actuation', JSON.stringify(payload));
+
+  // 3. Award +5 Eco-Points
+  myPoints += 5;
+  updateCitizenUI();
+
+  // 4. Update UI button
+  if (btn) {
+    btn.style.background = '#2ea043';
+    btn.innerHTML = '✅ Pintu Slot Terbuka! (+5 Mata Ditambah)';
+  }
+}
+
 function armAct(){
   const res=document.getElementById('arm-res');
   res.style.display='none';

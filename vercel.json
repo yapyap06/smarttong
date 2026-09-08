@@ -2,6 +2,7 @@
   "cleanUrls": true,
   "routes": [
     { "src": "/", "dest": "/citizen-app/index.html" },
+    { "src": "/simulator", "dest": "/simulator/index.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
