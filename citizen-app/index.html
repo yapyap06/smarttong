@@ -1453,7 +1453,7 @@ html,body {
 
     <!--  CITIZEN TANYA AI  -->
     <div class="pg" id="pg-c-tanya">
-      <div class="sec-hdr"><div><div class="sec-title">SilaTanya AI</div><div class="sec-sub">Citizen Q&amp;A Agent · Gemini 1.5 Flash</div></div></div>
+      <div class="sec-hdr"><div><div class="sec-title">SilaTanya AI</div><div class="sec-sub">Citizen Q&amp;A Agent · Gemini 2.5 Flash</div></div></div>
       <div class="qq-row">
         <button class="qq" onclick="qAsk('Macam mana nak kitar tin Milo?')">Tin Milo?</button>
         <button class="qq" onclick="qAsk('Botol plastik boleh kitar semula?')">Botol plastik?</button>
@@ -1585,7 +1585,7 @@ const BACKEND_FALLBACK = 'https://smarttong-backend.onrender.com'; // Render fal
 // Get your FREE key from: https://aistudio.google.com/app/apikey
 // Valid key format: AIzaSy...
 const GEMINI_KEY = atob('QVEuQWI4Uk42Smx0bTE2NmJsSG9nQ1RmVnlza09QaTYyYnZfQXVoWkxjandDWlRja21SaWc='); // Base64 decoded key
-const GEMINI_URL = key => `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+const GEMINI_URL = key => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
 
 function isValidGeminiKey(k) {
   return typeof k === 'string' && (k.startsWith('AIza') || k.startsWith('AQ')) && k.length >= 35;
@@ -2601,31 +2601,44 @@ async function sendChat() {
 
   showTyping();
 
+  // Try 1: Gemini 2.5 Flash API directly (Instant response, high intelligence, official SOP system prompt)
+  try {
+    const aiResp = await gemini(q, SMARTTONG_SOP);
+    document.getElementById('typing')?.remove();
+    if (aiResp && aiResp.trim()) {
+      addBotMsg(aiResp);
+      chatBusy = false;
+      return;
+    }
+  } catch(err) {
+    console.warn('[Gemini Client Chat Notice]', err);
+  }
+
+  // Try 2: Backend server /chat endpoint (if running)
   try {
     const resp = await fetch(`${BACKEND_URL}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: q })
     });
-    
-    if (!resp.ok) throw new Error('API error');
-    const data = await resp.json();
-    document.getElementById('typing')?.remove();
-    
-    if (data.reply) {
-      addBotMsg(data.reply);
-    } else {
-      addBotMsg('Ralat mendapatkan jawapan daripada pelayan AI.');
+    if (resp.ok) {
+      const data = await resp.json();
+      document.getElementById('typing')?.remove();
+      if (data.reply && data.reply.trim()) {
+        addBotMsg(data.reply);
+        chatBusy = false;
+        return;
+      }
     }
   } catch(e) {
-    console.error('[Chat Agent API]', e);
-    document.getElementById('typing')?.remove();
-    // SOP-based local KB fallback
-    const fallbackAns = await getSopAnswer(q.toLowerCase());
-    addBotMsg(fallbackAns);
-  } finally {
-    chatBusy = false;
+    console.warn('[Backend Chat Notice]', e);
   }
+
+  // Try 3: Offline local KB fallback as absolute last resort
+  document.getElementById('typing')?.remove();
+  const fallbackAns = await getSopAnswer(q.toLowerCase());
+  addBotMsg(fallbackAns);
+  chatBusy = false;
 }
 
 function qAsk(q) { document.getElementById('chat-in').value = q; sendChat(); }
