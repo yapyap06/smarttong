@@ -1081,7 +1081,7 @@
 
     // 6. Realtime Multi-Tier Cloud Sync (Cloud Relay + Firebase + BroadcastChannel)
     const CLOUD_RELAY_URL = 'https://ninjayy-smarttong-ai.hf.space/actuate';
-    let lastProcessedTimestamp = Date.now() - 5000;
+    let lastProcessedId = -1;
     let isRelayConnected = false;
 
     function setSyncStatus(isLive, label) {
@@ -1102,21 +1102,23 @@
               const data = JSON.parse(event.data);
               isRelayConnected = true;
               setSyncStatus(true, 'Cloud Relay: Terhubung (Live)');
-              if (data && data.timestamp && data.timestamp > lastProcessedTimestamp) {
-                lastProcessedTimestamp = data.timestamp;
+              if (data.type === 'CONNECTED') {
+                if (lastProcessedId === -1) lastProcessedId = data.current_id || 0;
+                return;
+              }
+              if (data && data.id !== undefined && data.id > lastProcessedId) {
+                lastProcessedId = data.id;
                 handleIncomingScan(data, 'Cloud Relay (Masa Nyata)');
               }
             } catch(e) {}
           }
         };
-        es.onerror = () => {
-          // SSE reconnects automatically, polling below guarantees delivery
-        };
+        es.onerror = () => {};
       } catch(e) {
-        console.warn('SSE not available:', e);
+        console.warn('SSE notice:', e);
       }
 
-      // 2. Fast Polling (every 650ms) - 100% reliable across any network firewall
+      // 2. Fast Polling (every 600ms) - 100% reliable across any network firewall
       setInterval(async () => {
         try {
           const res = await fetch(CLOUD_RELAY_URL, { cache: 'no-store' });
@@ -1124,13 +1126,15 @@
             const data = await res.json();
             isRelayConnected = true;
             setSyncStatus(true, 'Cloud Relay: Terhubung (Live)');
-            if (data && data.timestamp && data.timestamp > lastProcessedTimestamp && (Date.now() - data.timestamp < 60000)) {
-              lastProcessedTimestamp = data.timestamp;
+            if (lastProcessedId === -1) {
+              lastProcessedId = data.id || 0;
+            } else if (data && data.id !== undefined && data.id > lastProcessedId) {
+              lastProcessedId = data.id;
               handleIncomingScan(data, 'Cloud Relay (Masa Nyata)');
             }
           }
         } catch(e) {}
-      }, 650);
+      }, 600);
     }
     initGlobalCloudRelay();
 
@@ -1196,7 +1200,7 @@
       lastScanTime = now;
 
       const rawClass = (data.class || data.slot || '').toLowerCase();
-      addLog(`Imbasan diterima daripada ${source}: [${rawClass.toUpperCase()}]`);
+      addLog(`[ACKNOWLEDGE] Isyarat imbasan diterima daripada ${source}: [${rawClass.toUpperCase()}]`);
 
       // Match Scan Result to the exact 4 Bins from user's sketch:
       if (rawClass.includes('paper') || rawClass.includes('kertas') || rawClass.includes('cardboard') || rawClass.includes('kadbod')) {
