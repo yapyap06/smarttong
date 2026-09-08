@@ -919,9 +919,16 @@
     });
 
     // ─── 3D Waste Items to Animate Being Thrown In ───
-    // 1. Paper (Folded Paper Sheet / Crumpled Box)
-    const paperGeo = new THREE.BoxGeometry(0.3, 0.02, 0.24);
-    const paperMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+    // 1. Paper (Folded Paper Sheet with document lines)
+    const paperCanvas = document.createElement('canvas');
+    paperCanvas.width = 256; paperCanvas.height = 256;
+    const pctx = paperCanvas.getContext('2d');
+    pctx.fillStyle = '#ffffff'; pctx.fillRect(0, 0, 256, 256);
+    pctx.fillStyle = '#cbd5e1';
+    for (let l = 30; l < 230; l += 24) { pctx.fillRect(28, l, 200, 5); }
+    const paperTex = new THREE.CanvasTexture(paperCanvas);
+    const paperGeo = new THREE.BoxGeometry(0.32, 0.015, 0.24);
+    const paperMat = new THREE.MeshStandardMaterial({ map: paperTex, roughness: 0.7 });
     const paperItem = new THREE.Mesh(paperGeo, paperMat);
     paperItem.visible = false;
     scene.add(paperItem);
@@ -1072,7 +1079,62 @@
       requestAnimationFrame(stepThrow);
     }
 
-    // 6. Realtime Firebase Firestore & BroadcastChannel Sync
+    // 6. Realtime Multi-Tier Cloud Sync (Cloud Relay + Firebase + BroadcastChannel)
+    const CLOUD_RELAY_URL = 'https://ninjayy-smarttong-ai.hf.space/actuate';
+    let lastProcessedTimestamp = Date.now() - 5000;
+    let isRelayConnected = false;
+
+    function setSyncStatus(isLive, label) {
+      const lbl = document.getElementById('sync-lbl');
+      const dot = document.querySelector('.sync-dot');
+      if (lbl) lbl.textContent = label || (isLive ? 'Cloud Relay: Terhubung (Live)' : 'Cloud Sync: Mod Sandaran');
+      if (dot) dot.style.background = isLive ? '#16a34a' : '#ea580c';
+    }
+
+    // A. Global Cloud Relay (Instant cross-device push & fast polling)
+    function initGlobalCloudRelay() {
+      // 1. Server-Sent Events (SSE) for 0ms push latency
+      try {
+        const es = new EventSource(CLOUD_RELAY_URL + '/stream');
+        es.onmessage = (event) => {
+          if (event.data) {
+            try {
+              const data = JSON.parse(event.data);
+              isRelayConnected = true;
+              setSyncStatus(true, 'Cloud Relay: Terhubung (Live)');
+              if (data && data.timestamp && data.timestamp > lastProcessedTimestamp) {
+                lastProcessedTimestamp = data.timestamp;
+                handleIncomingScan(data, 'Cloud Relay (Masa Nyata)');
+              }
+            } catch(e) {}
+          }
+        };
+        es.onerror = () => {
+          // SSE reconnects automatically, polling below guarantees delivery
+        };
+      } catch(e) {
+        console.warn('SSE not available:', e);
+      }
+
+      // 2. Fast Polling (every 650ms) - 100% reliable across any network firewall
+      setInterval(async () => {
+        try {
+          const res = await fetch(CLOUD_RELAY_URL, { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            isRelayConnected = true;
+            setSyncStatus(true, 'Cloud Relay: Terhubung (Live)');
+            if (data && data.timestamp && data.timestamp > lastProcessedTimestamp && (Date.now() - data.timestamp < 60000)) {
+              lastProcessedTimestamp = data.timestamp;
+              handleIncomingScan(data, 'Cloud Relay (Masa Nyata)');
+            }
+          }
+        } catch(e) {}
+      }, 650);
+    }
+    initGlobalCloudRelay();
+
+    // B. Firebase Firestore Sync (Secondary channel)
     let db = null;
     try {
       if (typeof firebase !== 'undefined') {
@@ -1091,6 +1153,7 @@
       console.warn("Firebase notice:", e);
     }
 
+    // C. BroadcastChannel & LocalStorage (Same device / cross-tab)
     const bc = new BroadcastChannel('smarttong_channel');
     bc.onmessage = (e) => {
       if (e.data && e.data.type === 'ACTUATION') {
@@ -1113,13 +1176,16 @@
         .onSnapshot((doc) => {
           if (doc.exists) {
             const data = doc.data();
-            if (data && data.timestamp && (Date.now() - data.timestamp < 30000)) {
+            if (data && data.timestamp && (Date.now() - data.timestamp < 30000) && data.timestamp > lastProcessedTimestamp) {
+              lastProcessedTimestamp = data.timestamp;
               handleIncomingScan(data, 'Firebase Firestore (Awan)');
             }
           }
         }, (err) => {
-          console.warn("Firestore error:", err);
-          document.getElementById('sync-lbl').textContent = 'Cloud Sync: Mod Sandaran';
+          console.warn("Firestore notice:", err);
+          if (!isRelayConnected) {
+            setSyncStatus(false, 'Cloud Sync: Mod Sandaran');
+          }
         });
     }
 

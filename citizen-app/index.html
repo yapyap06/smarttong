@@ -36,6 +36,8 @@
   --g600:     #6C757D;
   --g700:     #495057;
   --dark:     #212529;
+  --primary:  #15803d;
+  --primary-dark: #14532d;
   --green:    #16A34A;
   --green-l:  #DCFCE7;
   --green-m:  #86EFAC;
@@ -1324,7 +1326,7 @@ html,body {
         <div id="arm-slot" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;"></div>
         
         <!-- Interactive Actuation Button -->
-        <button id="arm-open-btn" style="display:none;width:100%;margin-top:12px;padding:12px;border-radius:8px;font-weight:700;font-size:14px;border:none;background:var(--primary);color:#fff;cursor:pointer;" onclick="triggerKioskOpen()">
+        <button id="arm-open-btn" style="display:none;width:100%;margin-top:12px;padding:14px 16px;border-radius:10px;font-weight:800;font-size:15px;letter-spacing:0.2px;border:2px solid #14532d;background:#15803d;color:#ffffff;box-shadow:0 4px 14px rgba(21,128,61,0.35);cursor:pointer;transition:all .2s ease;" onclick="triggerKioskOpen()">
           🔓 Buka Pintu Slot Kiosk (+5 Mata)
         </button>
 
@@ -3631,11 +3633,16 @@ function renderARMResult(data) {
     reason.textContent = `${getConfidenceLabel(confVal)} — ${data.reason || ''}`;
   }
 
-  // Setup actuation button
+  // Setup actuation button with guaranteed high contrast
   if (openBtn) {
     openBtn.style.display = 'block';
     openBtn.disabled = false;
-    openBtn.style.background = 'var(--primary)';
+    openBtn.style.background = '#15803d';
+    openBtn.style.color = '#ffffff';
+    openBtn.style.border = '2px solid #14532d';
+    openBtn.style.fontWeight = '800';
+    openBtn.style.fontSize = '15px';
+    openBtn.style.boxShadow = '0 4px 14px rgba(21,128,61,0.35)';
     const slotTitle = data.class ? `Slot ${data.class.toUpperCase()}` : 'Slot Kiosk';
     openBtn.innerHTML = `🔓 Buka Pintu ${slotTitle} (+5 Mata)`;
   }
@@ -3648,18 +3655,35 @@ function triggerKioskOpen() {
   const btn = document.getElementById('arm-open-btn');
   if (btn) {
     btn.disabled = true;
+    btn.style.background = '#166534';
+    btn.style.color = '#ffffff';
     btn.innerHTML = '⏳ Menghantar Isyarat ke Tong...';
   }
 
   const payload = {
-    slot: currentScanData.bin || currentScanData.class || 'Logam',
-    class: currentScanData.class || currentScanData.label || 'Metal',
-    color: currentScanData.color || '#EF6C00',
-    bin: currentScanData.bin || 'Orange Recycling Bin (Logam)',
+    slot: currentScanData.bin || currentScanData.class || 'Paper',
+    class: currentScanData.class || currentScanData.label || 'Paper',
+    color: currentScanData.color || '#1976D2',
+    bin: currentScanData.bin || 'Blue Recycling Bin (Kertas/Kadbod)',
     timestamp: Date.now()
   };
 
-  // 1. Send to Firebase Firestore
+  // 1. Send to Global Cloud Relay (Works across any mobile 5G/Wi-Fi to laptop simulator)
+  try {
+    fetch('https://ninjayy-smarttong-ai.hf.space/actuate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(r => r.json()).then(res => {
+      console.log('[SmartTONG Cloud Relay] Actuation sent:', res);
+    }).catch(err => {
+      console.warn('[SmartTONG Cloud Relay Error]', err);
+    });
+  } catch(e) {
+    console.warn('[SmartTONG Cloud Relay]', e);
+  }
+
+  // 2. Send to Firebase Firestore (in parallel)
   try {
     if (typeof db !== 'undefined' && db) {
       db.collection('smarttong_actuations').doc('B01').set(payload);
@@ -3668,20 +3692,22 @@ function triggerKioskOpen() {
     console.warn('Firestore actuation error:', e);
   }
 
-  // 2. BroadcastChannel & LocalStorage sync (Instant local & cross-tab)
+  // 3. BroadcastChannel & LocalStorage sync (Instant local & cross-tab)
   try {
     const bc = new BroadcastChannel('smarttong_channel');
     bc.postMessage({ type: 'ACTUATION', payload: payload });
   } catch(e){}
   localStorage.setItem('smarttong_latest_actuation', JSON.stringify(payload));
 
-  // 3. Award +5 Eco-Points
+  // 4. Award +5 Eco-Points
   myPoints += 5;
   updateCitizenUI();
 
-  // 4. Update UI button
+  // 5. Update UI button
   if (btn) {
-    btn.style.background = '#2ea043';
+    btn.style.background = '#15803d';
+    btn.style.color = '#ffffff';
+    btn.style.border = '2px solid #14532d';
     btn.innerHTML = '✅ Pintu Slot Terbuka! (+5 Mata Ditambah)';
   }
 }
