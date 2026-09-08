@@ -69,12 +69,19 @@ class PredictHandler(BaseHTTPRequestHandler):
             img_bytes = base64.b64decode(img_b64)
             img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
             
-            # CRITICAL: Apply EXIF orientation natively (Gradio does this automatically, PIL doesn't)
+            # CRITICAL: Apply EXIF orientation natively
             from PIL import ImageOps
             img = ImageOps.exif_transpose(img)
             
-            img = img.resize((224, 224))
-            arr = np.array(img, dtype=np.float32)
+            # Aspect-Preserving Center-Square Crop to match 224x224 training geometry
+            w, h = img.size
+            min_dim = min(w, h)
+            left = (w - min_dim) // 2
+            top = (h - min_dim) // 2
+            cropped = img.crop((left, top, left + min_dim, top + min_dim))
+            resized = cropped.resize((224, 224))
+
+            arr = np.array(resized, dtype=np.float32)
             arr = np.expand_dims(arr, axis=0)
 
             preds = model.predict(arr, verbose=0)[0]

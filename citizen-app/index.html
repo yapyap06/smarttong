@@ -3511,59 +3511,48 @@ async function captureClassify() {
   try{
     const base64Data = dataUrl.split(',')[1];
 
-    // 1️⃣ Primary: Hugging Face Space (Pure Python Keras Model)
-    let predDone = false;
-    try {
-      const r = await fetch(`${BACKEND_URL}/predict`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ image: base64Data }),
-        signal: AbortSignal.timeout(20000)
-      });
-      if (r.ok) {
-        const data = await r.json();
-        if (data.class) {
-          document.getElementById('scan-load').style.display='none';
-          renderARMResult(data);
-          predDone = true;
-        }
-      }
-    } catch(e1) {
-      console.warn('[Scanner] HF Space unreachable, trying Render fallback...', e1);
+    // Candidate Keras model endpoints (all running best_model_finetuned224.keras)
+    const endpoints = [];
+    if (isLocalEnv) {
+      endpoints.push('http://127.0.0.1:7862/predict'); // predict_server.py
+      endpoints.push('http://127.0.0.1:7860/predict'); // local hf-space / fastapi
+    }
+    endpoints.push('https://ninjayy-smarttong-ai.hf.space/predict'); // Hugging Face Space Keras backend
+    if (!isLocalEnv) {
+      endpoints.push(`${BACKEND_FALLBACK}/predict`); // Render Keras backend
     }
 
-    if (predDone) return;
-
-    // 2️⃣ Secondary: Render backend (Python Keras Model fallback)
-    if (!isLocalEnv) {
+    let predDone = false;
+    for (const ep of endpoints) {
       try {
-        const r2 = await fetch(`${BACKEND_FALLBACK}/predict`, {
+        const r = await fetch(ep, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ image: base64Data }),
-          signal: AbortSignal.timeout(15000)
+          signal: AbortSignal.timeout(18000)
         });
-        if (r2.ok) {
-          const data2 = await r2.json();
-          if (data2.class) {
-            document.getElementById('scan-load').style.display='none';
-            renderARMResult(data2);
+        if (r.ok) {
+          const data = await r.json();
+          if (data.class) {
+            document.getElementById('scan-load').style.display = 'none';
+            renderARMResult(data);
             predDone = true;
+            break;
           }
         }
-      } catch(e2) {
-        console.warn('[Scanner] Render backend offline...', e2);
+      } catch (err) {
+        console.warn(`[Scanner] Endpoint ${ep} failed/offline:`, err);
       }
     }
 
     if (predDone) return;
 
-    throw new Error('All prediction pipelines exhausted');
+    throw new Error('All Keras fine-tuned model endpoints unreachable');
 
   }catch(e){
     console.error('[Cam Scanner Error]', e);
     document.getElementById('scan-load').style.display='none';
-    renderARMResult({label:'Tin Aluminium (Demo)',accepted:true,slot:'LOGAM',confidence:.94,reason:'Tin aluminium bersih, layak dikitar semula',isHazardous:false});
+    renderARMResult({label:'Tin Aluminium (Demo)',accepted:true,slot:'LOGAM',confidence:.94,reason:'Pelayan AI Keras sedang bermula atau luar talian.',isHazardous:false});
   }
 }
 
@@ -3585,11 +3574,12 @@ function renderARMResult(data) {
   res.style.display='block';
   
   if (data.class) {
-    // API response format from predict_server.py
+    // API response format from predict_server.py / HF Space Keras
     const c = data.color || 'var(--green)';
     lbl.textContent = data.class;
     lbl.style.color = c;
-    reason.textContent = `${getConfidenceLabel(data.confidence)} — ${data.tip || ''}`;
+    const modelTag = '<div style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:#EFF6FF;border:1px solid #BFDBFE;color:#1D4ED8;border-radius:6px;font-size:11px;font-weight:700;margin-bottom:6px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Model: best_model_finetuned224.keras</div>';
+    reason.innerHTML = `${modelTag}<br>${getConfidenceLabel(data.confidence)} (${data.confidence}%) — ${data.tip || ''}`;
     
     slot.style.background = c.replace(')', ', 0.1)').replace('rgb', 'rgba').replace('#', 'rgba(') + (c.startsWith('#') ? '0,0,0,0.1)' : ''); 
     // basic css fallback for opacity 

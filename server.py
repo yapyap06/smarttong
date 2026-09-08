@@ -79,10 +79,17 @@ def predict():
         img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
         img = ImageOps.exif_transpose(img)
 
-        # 1. Try TensorFlow Keras Model if loaded
+        # TensorFlow Keras Model Inference
         m = load_keras_model()
         if m is not None:
-            resized = img.resize((224, 224))
+            # Aspect-Preserving Center-Square Crop to match 224x224 training geometry
+            w, h = img.size
+            min_dim = min(w, h)
+            left = (w - min_dim) // 2
+            top = (h - min_dim) // 2
+            cropped = img.crop((left, top, left + min_dim, top + min_dim))
+            resized = cropped.resize((224, 224))
+
             arr = np.array(resized, dtype=np.float32)
             arr = np.expand_dims(arr, axis=0)
             preds = m.predict(arr, verbose=0)[0]
@@ -96,77 +103,15 @@ def predict():
                 "bin": BIN_MAP[mat]["bin"],
                 "color": BIN_MAP[mat]["color"],
                 "tip": BIN_MAP[mat]["tip"],
+                "source": "keras-finetuned",
                 "all_probabilities": {
                     CLASS_NAMES[i]: round(float(preds[i]) * 100, 2)
                     for i in range(len(CLASS_NAMES))
                 }
             })
 
-        # 2. Gemini Vision AI Fallback — reads key from GEMINI_API_KEY env var (works on Render)
-        import urllib.request
-        import re
-
-        gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
-        if not gemini_key:
-            # Try obfuscated built-in key as last resort
-            try:
-                import base64 as _b64
-                gemini_key = _b64.b64decode('QVEuQWI0Uk40Smx0bTE2NmJsSG9nQ1RmVnlza09QaTYyYnZfQXVoWkxjandDWlRja21SaWc=').decode('utf-8')
-            except Exception:
-                pass
-
-        if gemini_key:
-            try:
-                vision_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
-                prompt_text = (
-                    "You are a waste classification AI for SmartTONG Selangor recycling bins. "
-                    "Analyse the image and classify the waste item into EXACTLY ONE of these categories: "
-                    "Cardboard, Glass, Metal, Paper, Plastic, Trash. "
-                    "Respond with valid JSON ONLY, no markdown, no explanation: "
-                    '{"class": "CATEGORY", "confidence": 87.3, "bin": "BIN_NAME", "color": "#HEX", "tip": "SHORT_TIP"}. '
-                    "Bin/color mapping: Cardboard=Blue Recycling Bin (Kertas/Kadbod)/#1976D2, "
-                    "Paper=Blue Recycling Bin (Kertas/Kadbod)/#1976D2, Glass=Brown Recycling Bin (Kaca)/#795548, "
-                    "Metal=Orange Recycling Bin (Logam)/#EF6C00, Plastic=Orange Recycling Bin (Plastik)/#FB8C00, "
-                    "Trash=Black Bin (Sisa Baki)/#424242."
-                )
-                payload = {
-                    "contents": [{
-                        "parts": [
-                            {"text": prompt_text},
-                            {"inlineData": {"mimeType": "image/jpeg", "data": img_b64}}
-                        ]
-                    }],
-                    "generationConfig": {"temperature": 0.1, "maxOutputTokens": 256}
-                }
-                req = urllib.request.Request(
-                    vision_url,
-                    data=json.dumps(payload).encode('utf-8'),
-                    headers={'Content-Type': 'application/json'}
-                )
-                with urllib.request.urlopen(req, timeout=20) as resp:
-                    res_data = json.loads(resp.read().decode('utf-8'))
-                    text = (res_data.get('candidates', [{}])[0]
-                            .get('content', {}).get('parts', [{}])[0].get('text', ''))
-                    json_match = re.search(r'\{[\s\S]*?\}', text)
-                    if json_match:
-                        parsed = json.loads(json_match.group(0))
-                        cat = parsed.get("class", "Trash")
-                        if cat not in BIN_MAP:
-                            cat = "Trash"
-                        return jsonify({
-                            "class": cat,
-                            "confidence": float(parsed.get("confidence", 85.0)),
-                            "bin": BIN_MAP[cat]["bin"],
-                            "color": BIN_MAP[cat]["color"],
-                            "tip": parsed.get("tip", BIN_MAP[cat]["tip"]),
-                            "source": "gemini-vision"
-                        })
-            except Exception as err:
-                print(f"[SmartTONG] Gemini Vision fallback error: {err}")
-
-        # 3. No model and no Gemini key — return explicit error so the client knows
         return jsonify({
-            "error": "AI model not loaded and no Gemini API key set. Set GEMINI_API_KEY env var on Render.",
+            "error": "Keras model not loaded. Please ensure best_model_finetuned224.keras is in SmartTONG-AI/models/",
             "model_loaded": False
         }), 503
 
