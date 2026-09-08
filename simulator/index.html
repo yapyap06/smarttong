@@ -706,13 +706,19 @@
       group.add(chamberMesh);
       binChambers[cfg.key] = chamberMesh;
 
-      // Internal Waste Level Block in each compartment
-      const initHeight = cfg.key === 'blue' ? 0.5 : (cfg.key === 'orange' ? 0.4 : (cfg.key === 'brown' ? 0.3 : 0.2));
-      const wasteFill = new THREE.Mesh(
-        new THREE.BoxGeometry(slotWidth - 0.1, initHeight, 1.05),
-        new THREE.MeshStandardMaterial({ color: cfg.hex, roughness: 0.6 })
-      );
-      wasteFill.position.set(0, 0.2 + (initHeight / 2), 0);
+      // Internal Waste Level Stack (Bottom-anchored at base plinth y = 0.15 for ALL 4 bins)
+      const wasteGeo = new THREE.BoxGeometry(slotWidth - 0.12, 1.0, 1.05);
+      wasteGeo.translate(0, 0.5, 0); // Shift pivot to bottom face so bottom never moves
+      const wasteMat = new THREE.MeshStandardMaterial({
+        color: cfg.hex,
+        roughness: 0.55,
+        metalness: 0.1
+      });
+      const wasteFill = new THREE.Mesh(wasteGeo, wasteMat);
+      wasteFill.position.set(0, 0.15, 0); // Identical baseline for orange, blue, brown, black
+
+      const initHeight = 0.28; // Uniform baseline height for all bins
+      wasteFill.scale.set(1, initHeight, 1);
       group.add(wasteFill);
       wasteLevels[cfg.key] = { mesh: wasteFill, height: initHeight };
 
@@ -815,6 +821,80 @@
       cyl2.position.set(0.06, 1.69, 0);
       group.add(cyl2);
     });
+
+    // ─── Upper Cabinet Enclosure (White walls behind and around intake flaps) ───
+    const chassisEnclosureMeshes = [];
+    const upperWallMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.35,
+      metalness: 0.08
+    });
+
+    // 1. Solid Back Wall behind intake flaps & internal mechanism
+    const backWall = new THREE.Mesh(
+      new THREE.BoxGeometry(3.88, 0.53, 0.06),
+      upperWallMat.clone()
+    );
+    backWall.position.set(0, 2.015, -0.59);
+    backWall.castShadow = true;
+    backWall.receiveShadow = true;
+    kiosk.add(backWall);
+    chassisEnclosureMeshes.push(backWall);
+
+    // 2. Left Side Outer Wall
+    const leftWall = new THREE.Mesh(
+      new THREE.BoxGeometry(0.06, 0.53, 1.22),
+      upperWallMat.clone()
+    );
+    leftWall.position.set(-1.92, 2.015, 0.01);
+    leftWall.castShadow = true;
+    leftWall.receiveShadow = true;
+    kiosk.add(leftWall);
+    chassisEnclosureMeshes.push(leftWall);
+
+    // 3. Right Side Outer Wall
+    const rightWall = new THREE.Mesh(
+      new THREE.BoxGeometry(0.06, 0.53, 1.22),
+      upperWallMat.clone()
+    );
+    rightWall.position.set(1.92, 2.015, 0.01);
+    rightWall.castShadow = true;
+    rightWall.receiveShadow = true;
+    kiosk.add(rightWall);
+    chassisEnclosureMeshes.push(rightWall);
+
+    // 4. Internal Partition Walls between the 4 intake compartments
+    [-0.95, 0, 0.95].forEach(posX => {
+      const divider = new THREE.Mesh(
+        new THREE.BoxGeometry(0.04, 0.53, 1.18),
+        upperWallMat.clone()
+      );
+      divider.position.set(posX, 2.015, -0.01);
+      divider.castShadow = true;
+      divider.receiveShadow = true;
+      kiosk.add(divider);
+      chassisEnclosureMeshes.push(divider);
+
+      // Front vertical mullion between flap frames
+      const mullion = new THREE.Mesh(
+        new THREE.BoxGeometry(0.04, 0.53, 0.06),
+        upperWallMat.clone()
+      );
+      mullion.position.set(posX, 2.015, 0.60);
+      mullion.castShadow = true;
+      kiosk.add(mullion);
+      chassisEnclosureMeshes.push(mullion);
+    });
+
+    // 5. Horizontal Shelf Divider (top of colored bins / floor of upper mechanism)
+    const midShelf = new THREE.Mesh(
+      new THREE.BoxGeometry(3.88, 0.04, 1.22),
+      upperWallMat.clone()
+    );
+    midShelf.position.set(0, 1.75, 0.01);
+    midShelf.receiveShadow = true;
+    kiosk.add(midShelf);
+    chassisEnclosureMeshes.push(midShelf);
 
     // ─── Green Top Header Strip (Matching user's sketch) ───
     const greenTopGeo = new THREE.BoxGeometry(3.9, 0.36, 1.25);
@@ -978,12 +1058,20 @@
         btn.innerHTML = '<span>🔍 Mod Litar: AKTIF (Tembus Pandang)</span>';
         greenTopMesh.material.transparent = true;
         greenTopMesh.material.opacity = 0.4;
+        chassisEnclosureMeshes.forEach(m => {
+          m.material.transparent = true;
+          m.material.opacity = 0.22;
+        });
         addLog('Mod X-Ray diaktifkan: Memaparkan pendawaian litar ESP32 &amp; motor servo.');
       } else {
         btn.classList.remove('active-xray');
         btn.innerHTML = '<span>🔍 Mod Litar &amp; Mekanikal (X-Ray)</span>';
         greenTopMesh.material.transparent = false;
         greenTopMesh.material.opacity = 1.0;
+        chassisEnclosureMeshes.forEach(m => {
+          m.material.transparent = false;
+          m.material.opacity = 1.0;
+        });
         addLog('Mod X-Ray dinyahaktifkan: Kembali ke pandangan fizikal pepejal.');
       }
     }
@@ -1066,13 +1154,13 @@
           requestAnimationFrame(stepThrow);
         } else {
           itemMesh.visible = false;
-          // Increase waste height in compartment
+          // Increase waste height in compartment (stacks up step by step from fixed floor)
           const waste = wasteLevels[slotKey];
           if (waste) {
-            waste.height = Math.min(1.3, waste.height + 0.09);
-            waste.mesh.scale.y = waste.height / 0.5;
-            waste.mesh.position.y = 0.2 + (waste.height / 2);
-            addLog(`Sensor ultrasonik mengesan pertambahan isipadu dalam slot ${slotKey.toUpperCase()}.`);
+            waste.height = Math.min(1.42, waste.height + 0.12);
+            waste.mesh.scale.y = waste.height; // Bottom is locked at floor, grows purely upward!
+            const pct = Math.min(100, Math.round((waste.height / 1.42) * 100));
+            addLog(`Sensor ultrasonik mengesan pertambahan isipadu dalam slot ${slotKey.toUpperCase()} (${pct}% penuh).`);
           }
         }
       }
