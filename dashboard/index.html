@@ -1099,9 +1099,14 @@
 
     /* ═══ MAP ════════════════════════════════════════════════ */
     #map {
-      height: 320px;
+      height: 380px;
       width: 100%;
       border-radius: var(--r);
+    }
+    @media (min-width: 768px) {
+      #map {
+        height: 440px;
+      }
     }
 
     .kdeb-truck-div-icon {
@@ -3156,7 +3161,12 @@
       document.getElementById('scroll').scrollTop = 0;
 
       if (pgId === 'pg-map' && !appMap) setTimeout(initMap, 100);
-      else if (pgId === 'pg-map' && appMap) appMap.invalidateSize();
+      else if (pgId === 'pg-map' && appMap) {
+        setTimeout(() => {
+          appMap.invalidateSize();
+          if (activeRouteLines.length) appMap.fitBounds(activeRouteLines[0].getBounds(), { padding: [40, 40] });
+        }, 120);
+      }
       if (pgId === 'pg-chat') initChat();
       if (voiceOn) speak(getTabVoice(pgId));
     }
@@ -3700,10 +3710,14 @@
 
       setTimeout(() => {
         if (appMap) {
-          appMap.fitBounds([[3.042, 101.512], [3.115, 101.645]], { padding: [24, 24] });
+          if (activeRouteLines.length) {
+            appMap.fitBounds(activeRouteLines[0].getBounds(), { padding: [40, 40] });
+          } else {
+            appMap.fitBounds([[3.040, 101.510], [3.118, 101.648]], { padding: [40, 40] });
+          }
           appMap.invalidateSize();
         }
-      }, 250);
+      }, 300);
     }
 
     function renderMarkers(filter = 'ALL') {
@@ -3852,27 +3866,27 @@
       // Layer 1: Clean outer casing (white halo for contrast against map roads)
       const casingLine = L.polyline(routeCoords, {
         color: '#ffffff',
-        weight: 7,
-        opacity: 0.95,
+        weight: 8.5,
+        opacity: 0.96,
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(appMap);
 
       // Layer 2: Main KDEB Emerald line
       const mainLine = L.polyline(routeCoords, {
-        color: '#15803d',
-        weight: 3.5,
-        opacity: 0.95,
+        color: '#16a34a',
+        weight: 4.5,
+        opacity: 0.96,
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(appMap);
 
       // Layer 3: Dashed accent pulse line
       const dashLine = L.polyline(routeCoords, {
-        color: '#86efac',
-        weight: 1.8,
-        opacity: 0.85,
-        dashArray: '8, 12',
+        color: '#bbf7d0',
+        weight: 2.2,
+        opacity: 0.88,
+        dashArray: '7, 11',
         lineCap: 'round',
         lineJoin: 'round'
       }).addTo(appMap);
