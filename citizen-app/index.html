@@ -3908,7 +3908,7 @@
             Imbas Seterusnya
           </button>
         </div>
-        <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Kategori Sisa (AI Classes)
+        <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Jenis Sisa
         </div>
         <div class="slot-guide">
           <div class="slot-card">
@@ -6318,7 +6318,7 @@ Penjimatan: 21.3km (31%)  RM 96 petrol | 4.2kg CO dikurangkan`;
         const c = data.color || 'var(--green)';
         lbl.textContent = data.class;
         lbl.style.color = c;
-        reason.textContent = `${getConfidenceLabel(data.confidence)} (${data.confidence}%) — ${data.tip || ''}`;
+        reason.textContent = `${getConfidenceLabel(data.confidence)} — ${data.tip || ''}`;
 
         slot.style.background = c.replace(')', ', 0.1)').replace('rgb', 'rgba').replace('#', 'rgba(') + (c.startsWith('#') ? '0,0,0,0.1)' : '');
         // basic css fallback for opacity 
@@ -6353,7 +6353,7 @@ Penjimatan: 21.3km (31%)  RM 96 petrol | 4.2kg CO dikurangkan`;
         openBtn.style.fontSize = '15px';
         openBtn.style.boxShadow = '0 4px 14px rgba(21,128,61,0.35)';
         const slotTitle = data.class ? `Slot ${data.class.toUpperCase()}` : 'Slot Kiosk';
-        openBtn.innerHTML = `🔓 Buka Pintu ${slotTitle} (+5 Mata)`;
+        openBtn.innerHTML = `Buka Pintu ${slotTitle} (+5 Mata)`;
       }
 
       act.style.display = 'block';
@@ -6420,10 +6420,10 @@ Penjimatan: 21.3km (31%)  RM 96 petrol | 4.2kg CO dikurangkan`;
 
       // 5. Update UI button
       if (btn) {
-        btn.style.background = '#15803d';
+        btn.style.background = '#808080';
         btn.style.color = '#ffffff';
         btn.style.border = '2px solid #14532d';
-        btn.innerHTML = '✅ Pintu Slot Terbuka! (+5 Mata Ditambah)';
+        btn.innerHTML = 'Pintu Slot Terbuka! (+5 Mata Ditambah)';
       }
     }
 

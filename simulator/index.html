@@ -1242,8 +1242,8 @@
           const waste = wasteLevels[slotKey];
           if (waste) {
             const maxH = 1.40;
-            // Each throw adds 0.35 height (25% per throw, 4 throws = 100%)
-            waste.height = Math.min(maxH, waste.height + 0.35);
+            // Each throw adds 0.14 height (10% per throw, thinner stack)
+            waste.height = Math.min(maxH, waste.height + 0.14);
             waste.mesh.visible = true;
             waste.mesh.scale.y = Math.max(0.001, waste.height); // Bottom is locked at floor, grows purely upward!
             const pct = Math.min(100, Math.round((waste.height / maxH) * 100));
