@@ -5528,12 +5528,20 @@ Jawapan standard: Maaf, saya hanya dilatih untuk menjawab soalan berkaitan pengu
       { name: 'Lim Wei Xian', zone: 'SS2 PJ', pts: 420 },
       { name: 'Nurul Fadhilah', zone: 'Shah Alam', pts: 398 },
     ];
-    const ADUANS = [
+    const STATIC_DEFAULT_ADUANS = [
       { id: 'A01', title: 'Tong B03 — Limpah Penuh', loc: 'Dataran Sunway, PJS 11', time: '9:42 PM', date: '21/07/2026', icon: 'alert-triangle', color: 'var(--red)', status: 'pending', desc: 'Tong melimpah teruk, sisa organik membusuk di luar.', photo: '' },
       { id: 'A02', title: 'Pembuangan Haram — Tayar Lama', loc: 'Jalan Industri USJ', time: '8:15 PM', date: '21/07/2026', icon: 'shield-alert', color: 'var(--orange)', status: 'pending', desc: 'Timbunan tayar terpakai dibuang di bahu jalan.', photo: '' },
       { id: 'A03', title: 'Tong B04 — Pecah / Rosak', loc: 'Taman Jaya Park, PJ', time: '7:30 PM', date: '20/07/2026', icon: 'wrench', color: 'var(--amber)', status: 'sah', desc: 'Penutup tong rosak dan engsel patah.', photo: '' },
       { id: 'A04', title: 'Jalan Berlubang', loc: 'Jalan SS19, Subang', time: '6:55 PM', date: '20/07/2026', icon: 'map-pin', color: 'var(--blue)', status: 'sah', desc: 'Lubang dalam membahayakan penunggang motosikal.', photo: '' },
     ];
+    let ADUANS = [...STATIC_DEFAULT_ADUANS];
+    try {
+      const cachedAduans = JSON.parse(localStorage.getItem('smarttong_cached_aduans') || '[]');
+      if (Array.isArray(cachedAduans) && cachedAduans.length > 0) {
+        const cachedIds = new Set(cachedAduans.map(a => a.id));
+        ADUANS = [...cachedAduans, ...STATIC_DEFAULT_ADUANS.filter(a => !cachedIds.has(a.id))];
+      }
+    } catch (e) { }
     const SCHEDULE = [
       { binId: 'B03', loc: 'Dataran Sunway', pri: 'KRITIKAL', eta: '14 min', cls: 'pc-red' },
       { binId: 'B01', loc: 'USJ 1', pri: 'TINGGI', eta: '38 min', cls: 'pc-amber' },
@@ -5815,6 +5823,7 @@ Jawapan standard: Maaf, saya hanya dilatih untuk menjawab soalan berkaitan pengu
 
     //  Data Init 
     function initData() {
+      initAduanSync();
       if (role === 'gov') {
         renderSchedule();
         renderAduanList();
@@ -6709,7 +6718,16 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
     function renderCitizenHistory() {
       const el = document.getElementById('citizen-hist-list'); if (!el) return;
       const key = getCitizenSessionKey();
-      const myAduans = ADUANS.filter(a => a.submittedBy === key);
+      let myIds = new Set();
+      try {
+        myIds = new Set(JSON.parse(localStorage.getItem('my_aduan_ids') || '[]'));
+      } catch (e) { }
+
+      const myAduans = ADUANS.filter(a =>
+        (a.submittedBy && a.submittedBy === key) ||
+        myIds.has(a.id) ||
+        myIds.has(a._docId)
+      );
 
       if (myAduans.length === 0) {
         el.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--g500);">
@@ -6940,17 +6958,83 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
       }).join('');
     }
 
+    let _aduanFirestoreUnsub = null;
+
+    function saveAduansToLocalStorage() {
+      try {
+        localStorage.setItem('smarttong_cached_aduans', JSON.stringify(ADUANS));
+      } catch (e) { }
+    }
+
+    function initAduanSync() {
+      if (_aduanFirestoreUnsub) return;
+      try {
+        _aduanFirestoreUnsub = db.collection('citizen_aduans')
+          .orderBy('createdAt', 'desc')
+          .limit(60)
+          .onSnapshot(snapshot => {
+            const liveDocs = snapshot.docs.map(doc => {
+              const d = doc.data();
+              return {
+                id: doc.id,
+                _docId: doc.id,
+                title: d.title || 'Aduan Warganegara',
+                loc: d.loc || 'Lokasi Awam',
+                time: d.time || '',
+                date: d.date || '',
+                icon: d.icon || (d.type === 'broken' ? 'wrench' : d.type === 'illegal' ? 'shield-alert' : d.type === 'pothole' ? 'map-pin' : 'alert-triangle'),
+                color: d.color || (d.type === 'broken' ? 'var(--amber)' : d.type === 'illegal' ? 'var(--orange)' : d.type === 'pothole' ? 'var(--blue)' : 'var(--green)'),
+                emoji: d.emoji || '📢',
+                type: d.type || 'medium',
+                status: d.status || 'pending',
+                desc: d.desc || '',
+                photo: d.photo || '',
+                submittedBy: d.submittedBy || '',
+                reviewedBy: d.reviewedBy || '',
+                reviewedAt: d.reviewedAt || '',
+                rejectReason: d.rejectReason || '',
+                _fromFirestore: true
+              };
+            });
+
+            // Keep static defaults for any that are not in Firestore
+            const liveDocIds = new Set(liveDocs.map(item => item.id));
+            const staticRemaining = STATIC_DEFAULT_ADUANS.filter(s => !liveDocIds.has(s.id));
+            ADUANS = [...liveDocs, ...staticRemaining];
+
+            saveAduansToLocalStorage();
+
+            // Refresh whichever views are active
+            renderAduanList();
+            renderCitizenHistory();
+          }, err => {
+            console.warn('[Aduan Sync Firestore]', err);
+          });
+      } catch (err) {
+        console.warn('[Aduan Sync Init]', err);
+      }
+    }
+
     function approveAduan(idx) {
       if (ADUANS[idx]) {
+        const item = ADUANS[idx];
         const reviewer = userName || 'Pegawai KDEBWM';
         const now = new Date().toLocaleString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        ADUANS[idx].status = 'sah';
-        ADUANS[idx].reviewedBy = reviewer;
-        ADUANS[idx].reviewedAt = now;
-        if (ADUANS[idx].submittedBy) {
+        item.status = 'sah';
+        item.reviewedBy = reviewer;
+        item.reviewedAt = now;
+        if (item.submittedBy) {
           myApprovedReports += 1;
           localStorage.setItem('myApprovedReports', myApprovedReports);
         }
+        if (item._fromFirestore || item._docId) {
+          db.collection('citizen_aduans').doc(item._docId || item.id).update({
+            status: 'sah',
+            reviewedBy: reviewer,
+            reviewedAt: now
+          }).catch(e => console.warn('[Approve Firestore]', e));
+        }
+        saveAduansToLocalStorage();
         updateCitizenUI();
         showToast('✅ Laporan aduan telah disahkan!');
         renderAduanList();
@@ -6972,18 +7056,28 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
     }
     function confirmRejectAduan() {
       if (_rejectIdx < 0 || !ADUANS[_rejectIdx]) return;
+      const item = ADUANS[_rejectIdx];
       const reason = document.getElementById('reject-reason-inp')?.value.trim() || '';
       const reviewer = userName || 'Pegawai KDEBWM';
       const now = new Date().toLocaleString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-      ADUANS[_rejectIdx].status = 'batal';
-      ADUANS[_rejectIdx].rejectReason = reason || 'Tiada sebab diberikan.';
-      ADUANS[_rejectIdx].reviewedBy = reviewer;
-      ADUANS[_rejectIdx].reviewedAt = now;
-      if (ADUANS[_rejectIdx].submittedBy) {
+      item.status = 'batal';
+      item.rejectReason = reason || 'Tiada sebab diberikan.';
+      item.reviewedBy = reviewer;
+      item.reviewedAt = now;
+      if (item.submittedBy) {
         myPoints = Math.max(0, myPoints - 10);
         localStorage.setItem('myPoints', myPoints);
         updateCitizenUI();
       }
+      if (item._fromFirestore || item._docId) {
+        db.collection('citizen_aduans').doc(item._docId || item.id).update({
+          status: 'batal',
+          rejectReason: item.rejectReason,
+          reviewedBy: reviewer,
+          reviewedAt: now
+        }).catch(e => console.warn('[Reject Firestore]', e));
+      }
+      saveAduansToLocalStorage();
       closeRejectModal();
       showToast('⚠️ Laporan aduan telah ditolak. (-10 mata)');
       renderAduanList();
@@ -7461,12 +7555,32 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
       const f = inp.files[0]; if (!f) return;
       const reader = new FileReader();
       reader.onload = function (e) {
-        currentPhotoData = e.target.result;
-        document.getElementById('r-prev').innerHTML = `
-      <div style="position:relative;margin-top:10px;display:inline-block;width:100%;">
-        <img src="${currentPhotoData}" onclick="openLightbox('${currentPhotoData}')" style="width:100%;border-radius:var(--rsm);max-height:180px;object-fit:cover;cursor:zoom-in;display:block;" alt="Foto laporan"/>
-        <button type="button" onclick="removeReportPhoto()" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(220,38,38,0.92);color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3);font-size:16px;font-weight:bold;line-height:1;" title="Padam Foto">&times;</button>
-      </div>`;
+        const img = new Image();
+        img.onload = function () {
+          const maxDim = 800;
+          let w = img.width, h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          currentPhotoData = canvas.toDataURL('image/jpeg', 0.75);
+          document.getElementById('r-prev').innerHTML = `
+        <div style="position:relative;margin-top:10px;display:inline-block;width:100%;">
+          <img src="${currentPhotoData}" onclick="openLightbox('${currentPhotoData}')" style="width:100%;border-radius:var(--rsm);max-height:180px;object-fit:cover;cursor:zoom-in;display:block;" alt="Foto laporan"/>
+          <button type="button" onclick="removeReportPhoto()" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(220,38,38,0.92);color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3);font-size:16px;font-weight:bold;line-height:1;" title="Padam Foto">&times;</button>
+        </div>`;
+        };
+        img.src = e.target.result;
       };
       reader.readAsDataURL(f);
     }
@@ -7492,8 +7606,10 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
       const dateStr = now.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' });
       const timeStr = now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
 
+      const tempId = 'A' + Date.now();
       const newAduan = {
-        id: 'A' + Date.now(),
+        id: tempId,
+        _docId: tempId,
         title: (rTypeNames[rType] || 'Aduan') + ' — ' + binId,
         loc: binId,
         time: timeStr,
@@ -7509,8 +7625,15 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
         timestamp: new Date().toISOString()
       };
 
-      // Save to local array
+      // Save to local array & localStorage immediately
       ADUANS.unshift(newAduan);
+      try {
+        const myIds = JSON.parse(localStorage.getItem('my_aduan_ids') || '[]');
+        myIds.push(tempId);
+        localStorage.setItem('my_aduan_ids', JSON.stringify(myIds));
+      } catch (e) { }
+      saveAduansToLocalStorage();
+
       mySubmittedReports += 1;
       localStorage.setItem('mySubmittedReports', mySubmittedReports);
       myPoints += 10;
@@ -7518,11 +7641,13 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
 
       // ── Save to Firebase Firestore (citizen_aduans collection) ──
       try {
-        await db.collection('citizen_aduans').add({
+        const docRef = await db.collection('citizen_aduans').add({
           title: newAduan.title,
           loc: newAduan.loc,
           time: newAduan.time,
           date: newAduan.date,
+          icon: newAduan.icon,
+          color: newAduan.color,
           type: newAduan.type,
           emoji: newAduan.emoji,
           status: 'pending',
@@ -7531,9 +7656,17 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
           submittedBy: sessionKey,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        newAduan.id = docRef.id;
+        newAduan._docId = docRef.id;
+        try {
+          const myIds = JSON.parse(localStorage.getItem('my_aduan_ids') || '[]');
+          myIds.push(docRef.id);
+          localStorage.setItem('my_aduan_ids', JSON.stringify(myIds));
+        } catch (e) { }
+        saveAduansToLocalStorage();
         showToast('✅ Laporan dihantar ke PBT! (+10 Mata)');
       } catch (err) {
-        console.warn('[Aduan Firebase]', err);
+        console.warn('[Aduan Firebase Error]', err);
         showToast('Laporan disimpan tempatan! (+10 Mata)');
       }
 
@@ -7882,6 +8015,7 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
 
     //  Init 
     window.addEventListener('load', async () => {
+      initAduanSync();
       // Restore preferences
       contrastOn = localStorage.getItem('contrast') === 'true';
       fontSize = parseInt(localStorage.getItem('fontSize') || '100');
