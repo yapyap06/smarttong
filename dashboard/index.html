@@ -4265,8 +4265,37 @@
 
     function filterDistrict2(q) { quickAsk(q); }
 
-    /* PREDICT_URL: the standalone prediction server (predict_server.py) */
+    /* PREDICT_URL & Hugging Face Spaces Keras Model Endpoints */
     const PREDICT_URL = 'http://127.0.0.1:7862/predict';
+    const HF_PREDICT_URL = 'https://ninjayy-smarttong-ai.hf.space/predict';
+
+    async function callPredictAPI(base64img) {
+      const endpoints = [
+        HF_PREDICT_URL,
+        PREDICT_URL
+      ];
+      // If running locally, prioritize local server
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        endpoints.reverse();
+      }
+      for (const ep of endpoints) {
+        try {
+          const resp = await fetch(ep, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64img }),
+            signal: AbortSignal.timeout(15000)
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data.class) return data;
+          }
+        } catch (e) {
+          console.warn(`[Predict] Endpoint ${ep} unavailable, trying fallback...`);
+        }
+      }
+      throw new Error('Semua pelayan model Keras luar talian');
+    }
 
     function getBotAnswer(q) {
       for (const e of BOT_KB) {
@@ -4509,21 +4538,15 @@
       video.style.display = 'none';
 
       try {
-        const resp = await fetch(PREDICT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64img })
-        });
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const result = await resp.json();
-        if (result.error) throw new Error(result.error);
+        const result = await callPredictAPI(base64img);
         showScanResult(result);
         uploadAndLogScan(base64img, result);
       } catch (err) {
         console.warn("Snap error:", err);
         document.getElementById('scan-result').style.display = 'block';
-        document.getElementById('scan-class').textContent = 'Ralat Pelayan';
+        document.getElementById('scan-class').textContent = 'Ralat Pelayan AI';
         document.getElementById('scan-class').style.color = 'var(--red)';
+        document.getElementById('scan-conf').textContent = 'Pelayan Keras di Hugging Face Space sedang bersedia atau luar talian.';
       } finally {
         snapBtn.style.display = 'none';
         const liveBtn = document.getElementById('scan-live-btn');
@@ -4581,26 +4604,15 @@
 
       try {
         const base64img = await fileToBase64(scanFile);
-        const resp = await fetch(PREDICT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64img })
-        });
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const result = await resp.json();
-        if (result.error) throw new Error(result.error);
+        const result = await callPredictAPI(base64img);
         showScanResult(result);
         uploadAndLogScan(base64img, result);
       } catch (err) {
         console.warn('[Scanner]', err.message);
         document.getElementById('scan-result').style.display = 'block';
-        document.getElementById('scan-class').textContent = 'Server Tidak Berjalan';
+        document.getElementById('scan-class').textContent = 'Ralat Pelayan AI';
         document.getElementById('scan-class').style.color = 'var(--red)';
-        document.getElementById('scan-conf').textContent = 'Buka terminal dalam folder SmartTONG-AI lalu jalankan:';
-        document.getElementById('scan-bin').innerHTML =
-          '<svg width="13" height="13" viewBox="0 0 24 24" style="stroke:var(--orange);fill:none;stroke-width:2;">' +
-          '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>' +
-          '<line x1="12" y1="16" x2="12.01" y2="16"/></svg> python predict_server.py';
+        document.getElementById('scan-conf').textContent = 'Pelayan Keras di Hugging Face Space sedang bersedia atau luar talian.';
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" style="stroke:white;fill:none;stroke-width:2;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Analisis AI';

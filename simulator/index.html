@@ -251,21 +251,29 @@
     /* Bottom Control Bar */
     .bottom-bar {
       position: absolute;
-      bottom: 18px;
+      bottom: 14px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 10px 16px;
+      border-radius: 16px;
+      padding: 9px 18px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      gap: 7px;
       box-shadow: 0 8px 26px rgba(0,0,0,0.08);
       backdrop-filter: blur(10px);
-      flex-wrap: wrap;
+    }
+
+    .bottom-bar-row {
+      display: flex;
+      align-items: center;
       justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .btn-tool {
@@ -317,7 +325,7 @@
 
     .orbit-tip {
       position: absolute;
-      bottom: 76px;
+      bottom: 98px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 5;
@@ -505,28 +513,30 @@
 
   <!-- Bottom Control Bar -->
   <div class="bottom-bar">
-    <button class="btn-tool" onclick="setCameraAngle('front')">Pandangan Hadapan</button>
-    <button class="btn-tool" onclick="setCameraAngle('top')">Pandangan Atas</button>
-    <button class="btn-tool" id="btn-xray" onclick="toggleXRay()">
-      <span>🔍 Mod Litar &amp; Mekanikal (X-Ray)</span>
-    </button>
+    <div class="bottom-bar-row">
+      <button class="btn-tool" onclick="setCameraAngle('front')">Pandangan Hadapan</button>
+      <button class="btn-tool" onclick="setCameraAngle('top')">Pandangan Atas</button>
+      <button class="btn-tool" id="btn-xray" onclick="toggleXRay()">
+        <span>🔍 Mod Litar &amp; Mekanikal (X-Ray)</span>
+      </button>
+    </div>
 
-    <div class="divider"></div>
-
-    <!-- Live 1-Click Simulation Buttons matching the 4 bins -->
-    <span style="font-size:11px;font-weight:700;color:#64748b;">Uji Imbasan:</span>
-    <button class="btn-demo btn-orange" onclick="triggerActuation('orange', 'Plastik / Logam', 'milo_tin')">
-      🥫 Plastic / Metal
-    </button>
-    <button class="btn-demo btn-blue" onclick="triggerActuation('blue', 'Kertas (Paper)', 'paper_sheet')">
-      📄 Paper
-    </button>
-    <button class="btn-demo btn-brown" onclick="triggerActuation('brown', 'Kaca (Glass)', 'glass_bottle')">
-      🍾 Glass
-    </button>
-    <button class="btn-demo btn-black" onclick="triggerActuation('black', 'Sisa Baki (General)', 'trash_bag')">
-      🗑️ General Waste
-    </button>
+    <!-- Live 1-Click Simulation Buttons matching the 4 bins (Downwards & Centralized) -->
+    <div class="bottom-bar-row">
+      <span style="font-size:11px;font-weight:700;color:#64748b;margin-right:2px;">Uji Imbasan:</span>
+      <button class="btn-demo btn-orange" onclick="triggerActuation('orange', 'Plastik / Logam', 'milo_tin')">
+        🥫 Plastic / Metal
+      </button>
+      <button class="btn-demo btn-blue" onclick="triggerActuation('blue', 'Kertas (Paper)', 'paper_sheet')">
+        📄 Paper
+      </button>
+      <button class="btn-demo btn-brown" onclick="triggerActuation('brown', 'Kaca (Glass)', 'glass_bottle')">
+        🍾 Glass
+      </button>
+      <button class="btn-demo btn-black" onclick="triggerActuation('black', 'Sisa Baki (General)', 'trash_bag')">
+        🗑️ General Waste
+      </button>
+    </div>
   </div>
 
   <!-- Audio Synthesis -->
