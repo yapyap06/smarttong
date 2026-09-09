@@ -452,6 +452,14 @@
             <div id="bar-black" style="height:100%;background:#18181b;border-radius:4px;width:0%;transition:width 0.5s;"></div>
           </div>
         </div>
+        <!-- Total Weight (Load Cell Sensor) -->
+        <div style="margin-top:6px;padding-top:6px;border-top:1px dashed #cbd5e1;display:flex;justify-content:space-between;align-items:center;">
+          <span style="color:#475569;font-weight:700;font-size:11px;display:flex;align-items:center;gap:4px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h18"/></svg>
+            Jumlah Berat Sisa:
+          </span>
+          <span id="fill-weight-total" style="font-weight:800;color:#16a34a;font-family:'JetBrains Mono';font-size:12px;">0.0 kg</span>
+        </div>
       </div>
       <!-- Full Alert Banner -->
       <div id="bin-full-alert" style="display:none;margin-top:10px;padding:8px 10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:11px;color:#dc2626;font-weight:700;">
@@ -1257,6 +1265,33 @@
       requestAnimationFrame(stepThrow);
     }
 
+    // Realistic weight per material (Option B):
+    // Plastik/Logam: 1.2 kg per 10% (0.12 kg/%)
+    // Kertas/Kadbod: 1.8 kg per 10% (0.18 kg/%)
+    // Kaca: 3.0 kg per 10% (0.30 kg/%)
+    // Sisa Baki: 2.2 kg per 10% (0.22 kg/%)
+    const WEIGHT_COEFFS = {
+      orange: 0.12, // Plastik/Logam
+      blue:   0.18, // Kertas/Kadbod
+      brown:  0.30, // Kaca
+      black:  0.22  // Sisa Baki
+    };
+
+    function getBinWeights(pcts) {
+      const weights = {};
+      let total = 0;
+      Object.keys(WEIGHT_COEFFS).forEach(key => {
+        const pct = pcts[key] || 0;
+        const w = parseFloat((pct * WEIGHT_COEFFS[key]).toFixed(1));
+        weights[key] = w;
+        total += w;
+      });
+      return {
+        bySlot: weights,
+        total: parseFloat(total.toFixed(1))
+      };
+    }
+
     // Compute fill percentages for all 4 compartments
     function getBinFillPcts() {
       const result = {};
@@ -1276,13 +1311,15 @@
     // Update the fill level UI bars in left panel
     function updateBinFillUI() {
       const pcts = getBinFillPcts();
+      const weights = getBinWeights(pcts);
       const colorMap = { orange: '#f59e0b', blue: '#0284c7', brown: '#854d0e', black: '#18181b' };
       let hasAlert = false;
       binConfigs.forEach(cfg => {
         const pct = pcts[cfg.key] || 0;
+        const w = weights.bySlot[cfg.key] || 0;
         const fillEl = document.getElementById(`fill-${cfg.key}`);
         const barEl = document.getElementById(`bar-${cfg.key}`);
-        if (fillEl) fillEl.textContent = pct + '%';
+        if (fillEl) fillEl.textContent = `${pct}% (${w.toFixed(1)} kg)`;
         if (barEl) {
           barEl.style.width = pct + '%';
           // Color: green < 70, yellow 70-89, red 90+
@@ -1290,33 +1327,49 @@
         }
         if (pct >= 95) hasAlert = true;
       });
+
+      const totalEl = document.getElementById('fill-weight-total');
+      if (totalEl) totalEl.textContent = weights.total.toFixed(1) + ' kg';
+
       const alertEl = document.getElementById('bin-full-alert');
       if (alertEl) alertEl.style.display = hasAlert ? 'block' : 'none';
       const syncLbl = document.getElementById('bin-sync-label');
       if (syncLbl) syncLbl.textContent = 'B01 · Dikemas kini';
     }
 
-    // Report bin fill levels to HF Space backend
+    // Report bin fill levels to HF Space backend & BroadcastChannel
     const HF_BIN_STATUS_URL = 'https://ninjayy-smarttong-ai.hf.space/bin-status';
     let lastBinReportTime = 0;
     async function reportBinStatusToCloud() {
       const now = Date.now();
-      if (now - lastBinReportTime < 800) return; // debounce
+      if (now - lastBinReportTime < 500) return; // debounce
       lastBinReportTime = now;
 
       const pcts = getBinFillPcts();
+      const weights = getBinWeights(pcts);
+
       const payload = {
         binId: 'B01',
         location: 'Persiaran Kewajipan, USJ 1',
+        total_weight: weights.total,
         compartments: {
-          orange: { name: 'Plastik/Logam', fill_pct: pcts.orange || 0, color: '#f59e0b' },
-          blue:   { name: 'Kertas/Kadbod', fill_pct: pcts.blue   || 0, color: '#0284c7' },
-          brown:  { name: 'Kaca',           fill_pct: pcts.brown  || 0, color: '#854d0e' },
-          black:  { name: 'Sisa Baki',      fill_pct: pcts.black  || 0, color: '#18181b' }
+          orange: { name: 'Plastik/Logam', fill_pct: pcts.orange || 0, weight: weights.bySlot.orange, color: '#f59e0b' },
+          blue:   { name: 'Kertas/Kadbod', fill_pct: pcts.blue   || 0, weight: weights.bySlot.blue,   color: '#0284c7' },
+          brown:  { name: 'Kaca',           fill_pct: pcts.brown  || 0, weight: weights.bySlot.brown,  color: '#854d0e' },
+          black:  { name: 'Sisa Baki',      fill_pct: pcts.black  || 0, weight: weights.bySlot.black,  color: '#18181b' }
         },
         timestamp: now
       };
 
+      // 1. Instant cross-tab broadcast (0ms latency to Dashboard PBT tab)
+      try {
+        if (typeof bc !== 'undefined') {
+          bc.postMessage({ type: 'BIN_STATUS', payload });
+        }
+        localStorage.setItem('smarttong_bin_status', JSON.stringify(payload));
+      } catch(e) {}
+
+      // 2. Cloud relay via HF Space backend
       try {
         const res = await fetch(HF_BIN_STATUS_URL, {
           method: 'POST',

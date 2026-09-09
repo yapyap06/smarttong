@@ -3114,12 +3114,15 @@
 
     /* ── Live simulation ──────────────────────────────────────── */
     function liveSim() {
-      bins = bins.map(b => ({
-        ...b,
-        fill: Math.min(100, Math.max(5, b.fill + (Math.random() * 3 - .7))),
-        gas: Math.max(0, b.gas + Math.round(Math.random() * 20 - 8)),
-        moist: Math.min(100, Math.max(5, b.moist + (Math.random() * 2 - .5))),
-      }));
+      bins = bins.map(b => {
+        if (b.id === 'B01') return b; // B01 is live-synchronized with 3D digital twin kiosk
+        return {
+          ...b,
+          fill: Math.min(100, Math.max(5, b.fill + (Math.random() * 3 - .7))),
+          gas: Math.max(0, b.gas + Math.round(Math.random() * 20 - 8)),
+          moist: Math.min(100, Math.max(5, b.moist + (Math.random() * 2 - .5))),
+        };
+      });
       renderDispatchGrid();
       renderMapBinList();
       if (appMap) renderMarkers();
@@ -3135,17 +3138,57 @@
       document.getElementById('k-saved').textContent = 'RM ' + saved;
     }
 
-    /* ── Live B01 Bin Monitor (Real-Time PBT Alert) ─────────────── */
+    /* ── Live B01 Bin Monitor (Real-Time PBT Alert & Weight Sync) ── */
     const HF_BIN_STATUS_URL = 'https://ninjayy-smarttong-ai.hf.space/bin-status';
     let lastB01Status = null;
     let b01AlertShown = false;
 
     function initLiveBinMonitor() {
-      // Poll every 3 seconds
+      // 1. Instant cross-tab sync via BroadcastChannel (0ms latency from Simulator)
+      try {
+        const syncBc = new BroadcastChannel('smarttong_channel');
+        syncBc.onmessage = (e) => {
+          if (e.data && e.data.type === 'BIN_STATUS' && e.data.payload) {
+            updateB01AlertUI(e.data.payload);
+          } else if (e.data && (e.data.type === 'BIN_RESET' || e.data.type === 'RESET_B01')) {
+            const b01 = bins.find(b => b.id === 'B01');
+            if (b01) {
+              b01.fill = 0;
+              b01.weight = 0.0;
+              b01.status = 'NORMAL';
+              renderDispatchGrid();
+              renderMapBinList();
+              if (appMap) renderMarkers();
+            }
+          }
+        };
+      } catch(e) {}
+
+      // Cross-tab Storage event fallback
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'smarttong_bin_status' && e.newValue) {
+          try {
+            const payload = JSON.parse(e.newValue);
+            updateB01AlertUI(payload);
+          } catch(err) {}
+        } else if (e.key === 'smarttong_bin_reset') {
+          const b01 = bins.find(b => b.id === 'B01');
+          if (b01) {
+            b01.fill = 0;
+            b01.weight = 0.0;
+            b01.status = 'NORMAL';
+            renderDispatchGrid();
+            renderMapBinList();
+            if (appMap) renderMarkers();
+          }
+        }
+      });
+
+      // 2. Poll every 3 seconds
       pollBinStatus();
       setInterval(pollBinStatus, 3000);
 
-      // Also try SSE for zero-latency push
+      // 3. SSE for zero-latency push from Cloud
       try {
         const es = new EventSource(HF_BIN_STATUS_URL + '/stream');
         es.onmessage = (event) => {
@@ -3183,18 +3226,29 @@
       const alertSlots = (status.alert_slots || []);
       const hasAlert = status.alert === true || alertSlots.length > 0;
 
+      // Realistic material weight calculations (Option B):
+      // Plastik/Logam: 0.12 kg/%, Kertas: 0.18 kg/%, Kaca: 0.30 kg/%, Sisa Baki: 0.22 kg/%
+      const orangePct = (comps.orange && comps.orange.fill_pct) || 0;
+      const bluePct = (comps.blue && comps.blue.fill_pct) || 0;
+      const brownPct = (comps.brown && comps.brown.fill_pct) || 0;
+      const blackPct = (comps.black && comps.black.fill_pct) || 0;
+
+      const calcWeight = parseFloat(((orangePct * 0.12) + (bluePct * 0.18) + (brownPct * 0.30) + (blackPct * 0.22)).toFixed(1));
+      const liveTotalWeight = (status.total_weight !== undefined && status.total_weight !== null) ? status.total_weight : calcWeight;
+
       // Update compartment grid inside the alert banner
       const grid = document.getElementById('b01-comp-grid');
       if (grid) {
         const slotDefs = [
-          { key: 'orange', label: 'Plastik & Logam', color: '#15803d' },
-          { key: 'blue',   label: 'Kertas & Kadbod', color: '#0284c7' },
-          { key: 'brown',  label: 'Kaca',           color: '#854d0e' },
-          { key: 'black',  label: 'Sisa Baki',      color: '#334155' }
+          { key: 'orange', label: 'Plastik & Logam', color: '#15803d', rate: 0.12 },
+          { key: 'blue',   label: 'Kertas & Kadbod', color: '#0284c7', rate: 0.18 },
+          { key: 'brown',  label: 'Kaca',           color: '#854d0e', rate: 0.30 },
+          { key: 'black',  label: 'Sisa Baki',      color: '#334155', rate: 0.22 }
         ];
         grid.innerHTML = slotDefs.map(s => {
           const info = comps[s.key] || {};
           const pct = Math.round(info.fill_pct || 0);
+          const slotKg = (info.weight !== undefined && info.weight !== null) ? Number(info.weight).toFixed(1) : (pct * s.rate).toFixed(1);
           const isCrit = pct >= 95;
           const barColor = isCrit ? '#dc2626' : pct >= 70 ? '#f59e0b' : '#15803d';
           return `<div class="muji-comp-item ${isCrit ? 'is-crit' : ''}">
@@ -3203,13 +3257,34 @@
                 <span class="muji-comp-dot" style="background:${s.color};"></span>
                 ${s.label}
               </span>
-              <span class="muji-comp-pct" style="color:${isCrit ? '#dc2626' : '#1e293b'}">${pct}%</span>
+              <span class="muji-comp-pct" style="color:${isCrit ? '#dc2626' : '#1e293b'}">${pct}% (${slotKg} kg)</span>
             </div>
             <div class="muji-comp-bar">
               <div class="muji-comp-fill" style="width:${pct}%;background:${barColor};"></div>
             </div>
           </div>`;
         }).join('');
+      }
+
+      // Always update live B01 state in bins list
+      const b01 = bins.find(b => b.id === 'B01');
+      if (b01) {
+        const allPcts = Object.values(comps).map(c => c.fill_pct || 0);
+        const maxPct = allPcts.length > 0 ? Math.max(...allPcts) : 0;
+        b01.fill = hasAlert ? Math.max(95, maxPct) : maxPct;
+        b01.weight = liveTotalWeight;
+        b01.hz = false;
+        b01.wtype = 'Pelbagai (Kitar Semula)';
+        if (hasAlert) {
+          b01.hrsLeft = 0.3;
+          b01.status = 'CRITICAL';
+        } else {
+          b01.status = maxPct >= 85 ? 'CRITICAL' : maxPct >= 60 ? 'WARNING' : 'NORMAL';
+          b01.hrsLeft = null;
+        }
+        renderDispatchGrid();
+        renderMapBinList();
+        if (appMap) renderMarkers();
       }
 
       if (hasAlert) {
@@ -3221,52 +3296,24 @@
           const critSlotNames = alertSlots.map(s => slotNames[s] || s.toUpperCase()).join(', ');
           const now = new Date();
           const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-          sub.textContent = `Tong B01 · Slot kritikal: ${critSlotNames} — Kemas kini: ${timeStr}`;
-        }
-
-        // ── Promote B01 to KRITIKAL in dispatch grid ──
-        const b01 = bins.find(b => b.id === 'B01');
-        if (b01) {
-          const allPcts = Object.values(comps).map(c => c.fill_pct || 0);
-          const maxPct = Math.max(...allPcts);
-          b01.fill = Math.max(95, maxPct);
-          b01.hz = false;
-          b01.wtype = 'Pelbagai (Kitar Semula)';
-          b01.hrsLeft = 0.3;
-          b01.status = 'CRITICAL';
+          sub.textContent = `Tong B01 · Slot kritikal: ${critSlotNames} · Jumlah Berat: ${liveTotalWeight.toFixed(1)} kg — Kemas kini: ${timeStr}`;
         }
 
         // ── Toast + KPI (only once per new alert) ──
         if (!b01AlertShown) {
           b01AlertShown = true;
           showToast('AMARAN: Tong B01 hampir penuh. Sila hantar truk.', 'tr');
-          renderDispatchGrid();
-          renderMapBinList();
-          if (appMap) renderMarkers();
           const kCrit = document.getElementById('k-crit');
           if (kCrit) {
             const curr = parseInt(kCrit.textContent) || 0;
             kCrit.textContent = curr + 1;
           }
         }
-
       } else {
         // Alert cleared (e.g. after truck dispatch or normal level)
         if (b01AlertShown) {
           b01AlertShown = false;
           banner.style.display = 'none';
-        }
-        // Sync B01 fill in dispatch grid to actual live max compartment percentage
-        const b01 = bins.find(b => b.id === 'B01');
-        if (b01) {
-          const allPcts = Object.values(comps).map(c => c.fill_pct || 0);
-          const maxPct = allPcts.length > 0 ? Math.max(...allPcts) : 0;
-          b01.fill = maxPct;
-          b01.status = maxPct >= 85 ? 'CRITICAL' : maxPct >= 60 ? 'WARNING' : 'NORMAL';
-          b01.hrsLeft = null;
-          renderDispatchGrid();
-          renderMapBinList();
-          if (appMap) renderMarkers();
         }
       }
     }
@@ -3297,15 +3344,22 @@
         console.warn('[B01 Reset] Network error, resetting locally only:', e);
       }
 
-      // 3. Update local bins state to 0%
+      // 3. Update local bins state to 0% and 0.0 kg
       const b01 = bins.find(b => b.id === 'B01');
-      if (b01) { b01.status = 'NORMAL'; b01.fill = 0; b01.hrsLeft = null; }
+      if (b01) {
+        b01.status = 'NORMAL';
+        b01.fill = 0;
+        b01.weight = 0.0;
+        b01.hrsLeft = null;
+      }
 
       // Also reset lastB01Status compartments locally
       if (lastB01Status && lastB01Status.compartments) {
         Object.keys(lastB01Status.compartments).forEach(k => {
           lastB01Status.compartments[k].fill_pct = 0;
+          lastB01Status.compartments[k].weight = 0;
         });
+        lastB01Status.total_weight = 0.0;
         lastB01Status.alert = false;
         lastB01Status.alert_slots = [];
       }
