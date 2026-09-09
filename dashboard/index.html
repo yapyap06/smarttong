@@ -2278,92 +2278,98 @@
     <!-- SCROLL AREA -->
     <div class="scroll" id="scroll">
 
-      <!-- ─── GOV: TAB 1 — AI DISPATCH ──────────────────── -->
+      <!-- ─── GOV / CITIZEN: TAB 1 — HOME / DISPATCH ─────── -->
       <div class="pg on" id="pg-home">
-        <div class="ph">
-          <div>
-            <div class="ph-title" id="home-title">AI Logistik Dispatch</div>
-            <div class="ph-sub" id="home-sub">Penjadualan automatik KDEBWM · Selangor</div>
-          </div>
-        </div>
-
-        <!-- 4 KPI Cards at Top (Muji Green & White Simplicity) -->
-        <div class="muji-krow">
-          <div class="muji-kcard">
-            <div class="muji-ki">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <!-- Gov Home Content (AI Logistik Dispatch) -->
+        <div id="gov-home-view">
+          <div class="ph">
+            <div>
+              <div class="ph-title" id="home-title">AI Logistik Dispatch</div>
+              <div class="ph-sub" id="home-sub">Penjadualan automatik KDEBWM · Selangor</div>
             </div>
-            <div class="kn" id="k-crit">0</div>
-            <div class="kl">Tong Kritikal</div>
-            <div class="ks">≥85% kapasiti</div>
           </div>
 
-          <div class="muji-kcard">
-            <div class="muji-ki">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <!-- 4 KPI Cards at Top (Muji Green & White Simplicity) -->
+          <div class="muji-krow">
+            <div class="muji-kcard">
+              <div class="muji-ki">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div class="kn" id="k-crit">0</div>
+              <div class="kl">Tong Kritikal</div>
+              <div class="ks">≥85% kapasiti</div>
             </div>
-            <div class="kn" id="k-trucks">3</div>
-            <div class="kl">Truk Sedia</div>
-            <div class="ks">Sedia beroperasi</div>
+
+            <div class="muji-kcard">
+              <div class="muji-ki">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              </div>
+              <div class="kn" id="k-trucks">3</div>
+              <div class="kl">Truk Sedia</div>
+              <div class="ks">Sedia beroperasi</div>
+            </div>
+
+            <div class="muji-kcard">
+              <div class="muji-ki">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div class="kn" id="k-saved">RM 336</div>
+              <div class="kl">Bahan API Jimat</div>
+              <div class="ks">Minggu ini</div>
+            </div>
+
+            <div class="muji-kcard">
+              <div class="muji-ki">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              </div>
+              <div class="kn" id="k-recycle">38.1%</div>
+              <div class="kl">Kadar Kitar Semula</div>
+              <div class="ks">+7.1% vs baseline</div>
+            </div>
           </div>
 
-          <div class="muji-kcard">
-            <div class="muji-ki">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div class="kn" id="k-saved">RM 336</div>
-            <div class="kl">Bahan API Jimat</div>
-            <div class="ks">Minggu ini</div>
+          <!-- Section: Tong Mengikut Keutamaan -->
+          <div class="muji-section-header">
+            <span class="muji-section-title">Tong Mengikut Keutamaan</span>
+            <span class="muji-section-sub">5 Unit Aktif · Selangor</span>
           </div>
 
-          <div class="muji-kcard">
-            <div class="muji-ki">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            </div>
-            <div class="kn" id="k-recycle">38.1%</div>
-            <div class="kl">Kadar Kitar Semula</div>
-            <div class="ks">+7.1% vs baseline</div>
-          </div>
-        </div>
-
-        <!-- Section: Tong Mengikut Keutamaan -->
-        <div class="muji-section-header">
-          <span class="muji-section-title">Tong Mengikut Keutamaan</span>
-          <span class="muji-section-sub">5 Unit Aktif · Selangor</span>
-        </div>
-
-        <!-- Real-Time B01 Alert Card (Moved inside Tong Mengikut Keutamaan at the top) -->
-        <div id="b01-alert-banner" class="muji-alert-card" style="display:none;">
-          <div class="muji-alert-header">
-            <div class="muji-alert-tag">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <span>MAKLUMAN KRITIKAL · TONG B01 PENUH</span>
-            </div>
-            <button onclick="document.getElementById('b01-alert-banner').style.display='none'" class="muji-alert-close" aria-label="Tutup">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-
-          <div class="muji-alert-body">
-            <div class="muji-alert-loc" id="b01-alert-sub">Tong B01 · Persiaran Kewajipan, USJ 1 · Memerlukan pengosongan segera</div>
-            <div class="muji-comp-grid" id="b01-comp-grid">
-              <!-- Populated dynamically by updateB01AlertUI -->
-            </div>
-            <div class="muji-alert-actions">
-              <button class="muji-btn muji-btn-primary" onclick="dispatchB01Truck()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                Hantar Truk ke B01
-              </button>
-              <button class="muji-btn muji-btn-secondary" onclick="showToast('Notifikasi telah dihantar kepada pegawai bertugas.','ty')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                Notifikasi Pegawai
+          <!-- Real-Time B01 Alert Card (Inside Tong Mengikut Keutamaan at the top) -->
+          <div id="b01-alert-banner" class="muji-alert-card" style="display:none;">
+            <div class="muji-alert-header">
+              <div class="muji-alert-tag">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>MAKLUMAN KRITIKAL · TONG B01 PENUH</span>
+              </div>
+              <button onclick="document.getElementById('b01-alert-banner').style.display='none'" class="muji-alert-close" aria-label="Tutup">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
+
+            <div class="muji-alert-body">
+              <div class="muji-alert-loc" id="b01-alert-sub">Tong B01 · Persiaran Kewajipan, USJ 1 · Memerlukan pengosongan segera</div>
+              <div class="muji-comp-grid" id="b01-comp-grid">
+                <!-- Populated dynamically by updateB01AlertUI -->
+              </div>
+              <div class="muji-alert-actions">
+                <button class="muji-btn muji-btn-primary" onclick="dispatchB01Truck()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                  Hantar Truk ke B01
+                </button>
+                <button class="muji-btn muji-btn-secondary" onclick="showToast('Notifikasi telah dihantar kepada pegawai bertugas.','ty')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  Notifikasi Pegawai
+                </button>
+              </div>
+            </div>
           </div>
+
+          <!-- Dispatch grid (Bins B01 - B05) -->
+          <div id="dispatch-grid" style="margin:0 14px 20px;"></div>
         </div>
 
-        <!-- Dispatch grid (Bins B01 - B05) -->
-        <div id="dispatch-grid" style="margin:0 14px 20px;"></div>
+        <!-- Citizen Home Content (Rendered dynamically when logged in as citizen) -->
+        <div id="citizen-home-view" style="display:none;"></div>
       </div>
 
       <!-- ─── TAB 2: MAP ──────────────────────────────────── -->
@@ -3009,29 +3015,46 @@
     /* ── Nav setup per role ─────────────────────────────────── */
     function setupNavForRole() {
       const bnav = document.getElementById('bnav');
+      const overrideBtn = document.getElementById('override-btn');
+      const nbScan = document.getElementById('nb-scan');
+      const nblTab2 = document.getElementById('nbl-tab2');
+      const niTab2 = document.getElementById('ni-tab2');
+      const nblTab3 = document.getElementById('nbl-tab3');
+      const niTab3 = document.getElementById('ni-tab3');
+      const nblTab4 = document.getElementById('nbl-tab4');
+      const niTab4 = document.getElementById('ni-tab4');
+      const nblHome = document.getElementById('nbl-home');
+      const govView = document.getElementById('gov-home-view');
+      const citizenView = document.getElementById('citizen-home-view');
+
       if (role === 'gov') {
-        bnav.classList.remove('citizen-nav');
-        // Gov nav icons (already set as Lucide SVGs for map, aduan, lestari)
-        document.getElementById('nbl-tab2').textContent = 'Peta';
-        document.getElementById('ni-tab2').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>';
-        document.getElementById('nbl-tab3').textContent = 'Aduan';
-        document.getElementById('ni-tab3').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
-        document.getElementById('nbl-tab4').textContent = 'Lestari';
-        document.getElementById('ni-tab4').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
-        document.getElementById('nbl-home').textContent = 'Dispatch';
-        document.getElementById('override-btn').style.display = 'flex';
-        document.getElementById('nb-scan').style.display = 'none';
+        if (bnav) bnav.classList.remove('citizen-nav');
+        if (nblTab2) nblTab2.textContent = 'Peta';
+        if (niTab2) niTab2.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>';
+        if (nblTab3) nblTab3.textContent = 'Aduan';
+        if (niTab3) niTab3.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
+        if (nblTab4) nblTab4.textContent = 'Lestari';
+        if (niTab4) niTab4.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+        if (nblHome) nblHome.textContent = 'Dispatch';
+        if (overrideBtn) overrideBtn.style.display = 'flex';
+        if (nbScan) nbScan.style.display = 'none';
+        if (govView) govView.style.display = 'block';
+        if (citizenView) citizenView.style.display = 'none';
+        renderDispatchGrid();
+        updateGovKPIs();
       } else {
-        bnav.classList.add('citizen-nav');
-        document.getElementById('nbl-tab2').textContent = 'SilaTanya';
-        document.getElementById('ni-tab2').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
-        document.getElementById('nbl-tab3').textContent = 'Aduan';
-        document.getElementById('ni-tab3').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
-        document.getElementById('nbl-tab4').textContent = 'OKU';
-        document.getElementById('ni-tab4').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>';
-        document.getElementById('nbl-home').textContent = 'Utama';
-        document.getElementById('override-btn').style.display = 'none';
-        document.getElementById('nb-scan').style.display = 'flex';
+        if (bnav) bnav.classList.add('citizen-nav');
+        if (nblTab2) nblTab2.textContent = 'SilaTanya';
+        if (niTab2) niTab2.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+        if (nblTab3) nblTab3.textContent = 'Aduan';
+        if (niTab3) niTab3.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+        if (nblTab4) nblTab4.textContent = 'OKU';
+        if (niTab4) niTab4.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>';
+        if (nblHome) nblHome.textContent = 'Utama';
+        if (overrideBtn) overrideBtn.style.display = 'none';
+        if (nbScan) nbScan.style.display = 'flex';
+        if (govView) govView.style.display = 'none';
+        if (citizenView) citizenView.style.display = 'block';
         renderCitizenHome();
       }
     }
@@ -3076,6 +3099,17 @@
       setInterval(liveSim, 8000);
       // Start real-time B01 bin level monitoring (PBT only)
       if (role === 'gov') initLiveBinMonitor();
+    }
+
+    // Pre-populate dispatch grid immediately so DOM is never blank
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        renderDispatchGrid();
+        updateGovKPIs();
+      });
+    } else {
+      renderDispatchGrid();
+      updateGovKPIs();
     }
 
     /* ── Live simulation ──────────────────────────────────────── */
@@ -3370,7 +3404,7 @@
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h18"/></svg>
               Berat Sisa
             </div>
-            <div class="muji-tele-val">${b.weight.toFixed(1)} kg</div>
+            <div class="muji-tele-val">${(b.weight != null ? b.weight : 0).toFixed(1)} kg</div>
           </div>
           <div class="muji-tele-item">
             <div class="muji-tele-label">
@@ -3723,13 +3757,13 @@
 
     /* ── Citizen Home ──────────────────────────────────────────── */
     function renderCitizenHome() {
-      const pg = document.getElementById('pg-home');
-      if (!pg || role !== 'citizen') return;
+      const citizenView = document.getElementById('citizen-home-view');
+      if (!citizenView || role !== 'citizen') return;
       const pct = Math.min(100, Math.round(myPts / 500 * 100));
       const tier = myPts >= 1000 ? '🦅 Wira Selangor' : myPts >= 500 ? '🏆 Juara Kebersihan' : '🌿 Pejuang Kebersihan';
       const next = myPts >= 1000 ? 'Tahniah — tahap tertinggi!' : myPts >= 500 ? `${1000 - myPts} mata lagi untuk Wira Selangor` : `${500 - myPts} mata lagi untuk Juara Kebersihan`;
 
-      pg.innerHTML = `
+      citizenView.innerHTML = `
     <div class="eco-hero au">
       <div class="eco-lbl">Mata Eco Anda</div>
       <div class="eco-pts">${myPts}</div>
