@@ -379,8 +379,16 @@
     }
 
     @keyframes alertPulse {
-      0%, 100% { box-shadow: 0 4px 16px rgba(220,38,38,0.18); }
-      50% { box-shadow: 0 4px 28px rgba(220,38,38,0.45); border-color: #f87171; }
+
+      0%,
+      100% {
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.18);
+      }
+
+      50% {
+        box-shadow: 0 4px 28px rgba(220, 38, 38, 0.45);
+        border-color: #f87171;
+      }
     }
 
     .hdr-btn {
@@ -1103,6 +1111,7 @@
       width: 100%;
       border-radius: var(--r);
     }
+
     @media (min-width: 768px) {
       #map {
         height: 440px;
@@ -1135,8 +1144,15 @@
     }
 
     @keyframes radarWave {
-      0% { transform: scale(0.5); opacity: 0.95; }
-      100% { transform: scale(2.1); opacity: 0; }
+      0% {
+        transform: scale(0.5);
+        opacity: 0.95;
+      }
+
+      100% {
+        transform: scale(2.1);
+        opacity: 0;
+      }
     }
 
     .truck-vehicle {
@@ -1146,7 +1162,7 @@
       align-items: center;
       justify-content: center;
       transition: transform 0.4s ease;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
       cursor: pointer;
     }
 
@@ -1163,7 +1179,7 @@
       font-weight: 700;
       color: #15803d;
       white-space: nowrap;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.14);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.14);
       display: flex;
       align-items: center;
       gap: 5px;
@@ -1180,8 +1196,17 @@
     }
 
     @keyframes truckDotBlink {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.3; transform: scale(0.7); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.3;
+        transform: scale(0.7);
+      }
     }
 
     .leaflet-popup-content-wrapper {
@@ -1320,6 +1345,7 @@
       gap: 10px;
       padding: 0 14px 16px;
     }
+
     @media (min-width: 640px) {
       .muji-krow {
         grid-template-columns: repeat(4, 1fr);
@@ -1336,10 +1362,12 @@
       justify-content: space-between;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
+
     .muji-kcard:hover {
       border-color: #cbd5e1;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
     }
+
     .muji-ki {
       width: 32px;
       height: 32px;
@@ -1351,6 +1379,7 @@
       justify-content: center;
       margin-bottom: 10px;
     }
+
     .muji-kcard .kn {
       font-size: 22px;
       font-weight: 800;
@@ -1360,6 +1389,7 @@
       margin-bottom: 4px;
       font-family: 'JetBrains Mono', monospace;
     }
+
     .muji-kcard .kl {
       font-size: 11px;
       font-weight: 700;
@@ -1367,6 +1397,7 @@
       letter-spacing: 0.3px;
       text-transform: none;
     }
+
     .muji-kcard .ks {
       font-size: 11px;
       color: #94a3b8;
@@ -1379,12 +1410,14 @@
       align-items: baseline;
       justify-content: space-between;
     }
+
     .muji-section-title {
       font-size: 13px;
       font-weight: 800;
       color: #0f172a;
       letter-spacing: -0.2px;
     }
+
     .muji-section-sub {
       font-size: 11px;
       color: #64748b;
@@ -1401,6 +1434,7 @@
       box-shadow: 0 2px 10px rgba(220, 38, 38, 0.08);
       animation: alertPulse 2s infinite;
     }
+
     .muji-alert-header {
       padding: 11px 16px;
       background: #fef2f2;
@@ -1409,6 +1443,7 @@
       align-items: center;
       justify-content: space-between;
     }
+
     .muji-alert-tag {
       display: flex;
       align-items: center;
@@ -1418,6 +1453,7 @@
       color: #991b1b;
       letter-spacing: 0.4px;
     }
+
     .muji-alert-close {
       background: transparent;
       border: none;
@@ -1428,39 +1464,47 @@
       align-items: center;
       border-radius: 4px;
     }
+
     .muji-alert-close:hover {
       background: rgba(153, 27, 27, 0.08);
     }
+
     .muji-alert-body {
       padding: 14px 16px;
     }
+
     .muji-alert-loc {
       font-size: 12px;
       color: #475569;
       margin-bottom: 12px;
       font-weight: 500;
     }
+
     .muji-comp-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
       margin-bottom: 14px;
     }
+
     @media (max-width: 480px) {
       .muji-comp-grid {
         grid-template-columns: 1fr;
       }
     }
+
     .muji-comp-item {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       padding: 8px 10px;
     }
+
     .muji-comp-item.is-crit {
       background: #fef2f2;
       border-color: #fecaca;
     }
+
     .muji-comp-header {
       display: flex;
       align-items: center;
@@ -1468,6 +1512,7 @@
       margin-bottom: 5px;
       font-size: 11px;
     }
+
     .muji-comp-name {
       font-weight: 600;
       color: #334155;
@@ -1475,26 +1520,31 @@
       align-items: center;
       gap: 6px;
     }
+
     .muji-comp-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
     }
+
     .muji-comp-pct {
       font-weight: 800;
       font-family: 'JetBrains Mono', monospace;
     }
+
     .muji-comp-bar {
       height: 5px;
       background: #e2e8f0;
       border-radius: 3px;
       overflow: hidden;
     }
+
     .muji-comp-fill {
       height: 100%;
       border-radius: 3px;
       transition: width 0.5s;
     }
+
     .muji-alert-actions {
       display: flex;
       gap: 8px;
@@ -1508,19 +1558,23 @@
       border-radius: 12px;
       overflow: hidden;
       margin-bottom: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
       transition: border-color 0.2s, box-shadow 0.2s;
     }
+
     .muji-bin-card:hover {
       border-color: #cbd5e1;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
     }
+
     .muji-bin-card.is-critical {
       border-left: 4px solid #dc2626;
     }
+
     .muji-bin-card.is-warning {
       border-left: 4px solid #f59e0b;
     }
+
     .muji-bin-card.is-normal {
       border-left: 4px solid #16a34a;
     }
@@ -1529,17 +1583,20 @@
       padding: 13px 16px;
       cursor: pointer;
     }
+
     .muji-header-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 6px;
     }
+
     .muji-bin-tag {
       display: inline-flex;
       align-items: center;
       gap: 8px;
     }
+
     .muji-bin-id {
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
@@ -1550,11 +1607,13 @@
       border-radius: 6px;
       border: 1px solid #e2e8f0;
     }
+
     .muji-bin-zone {
       font-size: 11px;
       color: #64748b;
       font-weight: 500;
     }
+
     .muji-status-pill {
       display: inline-flex;
       align-items: center;
@@ -1564,26 +1623,31 @@
       font-size: 11px;
       font-weight: 700;
     }
+
     .muji-status-pill.is-critical {
       background: #fef2f2;
       color: #dc2626;
       border: 1px solid #fee2e2;
     }
+
     .muji-status-pill.is-warning {
       background: #fffbeb;
       color: #b45309;
       border: 1px solid #fef3c7;
     }
+
     .muji-status-pill.is-normal {
       background: #f0fdf4;
       color: #15803d;
       border: 1px solid #dcfce7;
     }
+
     .muji-status-pill.is-hazard {
       background: #faf5ff;
       color: #7e22ce;
       border: 1px solid #f3e8ff;
     }
+
     .muji-status-dot {
       width: 6px;
       height: 6px;
@@ -1597,11 +1661,13 @@
       color: #1e293b;
       margin-bottom: 10px;
     }
+
     .muji-meter-row {
       display: flex;
       align-items: center;
       gap: 10px;
     }
+
     .muji-meter-bar {
       flex: 1;
       height: 6px;
@@ -1609,11 +1675,13 @@
       border-radius: 3px;
       overflow: hidden;
     }
+
     .muji-meter-fill {
       height: 100%;
       border-radius: 3px;
       transition: width 0.4s ease;
     }
+
     .muji-meter-val {
       font-size: 12px;
       font-weight: 800;
@@ -1629,23 +1697,27 @@
       background: #fafcfb;
       border-top: 1px solid #edf2f0;
     }
+
     .muji-telemetry-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       margin-bottom: 14px;
     }
+
     @media (max-width: 580px) {
       .muji-telemetry-grid {
         grid-template-columns: repeat(2, 1fr);
       }
     }
+
     .muji-tele-item {
       background: #ffffff;
       border: 1px solid #eef2f0;
       border-radius: 8px;
       padding: 8px 10px;
     }
+
     .muji-tele-label {
       font-size: 10px;
       font-weight: 600;
@@ -1655,10 +1727,12 @@
       gap: 5px;
       margin-bottom: 3px;
     }
+
     .muji-tele-label svg {
       color: #15803d;
       flex-shrink: 0;
     }
+
     .muji-tele-val {
       font-size: 12px;
       font-weight: 700;
@@ -1671,6 +1745,7 @@
       gap: 8px;
       flex-wrap: wrap;
     }
+
     .muji-btn {
       display: inline-flex;
       align-items: center;
@@ -1682,19 +1757,23 @@
       cursor: pointer;
       transition: all 0.15s ease;
     }
+
     .muji-btn-primary {
       background: #15803d;
       color: #ffffff;
       border: 1px solid #14532d;
     }
+
     .muji-btn-primary:hover {
       background: #166534;
     }
+
     .muji-btn-secondary {
       background: #ffffff;
       color: #334155;
       border: 1px solid #cbd5e1;
     }
+
     .muji-btn-secondary:hover {
       background: #f8fafc;
       border-color: #94a3b8;
@@ -2349,7 +2428,9 @@
         <span class="hdr-title">SmartTong</span>
       </div>
       <div class="hdr-right">
-        <a href="/simulator" target="_blank" class="hdr-btn" style="text-decoration:none;font-size:11px;font-weight:700;padding:4px 10px;width:auto;border-radius:6px;background:rgba(46,160,67,0.15);border:1px solid rgba(46,160,67,0.3);color:#2ea043;display:inline-flex;align-items:center;gap:4px;" title="Buka Simulator Digital Twin">🎮 Simulator Kiosk</a>
+        <a href="/simulator" target="_blank" class="hdr-btn"
+          style="text-decoration:none;font-size:11px;font-weight:700;padding:4px 10px;width:auto;border-radius:6px;background:rgba(46,160,67,0.15);border:1px solid rgba(46,160,67,0.3);color:#2ea043;display:inline-flex;align-items:center;gap:4px;"
+          title="Buka Simulator Digital Twin">🎮 Simulator Kiosk</a>
         <div class="rbadge">
           <div class="live-dot"></div><span id="rl">PBT</span>
         </div>
@@ -2370,7 +2451,8 @@
               <div class="ph-sub" id="home-sub">Penjadualan automatik KDEBWM · Selangor</div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <a href="/simulator" target="_blank" class="btn bo bsm" style="text-decoration:none;font-size:11px;" title="Buka Simulator Digital Twin SmartTong">🎮 Buka Simulator Kiosk</a>
+              <a href="/simulator" target="_blank" class="btn bo bsm" style="text-decoration:none;font-size:11px;"
+                title="Buka Simulator Digital Twin SmartTong">🎮 Buka Simulator Kiosk</a>
               <button class="btn bo bsm" onclick="overrideDispatch()">⚡ Override Semua</button>
             </div>
           </div>
@@ -2404,28 +2486,36 @@
           </div>
 
           <!-- ── Real-Time B01 Live Alert Banner (hidden by default, shown when 95%+ full) ── -->
-          <div id="b01-alert-banner" style="display:none;margin:0 14px 10px;border-radius:12px;overflow:hidden;border:2px solid #fca5a5;box-shadow:0 4px 16px rgba(220,38,38,0.18);animation:alertPulse 2s infinite;">
-            <div style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:12px 16px;display:flex;align-items:flex-start;gap:10px;">
+          <div id="b01-alert-banner"
+            style="display:none;margin:0 14px 10px;border-radius:12px;overflow:hidden;border:2px solid #fca5a5;box-shadow:0 4px 16px rgba(220,38,38,0.18);animation:alertPulse 2s infinite;">
+            <div
+              style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:12px 16px;display:flex;align-items:flex-start;gap:10px;">
               <div style="font-size:22px;flex-shrink:0;">🚨</div>
               <div style="flex:1;">
-                <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;">AMARAN MASA NYATA — TONG B01 HAMPIR PENUH</div>
-                <div style="font-size:11px;color:#fecaca;" id="b01-alert-sub">Isyarat diterima daripada Simulator Kiosk B01...</div>
+                <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;">AMARAN MASA NYATA — TONG B01
+                  HAMPIR PENUH</div>
+                <div style="font-size:11px;color:#fecaca;" id="b01-alert-sub">Isyarat diterima daripada Simulator Kiosk
+                  B01...</div>
               </div>
-              <button onclick="document.getElementById('b01-alert-banner').style.display='none'" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-weight:700;">Tutup</button>
+              <button onclick="document.getElementById('b01-alert-banner').style.display='none'"
+                style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-weight:700;">Tutup</button>
             </div>
             <!-- Compartment fill bars -->
             <div style="background:#fef2f2;padding:12px 16px;" id="b01-alert-detail">
-              <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
+              <div
+                style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
                 📡 Tong B01 · Persiaran Kewajipan, USJ 1 · Masa Nyata
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="b01-comp-grid">
                 <!-- Populated by JS -->
               </div>
               <div style="margin-top:10px;display:flex;gap:8px;">
-                <button onclick="dispatchB01Truck()" style="flex:1;background:#dc2626;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+                <button onclick="dispatchB01Truck()"
+                  style="flex:1;background:#dc2626;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
                   🚛 Hantar Truk ke B01 Segera
                 </button>
-                <button onclick="showToast('Notifikasi telah dihantar kepada pegawai bertugas.','ty')" style="background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;">
+                <button onclick="showToast('Notifikasi telah dihantar kepada pegawai bertugas.','ty')"
+                  style="background:#fff;color:#374151;border:1px solid #d1d5db;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;">
                   Notifikasi Pegawai
                 </button>
               </div>
@@ -3169,13 +3259,18 @@
     function initApp() {
       renderDispatchGrid();
       renderMapBinList();
-      renderAduanList();
+      if (role === 'gov') {
+        startAduanListener(); // Real-time Firestore listener for citizen_aduans
+      } else {
+        renderAduanList(); // Citizen just sees local list
+      }
       renderChampions();
       if (role === 'citizen') renderCitizenHome();
       setInterval(liveSim, 8000);
       // Start real-time B01 bin level monitoring (PBT only)
       if (role === 'gov') initLiveBinMonitor();
     }
+
 
     // Pre-populate dispatch grid immediately so DOM is never blank
     if (document.readyState === 'loading') {
@@ -3238,7 +3333,7 @@
             }
           }
         };
-      } catch(e) {}
+      } catch (e) { }
 
       // Cross-tab Storage event fallback
       window.addEventListener('storage', (e) => {
@@ -3246,7 +3341,7 @@
           try {
             const payload = JSON.parse(e.newValue);
             updateB01AlertUI(payload);
-          } catch(err) {}
+          } catch (err) { }
         } else if (e.key === 'smarttong_bin_reset') {
           const b01 = bins.find(b => b.id === 'B01');
           if (b01) {
@@ -3275,10 +3370,10 @@
             } else if (data && data.bin_status) {
               updateB01AlertUI(data.bin_status);
             }
-          } catch(e) {}
+          } catch (e) { }
         };
-        es.onerror = () => {};
-      } catch(e) {}
+        es.onerror = () => { };
+      } catch (e) { }
     }
 
     async function pollBinStatus() {
@@ -3290,7 +3385,7 @@
             updateB01AlertUI(data);
           }
         }
-      } catch(e) {}
+      } catch (e) { }
     }
 
     function updateB01AlertUI(status) {
@@ -3317,9 +3412,9 @@
       if (grid) {
         const slotDefs = [
           { key: 'orange', label: 'Plastik & Logam', color: '#15803d', rate: 0.12 },
-          { key: 'blue',   label: 'Kertas & Kadbod', color: '#0284c7', rate: 0.18 },
-          { key: 'brown',  label: 'Kaca',           color: '#854d0e', rate: 0.30 },
-          { key: 'black',  label: 'Sisa Baki',      color: '#334155', rate: 0.22 }
+          { key: 'blue', label: 'Kertas & Kadbod', color: '#0284c7', rate: 0.18 },
+          { key: 'brown', label: 'Kaca', color: '#854d0e', rate: 0.30 },
+          { key: 'black', label: 'Sisa Baki', color: '#334155', rate: 0.22 }
         ];
         grid.innerHTML = slotDefs.map(s => {
           const info = comps[s.key] || {};
@@ -3371,7 +3466,7 @@
           const slotNames = { orange: 'Plastik/Logam', blue: 'Kertas/Kadbod', brown: 'Kaca', black: 'Sisa Baki' };
           const critSlotNames = alertSlots.map(s => slotNames[s] || s.toUpperCase()).join(', ');
           const now = new Date();
-          const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+          const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
           sub.textContent = `Tong B01 · Slot kritikal: ${critSlotNames} · Jumlah Berat: ${liveTotalWeight.toFixed(1)} kg — Kemas kini: ${timeStr}`;
         }
 
@@ -3403,7 +3498,7 @@
         const bc = new BroadcastChannel('smarttong_channel');
         bc.postMessage({ type: 'BIN_RESET', binId: 'B01', timestamp: Date.now() });
         localStorage.setItem('smarttong_bin_reset', Date.now().toString());
-      } catch(e) {}
+      } catch (e) { }
 
       // 2. POST /bin-reset to HF Space → clears simulator waste levels & cloud backend
       try {
@@ -3416,7 +3511,7 @@
           const d = await res.json();
           console.log('[B01 Reset] Truck dispatched, simulator notified:', d.reset_id);
         }
-      } catch(e) {
+      } catch (e) {
         console.warn('[B01 Reset] Network error, resetting locally only:', e);
       }
 
@@ -3459,11 +3554,11 @@
     function dispatchColor(b) {
       return b.hz ? 'var(--purple)' : b.fill >= 85 ? 'var(--red)' : b.fill >= 60 ? 'var(--yellow-dark)' : 'var(--green)';
     }
-    function dispatchClass(b) { 
-      return b.hz || b.fill >= 85 ? 'critical' : b.fill >= 60 ? 'warning' : 'normal'; 
+    function dispatchClass(b) {
+      return b.hz || b.fill >= 85 ? 'critical' : b.fill >= 60 ? 'warning' : 'normal';
     }
-    function dispatchLabel(b) { 
-      return b.hz ? '☣️ KRITIKAL — Berbahaya' : b.fill >= 85 ? '🔴 KRITIKAL — Perlu Kosong Segera' : b.fill >= 60 ? '🟡 AMARAN — Hampir Penuh' : '🟢 NORMAL'; 
+    function dispatchLabel(b) {
+      return b.hz ? '☣️ KRITIKAL — Berbahaya' : b.fill >= 85 ? '🔴 KRITIKAL — Perlu Kosong Segera' : b.fill >= 60 ? '🟡 AMARAN — Hampir Penuh' : '🟢 NORMAL';
     }
 
     function renderDispatchGrid() {
@@ -3924,10 +4019,10 @@
         const chip = b.hz
           ? `<span class="chip cp"><span style="width:6px;height:6px;border-radius:50%;background:#9333ea;display:inline-block;margin-right:4px;"></span>Berbahaya</span>`
           : b.fill >= 85
-          ? `<span class="chip cr"><span style="width:6px;height:6px;border-radius:50%;background:#dc2626;display:inline-block;margin-right:4px;"></span>Kritikal</span>`
-          : b.fill >= 60
-          ? `<span class="chip cy"><span style="width:6px;height:6px;border-radius:50%;background:#d97706;display:inline-block;margin-right:4px;"></span>Amaran</span>`
-          : `<span class="chip cg"><span style="width:6px;height:6px;border-radius:50%;background:#16a34a;display:inline-block;margin-right:4px;"></span>Normal</span>`;
+            ? `<span class="chip cr"><span style="width:6px;height:6px;border-radius:50%;background:#dc2626;display:inline-block;margin-right:4px;"></span>Kritikal</span>`
+            : b.fill >= 60
+              ? `<span class="chip cy"><span style="width:6px;height:6px;border-radius:50%;background:#d97706;display:inline-block;margin-right:4px;"></span>Amaran</span>`
+              : `<span class="chip cg"><span style="width:6px;height:6px;border-radius:50%;background:#16a34a;display:inline-block;margin-right:4px;"></span>Normal</span>`;
         return `<div class="card" style="cursor:pointer;" onclick="openPopup('${b.id}')"><div class="cb" style="padding:13px 15px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;"><div><div style="font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-bottom:2px;">${b.id} · ${b.zone}</div><div style="font-size:13px;font-weight:700;">${b.name}</div></div>${chip}</div><div style="display:flex;align-items:center;gap:10px;"><div class="fb" style="flex:1;"><div class="fbi" style="width:${Math.round(b.fill)}%;background:${c};"></div></div><span style="font-size:12px;font-weight:800;color:${c};font-family:'JetBrains Mono',monospace;">${Math.round(b.fill)}%</span></div></div></div>`;
       }).join('');
     }
@@ -3937,51 +4032,130 @@
       if (m && appMap) { m.openPopup(); swTab('tab2'); }
     }
 
-    /* ── Aduan Hub (Gov) ──────────────────────────────────────── */
-    function renderAduanList() {
+    /* ── Aduan Hub (Gov) — Live from Firebase Firestore ──────── */
+    let _aduanUnsubscribe = null;
+    let _firestoreAduans = []; // Live citizen reports from Firestore
+
+    function renderAduanFromFirestore(docs) {
       const el = document.getElementById('aduan-list');
       if (!el) return;
+      if (!window.ADUAN_STATES) window.ADUAN_STATES = {};
 
-      // Custom local state check for aduans status
-      if (!window.ADUAN_STATES) {
-        window.ADUAN_STATES = {};
+      // Combine Firestore docs with local hardcoded ADUANS (for demo fallback)
+      const allAduans = [...docs];
+
+      if (allAduans.length === 0) {
+        el.innerHTML = `<div style="text-align:center;padding:32px 16px;color:var(--muted);">
+          <div style="font-size:32px;margin-bottom:8px;">📭</div>
+          <div style="font-weight:600;">Tiada aduan baharu</div>
+          <div style="font-size:12px;margin-top:4px;">Aduan warganegara akan muncul di sini secara masa nyata.</div>
+        </div>`;
+        return;
       }
 
-      el.innerHTML = ADUANS.map((a, idx) => {
-        const isDispatched = window.ADUAN_STATES[idx] === 'dispatched';
-        const cardStyle = isDispatched ? 'opacity: 0.65; border-left: 4px solid var(--green);' : '';
+      el.innerHTML = allAduans.map((a, idx) => {
+        const docId = a._docId || idx;
+        const isDispatched = window.ADUAN_STATES[docId] === 'dispatched' || a.status === 'dispatched';
+        const cardStyle = isDispatched ? 'opacity:0.68;border-left:4px solid var(--green);' : a.type === 'critical' ? 'border-left:4px solid var(--red);' : a.type === 'high' ? 'border-left:4px solid var(--orange);' : '';
         const btnText = isDispatched ? '✅ Dispatched (En Route)' : '🚛 Dispatch Compactor';
-        const statusText = isDispatched ? '<div style="color:var(--green);font-weight:800;font-size:11px;margin-top:4px;">Status: Truk dihantar (ETA 15m)</div>' : '';
+        const statusText = isDispatched ? `<div style="color:var(--green);font-weight:800;font-size:11px;margin-top:4px;">✅ Truk dihantar (ETA 15 min)</div>` : '';
+        const badgeColor = a.type === 'critical' ? '#e53e3e' : a.type === 'high' ? '#dd6b20' : '#718096';
+        const badgeLabel = a.type === 'critical' ? 'KRITIKAL' : a.type === 'high' ? 'TINGGI' : 'SEDERHANA';
+        const photoHtml = a.photo ? `<img src="${a.photo}" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;margin-top:6px;" alt="Foto aduan"/>` : '';
+        const descHtml = a.desc ? `<div style="font-size:11px;color:var(--g600);margin-top:4px;font-style:italic;">"${a.desc}"</div>` : '';
+        const dateHtml = a.date ? `<span style="font-size:10px;color:var(--g400);">${a.date} ${a.time}</span>` : `<span style="font-size:10px;color:var(--g400);">${a.time}</span>`;
+        const fromCitizen = a._fromFirestore ? `<span style="font-size:10px;background:#ebf8ff;color:#2b6cb0;padding:2px 6px;border-radius:99px;margin-left:4px;">🔴 Live</span>` : '';
 
         return `
     <div class="aduan-item" style="${cardStyle}">
-      <div class="aduan-img">${a.emoji}</div>
+      <div class="aduan-img">${a.emoji || '📢'}</div>
       <div class="aduan-content">
-        <div class="aduan-title">${a.title}</div>
+        <div class="aduan-title">${a.title} <span style="background:${badgeColor};color:white;font-size:9px;padding:2px 5px;border-radius:4px;">${badgeLabel}</span>${fromCitizen}</div>
         <div class="aduan-loc">📍 ${a.loc}</div>
+        ${descHtml}
+        ${photoHtml}
         ${statusText}
         <div class="aduan-actions" style="margin-top:6px;">
-          <button class="btn br bsm" onclick="dispatchAduan(this, ${idx})" ${isDispatched ? 'disabled' : ''}>${btnText}</button>
-          <button class="btn bo bsm" onclick="showToast('🔧 Dijadualkan penyelenggaraan.','');" ${isDispatched ? 'disabled' : ''}>🔧 Penyelenggaraan</button>
+          <button class="btn br bsm" onclick="dispatchAduan(this,'${docId}')" ${isDispatched ? 'disabled' : ''}>${btnText}</button>
+          <button class="btn bo bsm" onclick="markAduanSelesai('${docId}')" ${isDispatched ? 'disabled' : ''}>✅ Tandakan Selesai</button>
         </div>
-        <div class="aduan-time">${a.time}</div>
+        <div class="aduan-time" style="margin-top:4px;">${dateHtml}</div>
       </div>
     </div>`;
       }).join('');
     }
 
-    function dispatchAduan(btn, idx) {
-      if (!window.ADUAN_STATES) window.ADUAN_STATES = {};
-      window.ADUAN_STATES[idx] = 'dispatched';
+    function renderAduanList() {
+      // Render from cached Firestore data + static ADUANS
+      const staticMapped = ADUANS.map((a, idx) => ({
+        ...a, _docId: 'static_' + idx, _fromFirestore: false
+      }));
+      const combined = [..._firestoreAduans, ...staticMapped];
+      renderAduanFromFirestore(combined);
+    }
 
+    function startAduanListener() {
+      if (_aduanUnsubscribe) _aduanUnsubscribe(); // unsubscribe previous listener
+      try {
+        _aduanUnsubscribe = db.collection('citizen_aduans')
+          .orderBy('createdAt', 'desc')
+          .limit(50)
+          .onSnapshot(snapshot => {
+            _firestoreAduans = snapshot.docs.map(doc => ({
+              ...doc.data(),
+              _docId: doc.id,
+              _fromFirestore: true
+            }));
+            renderAduanList();
+            // Show badge if on other tab
+            const badge = document.getElementById('aduan-badge');
+            if (badge) {
+              const pending = _firestoreAduans.filter(a => a.status === 'pending').length;
+              badge.textContent = pending > 0 ? pending : '';
+              badge.style.display = pending > 0 ? 'flex' : 'none';
+            }
+          }, err => {
+            console.warn('[Aduan Firestore]', err);
+            renderAduanList(); // fallback to static
+          });
+      } catch (e) {
+        console.warn('[Aduan Listener]', e);
+        renderAduanList();
+      }
+    }
+
+    function dispatchAduan(btn, docId) {
+      if (!window.ADUAN_STATES) window.ADUAN_STATES = {};
+      window.ADUAN_STATES[docId] = 'dispatched';
       btn.textContent = '⏳ Dihantar...';
       btn.disabled = true;
 
-      setTimeout(() => {
-        showToast('🚛 Compactor/Truk sampah berjaya dihantar ke aduan!', 'tg');
-        renderAduanList();
-      }, 1000);
+      // Update Firestore if it's a real doc
+      if (!String(docId).startsWith('static_')) {
+        db.collection('citizen_aduans').doc(docId).update({ status: 'dispatched' })
+          .then(() => { showToast('🚛 Compactor berjaya dihantar ke lokasi aduan!', 'tg'); renderAduanList(); })
+          .catch(() => { showToast('🚛 Compactor dihantar (offline mode)!', 'tg'); renderAduanList(); });
+      } else {
+        setTimeout(() => {
+          showToast('🚛 Compactor/Truk sampah berjaya dihantar ke aduan!', 'tg');
+          renderAduanList();
+        }, 1000);
+      }
     }
+
+    function markAduanSelesai(docId) {
+      if (!String(docId).startsWith('static_')) {
+        db.collection('citizen_aduans').doc(docId).update({ status: 'selesai' })
+          .then(() => showToast('✅ Aduan ditanda selesai.', 'tg'))
+          .catch(() => showToast('✅ Status dikemas kini (offline).'));
+      } else {
+        showToast('✅ Aduan ditanda selesai.');
+      }
+      if (!window.ADUAN_STATES) window.ADUAN_STATES = {};
+      window.ADUAN_STATES[docId] = 'dispatched';
+      renderAduanList();
+    }
+
 
     /* ── Champions (Gov Lestari) ─────────────────────────────── */
     function renderChampions() {
@@ -4168,7 +4342,7 @@
         if (!resp.ok) throw new Error('API error');
         const data = await resp.json();
         typing.remove();
-        
+
         if (data.reply) {
           addBotMsg(data.reply);
         } else {

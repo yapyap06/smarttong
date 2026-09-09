@@ -4617,26 +4617,8 @@
           <button class="aduan-tab-btn on" id="tab-aduan-new" onclick="switchAduanTab('new')">Hantar Aduan</button>
           <button class="aduan-tab-btn" id="tab-aduan-hist" onclick="switchAduanTab('hist')">Sejarah Aduan</button>
         </div>
-
         <!-- TAB 1: New Report -->
         <div id="aduan-tab-new">
-          <!-- QR Scanner Card -->
-          <div
-            style="margin:0 20px 14px; background:var(--white); border:1px solid var(--g200); border-radius:var(--rlg); padding:18px; text-align:center; box-shadow:var(--sh-sm);">
-            <div
-              style="width:44px;height:44px;border-radius:12px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" style="width:22px;height:22px;">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <polyline points="21 15 16 10 5 21" />
-              </svg>
-            </div>
-            <div style="font-weight:700;font-size:14px;margin-bottom:4px;">Imbas QR Tong</div>
-            <div style="font-size:11px;color:var(--g500);margin-bottom:12px;">Imbas kod QR pada tong untuk mengisi ID
-              automatik</div>
-            <button class="btn-primary" style="width:100%;padding:10px;" onclick="mockQR()">Imbas Kod QR Tong</button>
-          </div>
 
           <!-- Form Card -->
           <div
@@ -7495,13 +7477,14 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
       const prev = document.getElementById('r-prev');
       if (prev) prev.innerHTML = '';
     }
-    function submitRep() {
+    async function submitRep() {
       const binId = document.getElementById('r-binid')?.value.trim() || 'Lokasi Awam';
       const desc = document.getElementById('r-desc')?.value.trim() || 'Laporan daripada warganegara';
 
       const rTypeNames = { overflow: 'Tong Penuh', illegal: 'Buang Haram', broken: 'Tong Rosak', pothole: 'Jalan Berlubang' };
       const rTypeColors = { overflow: 'var(--green)', illegal: 'var(--orange)', broken: 'var(--amber)', pothole: 'var(--blue)' };
       const rTypeIcons = { overflow: 'alert-triangle', illegal: 'shield-alert', broken: 'wrench', pothole: 'map-pin' };
+      const rTypeEmoji = { overflow: '🔴', illegal: '🚫', broken: '🔧', pothole: '🕳️' };
 
       const sessionKey = getCitizenSessionKey();
 
@@ -7510,26 +7493,50 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
       const timeStr = now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
 
       const newAduan = {
-        id: 'A' + (ADUANS.length + 1),
+        id: 'A' + Date.now(),
         title: (rTypeNames[rType] || 'Aduan') + ' — ' + binId,
         loc: binId,
         time: timeStr,
         date: dateStr,
         icon: rTypeIcons[rType] || 'flag',
         color: rTypeColors[rType] || 'var(--green)',
+        emoji: rTypeEmoji[rType] || '📢',
+        type: rType === 'overflow' ? 'critical' : rType === 'illegal' ? 'high' : 'medium',
         status: 'pending',
         desc: desc,
         photo: currentPhotoData || '',
-        submittedBy: sessionKey
+        submittedBy: sessionKey,
+        timestamp: new Date().toISOString()
       };
 
+      // Save to local array
       ADUANS.unshift(newAduan);
       mySubmittedReports += 1;
       localStorage.setItem('mySubmittedReports', mySubmittedReports);
       myPoints += 10;
       updateCitizenUI();
 
-      showToast('Laporan dihantar! (+10 Mata) — Menunggu Pengesahan');
+      // ── Save to Firebase Firestore (citizen_aduans collection) ──
+      try {
+        await db.collection('citizen_aduans').add({
+          title: newAduan.title,
+          loc: newAduan.loc,
+          time: newAduan.time,
+          date: newAduan.date,
+          type: newAduan.type,
+          emoji: newAduan.emoji,
+          status: 'pending',
+          desc: newAduan.desc,
+          photo: newAduan.photo,
+          submittedBy: sessionKey,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showToast('✅ Laporan dihantar ke PBT! (+10 Mata)');
+      } catch (err) {
+        console.warn('[Aduan Firebase]', err);
+        showToast('Laporan disimpan tempatan! (+10 Mata)');
+      }
+
       if (document.getElementById('r-binid')) document.getElementById('r-binid').value = '';
       if (document.getElementById('r-desc')) document.getElementById('r-desc').value = '';
       if (document.getElementById('r-prev')) document.getElementById('r-prev').innerHTML = '';
