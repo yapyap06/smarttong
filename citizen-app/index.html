@@ -5623,7 +5623,7 @@ Penjimatan: 21.3km (31%)  RM 96 petrol | 4.2kg CO dikurangkan`;
     function initGovMap() {
       if (govMap) return;
       govMap = L.map('gov-map', { zoomControl: false }).setView([3.075, 101.58], 12);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '©CartoDB', maxZoom: 19 }).addTo(govMap);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 }).addTo(govMap);
       renderGovMarkers();
     }
     function renderGovMarkers(filter = 'ALL') {
@@ -5673,7 +5673,7 @@ Penjimatan: 21.3km (31%)  RM 96 petrol | 4.2kg CO dikurangkan`;
     function initCitizenMap() {
       if (citizenMap) return;
       citizenMap = L.map('citizen-map', { zoomControl: false }).setView([3.0738, 101.5183], 13);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '©CartoDB', maxZoom: 19 }).addTo(citizenMap);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 }).addTo(citizenMap);
       BINS.forEach(b => {
         const c = binColor(b);
         L.circleMarker([b.lat, b.lng], { radius: 13, fillColor: c, color: 'white', weight: 2.5, fillOpacity: .9 }).addTo(citizenMap)

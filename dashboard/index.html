@@ -1099,7 +1099,84 @@
 
     /* ═══ MAP ════════════════════════════════════════════════ */
     #map {
-      height: 270px;
+      height: 320px;
+      width: 100%;
+      border-radius: var(--r);
+    }
+
+    .kdeb-truck-div-icon {
+      background: transparent !important;
+      border: none !important;
+    }
+
+    .truck-marker-wrap {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .truck-radar-ring {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(22, 163, 74, 0.22);
+      border: 1.5px solid rgba(22, 163, 74, 0.5);
+      animation: radarWave 2.2s infinite ease-out;
+      pointer-events: none;
+    }
+
+    @keyframes radarWave {
+      0% { transform: scale(0.5); opacity: 0.95; }
+      100% { transform: scale(2.1); opacity: 0; }
+    }
+
+    .truck-vehicle {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.4s ease;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));
+      cursor: pointer;
+    }
+
+    .truck-tag-badge {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.96);
+      border: 1.5px solid #16a34a;
+      border-radius: 20px;
+      padding: 3px 9px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #15803d;
+      white-space: nowrap;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.14);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .truck-tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #16a34a;
+      animation: truckDotBlink 1.2s infinite ease-in-out;
+    }
+
+    @keyframes truckDotBlink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.7); }
     }
 
     .leaflet-popup-content-wrapper {
@@ -3601,15 +3678,32 @@
       return '#2E7D32';
     }
 
-    let activeRouteLine = null;
+    let activeRouteLines = [];
     let activeTruckMarker = null;
+    let truckAnimTimer = null;
+    let truckAnimState = {
+      legIndex: 0,
+      step: 0,
+      isPaused: false
+    };
 
     function initMap() {
       if (appMap) return;
       appMap = L.map('map', { zoomControl: false }).setView([3.075, 101.58], 12);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '©CartoDB', maxZoom: 19 }).addTo(appMap);
+      // Clean OpenStreetMap tiles without Carto watermark
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(appMap);
       renderMarkers();
       drawOptimizedRoute();
+
+      setTimeout(() => {
+        if (appMap) {
+          appMap.fitBounds([[3.042, 101.512], [3.115, 101.645]], { padding: [24, 24] });
+          appMap.invalidateSize();
+        }
+      }, 250);
     }
 
     function renderMarkers(filter = 'ALL') {
@@ -3633,12 +3727,17 @@
       <div class="pu-row"><span class="pu-l">Jenis Sisa</span><span class="pu-v">${b.wtype}</span></div>
       <div class="pu-row"><span class="pu-l">Gas</span><span class="pu-v">${b.gas} ppm</span></div>
       <div class="pu-row"><span class="pu-l">Anggaran ETA</span><span class="pu-v" style="color:var(--green);font-weight:800;">${eta}</span></div>
-      ${b.hz ? `<div style="margin-top:8px;padding:7px;background:#F3E5F5;border-radius:7px;font-size:11px;font-weight:700;color:#6A1B9A;">☣️ BAHAN BERBAHAYA DIKESAN</div>` : ''}
+      ${b.hz ? `<div style="margin-top:8px;padding:7px;background:#F3E5F5;border-radius:7px;font-size:11px;font-weight:700;color:#6A1B9A;display:flex;align-items:center;gap:5px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:#9333ea;display:inline-block;"></span> BAHAN BERBAHAYA DIKESAN
+      </div>` : ''}
       <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
-        <button onclick="dispatchFromPopup('${b.id}')" style="width:100%;padding:7px;background:#2E7D32;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;">🚛 Dispatch Truk</button>
+        <button onclick="dispatchFromPopup('${b.id}')" style="width:100%;padding:8px;background:#15803d;color:white;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          Dispatch Truk
+        </button>
         <div style="display:flex;gap:4px;">
-          <a href="${gmapsLink}" target="_blank" style="flex:1;text-align:center;padding:5px;background:var(--bg-card2);border:1px solid var(--border);border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;color:var(--text);">🗺️ GMaps</a>
-          <a href="${wazeLink}" target="_blank" style="flex:1;text-align:center;padding:5px;background:var(--bg-card2);border:1px solid var(--border);border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;color:var(--text);">🚙 Waze</a>
+          <a href="${gmapsLink}" target="_blank" style="flex:1;text-align:center;padding:6px;background:var(--bg-card2);border:1px solid var(--border);border-radius:5px;font-size:11px;font-weight:700;text-decoration:none;color:var(--text);">Google Maps</a>
+          <a href="${wazeLink}" target="_blank" style="flex:1;text-align:center;padding:6px;background:var(--bg-card2);border:1px solid var(--border);border-radius:5px;font-size:11px;font-weight:700;text-decoration:none;color:var(--text);">Waze</a>
         </div>
       </div>`;
         mapMkrs[b.id] = L.marker([b.lat, b.lng], { icon }).addTo(appMap).bindPopup(popup);
@@ -3646,7 +3745,7 @@
     }
 
     function dispatchFromPopup(id) {
-      showToast(`🚛 Truk dihantar ke ${id}!`, 'tg');
+      showToast(`Truk dihantar ke ${id}!`, 'tg');
       const bin = bins.find(b => b.id === id);
       if (bin) {
         bin.status = 'DISPATCHED';
@@ -3655,71 +3754,217 @@
       renderDispatchGrid();
       renderMapBinList();
       renderMarkers();
-      drawOptimizedRoute();
     }
 
-    /* ── Route Optimization & Animation (Phase 4) ─────────────── */
+    /* ── Helper: Calculate Bearing Between 2 GPS Points ─────── */
+    function calcBearing(lat1, lng1, lat2, lng2) {
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const phi1 = lat1 * Math.PI / 180;
+      const phi2 = lat2 * Math.PI / 180;
+      const y = Math.sin(dLng) * Math.cos(phi2);
+      const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLng);
+      const brng = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+      return brng;
+    }
+
+    /* ── Top-Down SVG Truck Graphic (North-pointing at 0 deg) ── */
+    function getTruckSvg() {
+      return `
+        <svg width="34" height="34" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="5" width="16" height="26" rx="4" fill="#052e16" opacity="0.3"/>
+          <rect x="9" y="11" width="18" height="19" rx="3" fill="#15803d" stroke="#ffffff" stroke-width="1.5"/>
+          <line x1="12" y1="16" x2="24" y2="16" stroke="#4ade80" stroke-width="1.2"/>
+          <line x1="12" y1="21" x2="24" y2="21" stroke="#4ade80" stroke-width="1.2"/>
+          <line x1="12" y1="26" x2="24" y2="26" stroke="#4ade80" stroke-width="1.2"/>
+          <rect x="10.5" y="3" width="15" height="9" rx="2.5" fill="#166534" stroke="#ffffff" stroke-width="1.5"/>
+          <path d="M12.5 7.5L13.5 5.2H22.5L23.5 7.5H12.5Z" fill="#bae6fd"/>
+          <rect x="8" y="5" width="2" height="3" rx="0.5" fill="#374151"/>
+          <rect x="26" y="5" width="2" height="3" rx="0.5" fill="#374151"/>
+          <circle cx="12.5" cy="3.5" r="1.2" fill="#fef08a"/>
+          <circle cx="23.5" cy="3.5" r="1.2" fill="#fef08a"/>
+        </svg>
+      `;
+    }
+
+    function createTruckDivIcon(bearing = 0, tagText = 'Truk KDEB: Dalam Laluan') {
+      const html = `
+        <div class="truck-marker-wrap">
+          <div class="truck-radar-ring"></div>
+          <div class="truck-vehicle" id="truck-vehicle-svg" style="transform: rotate(${Math.round(bearing)}deg);">
+            ${getTruckSvg()}
+          </div>
+          <div class="truck-tag-badge" id="truck-tag-badge">
+            <span class="truck-tag-dot"></span>
+            <span class="truck-tag-text" id="truck-tag-text">${tagText}</span>
+          </div>
+        </div>
+      `;
+      return L.divIcon({
+        html: html,
+        className: 'kdeb-truck-div-icon',
+        iconSize: [42, 42],
+        iconAnchor: [21, 21],
+        popupAnchor: [0, -26]
+      });
+    }
+
+    function updateTruckVisual(bearing, text) {
+      if (!activeTruckMarker) return;
+      const markerEl = activeTruckMarker.getElement();
+      if (!markerEl) return;
+
+      if (bearing !== null && bearing !== undefined) {
+        const veh = markerEl.querySelector('#truck-vehicle-svg');
+        if (veh) veh.style.transform = `rotate(${Math.round(bearing)}deg)`;
+      }
+
+      if (text) {
+        const txtEl = markerEl.querySelector('#truck-tag-text');
+        if (txtEl) txtEl.textContent = text;
+      }
+    }
+
+    /* ── Route Stops: Connects All 5 Bins in Continuous Loop ─── */
+    function getOrderedRouteStops() {
+      // Sequence: B05 (Shah Alam) -> B02 (SS15) -> B01 (USJ 1) -> B03 (Sunway) -> B04 (Taman Jaya)
+      const stopIds = ['B05', 'B02', 'B01', 'B03', 'B04'];
+      const stops = stopIds.map(id => bins.find(b => b.id === id)).filter(Boolean);
+      return stops;
+    }
+
+    /* ── Draw Connected Route Lines & Animate Slow Truck ─────── */
     function drawOptimizedRoute() {
       if (!appMap) return;
 
-      // Clear existing layers
-      if (activeRouteLine) { appMap.removeLayer(activeRouteLine); activeRouteLine = null; }
-      if (activeTruckMarker) { appMap.removeLayer(activeTruckMarker); activeTruckMarker = null; }
+      const stops = getOrderedRouteStops();
+      if (stops.length < 2) return;
 
-      // Gather critical coordinates (fill >= 70% or hazardous)
-      const critPoints = bins
-        .filter(b => b.fill >= 70 || b.hz)
-        .sort((a, b) => b.fill - a.fill) // Greedy route logic
-        .map(b => [b.lat, b.lng]);
+      // Create closed loop coordinates: B05 -> B02 -> B01 -> B03 -> B04 -> B05
+      const routeCoords = stops.map(s => [s.lat, s.lng]);
+      routeCoords.push([stops[0].lat, stops[0].lng]);
 
-      if (critPoints.length < 2) return;
-
-      // Add Depot location (e.g. Shah Alam center) at start/end
-      const depot = [3.0738, 101.5183];
-      const routePath = [depot, ...critPoints, depot];
-
-      // Draw optimized dashed route line
-      activeRouteLine = L.polyline(routePath, {
-        color: 'var(--green)',
-        weight: 4,
-        opacity: 0.8,
-        dashArray: '8, 8'
-      }).addTo(appMap);
-
-      // Add animated truck icon
-      const truckSvg = `<span style="font-size: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">🚛</span>`;
-      const truckIcon = L.divIcon({ html: truckSvg, className: '', iconSize: [24, 24], iconAnchor: [12, 12] });
-
-      activeTruckMarker = L.marker(depot, { icon: truckIcon }).addTo(appMap);
-
-      // Simple truck animation loop along path
-      let currentIdx = 0;
-      function animateTruck() {
-        if (!activeTruckMarker || !activeRouteLine) return;
-        const startCoord = routePath[currentIdx];
-        const endCoord = routePath[(currentIdx + 1) % routePath.length];
-
-        let steps = 40;
-        let step = 0;
-
-        function move() {
-          if (!activeTruckMarker) return;
-          const lat = startCoord[0] + (endCoord[0] - startCoord[0]) * (step / steps);
-          const lng = startCoord[1] + (endCoord[1] - startCoord[1]) * (step / steps);
-          activeTruckMarker.setLatLng([lat, lng]);
-
-          if (step < steps) {
-            step++;
-            setTimeout(move, 40);
-          } else {
-            currentIdx = (currentIdx + 1) % routePath.length;
-            setTimeout(animateTruck, 1000);
-          }
-        }
-        move();
+      // Remove existing polylines if any
+      if (activeRouteLines.length) {
+        activeRouteLines.forEach(line => appMap.removeLayer(line));
+        activeRouteLines = [];
       }
 
-      animateTruck();
+      // Layer 1: Clean outer casing (white halo for contrast against map roads)
+      const casingLine = L.polyline(routeCoords, {
+        color: '#ffffff',
+        weight: 7,
+        opacity: 0.95,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(appMap);
+
+      // Layer 2: Main KDEB Emerald line
+      const mainLine = L.polyline(routeCoords, {
+        color: '#15803d',
+        weight: 3.5,
+        opacity: 0.95,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(appMap);
+
+      // Layer 3: Dashed accent pulse line
+      const dashLine = L.polyline(routeCoords, {
+        color: '#86efac',
+        weight: 1.8,
+        opacity: 0.85,
+        dashArray: '8, 12',
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(appMap);
+
+      activeRouteLines = [casingLine, mainLine, dashLine];
+
+      // If truck animation is already active, keep it running smoothly without resetting
+      if (activeTruckMarker && truckAnimTimer) {
+        return;
+      }
+
+      // Initialize truck marker at starting stop (B05)
+      const initialFrom = stops[0];
+      const initialTo = stops[1];
+      const initialBearing = calcBearing(initialFrom.lat, initialFrom.lng, initialTo.lat, initialTo.lng);
+      const truckIcon = createTruckDivIcon(initialBearing, `Truk KDEB: Ke arah ${initialTo.id}`);
+
+      activeTruckMarker = L.marker([initialFrom.lat, initialFrom.lng], {
+        icon: truckIcon,
+        zIndexOffset: 1000
+      }).addTo(appMap);
+
+      activeTruckMarker.bindPopup(`
+        <div style="font-family:'Inter',sans-serif;padding:4px 2px;min-width:200px;">
+          <div style="font-size:10px;color:#15803d;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Armada KDEB SmartTong</div>
+          <div style="font-size:13px;font-weight:800;color:#1e293b;margin:3px 0;">Truk Pengutipan Pintar #07</div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:8px;">Laluan Bersepadu: B05 &rarr; B02 &rarr; B01 &rarr; B03 &rarr; B04</div>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:6px 8px;font-size:11px;color:#166534;font-weight:600;display:flex;align-items:center;gap:6px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;"></span>
+            Status: Rondaan Masa Nyata (Perlahan)
+          </div>
+        </div>
+      `);
+
+      // Start the very slow travel animation along the loop
+      startSlowTruckLoop(stops);
+    }
+
+    function startSlowTruckLoop(stops) {
+      if (truckAnimTimer) {
+        clearTimeout(truckAnimTimer);
+        truckAnimTimer = null;
+      }
+
+      // Travel durations in ms: calibrated to be VERY, VERY SLOW
+      // Leg 0: B05 -> B02 (~7.3km) = 22,000 ms (22s)
+      // Leg 1: B02 -> B01 (~3.1km) = 16,000 ms (16s)
+      // Leg 2: B01 -> B03 (~3.3km) = 16,000 ms (16s)
+      // Leg 3: B03 -> B04 (~6.0km) = 19,000 ms (19s)
+      // Leg 4: B04 -> B05 (~13.7km) = 28,000 ms (28s)
+      const legDurations = [22000, 16000, 16000, 19000, 28000];
+      const numLegs = stops.length;
+      const STEP_INTERVAL = 50; // 50ms per frame = 20 fps smooth gliding
+
+      function tick() {
+        if (!activeTruckMarker || !appMap) return;
+
+        const fromStop = stops[truckAnimState.legIndex];
+        const toStop = stops[(truckAnimState.legIndex + 1) % numLegs];
+        const duration = legDurations[truckAnimState.legIndex] || 18000;
+        const totalSteps = Math.round(duration / STEP_INTERVAL);
+
+        // Update bearing and tag at the start of each leg
+        if (truckAnimState.step === 0) {
+          const brng = calcBearing(fromStop.lat, fromStop.lng, toStop.lat, toStop.lng);
+          updateTruckVisual(brng, `Truk KDEB: Ke arah ${toStop.id} (${toStop.name.split(',')[0]})`);
+        }
+
+        truckAnimState.step++;
+        const progress = Math.min(1, truckAnimState.step / totalSteps);
+
+        // Smooth linear interpolation along the route segment
+        const curLat = fromStop.lat + (toStop.lat - fromStop.lat) * progress;
+        const curLng = fromStop.lng + (toStop.lng - fromStop.lng) * progress;
+        activeTruckMarker.setLatLng([curLat, curLng]);
+
+        if (progress < 1) {
+          truckAnimTimer = setTimeout(tick, STEP_INTERVAL);
+        } else {
+          // Arrived at destination stop: pause 2.5s to simulate waste collection
+          updateTruckVisual(null, `Tiba di ${toStop.id}: Mengutip sisa...`);
+          truckAnimState.isPaused = true;
+          truckAnimTimer = setTimeout(() => {
+            truckAnimState.isPaused = false;
+            truckAnimState.step = 0;
+            truckAnimState.legIndex = (truckAnimState.legIndex + 1) % numLegs;
+            tick();
+          }, 2500);
+        }
+      }
+
+      tick();
     }
 
     function filterDistrict(el, dist) {
@@ -3735,7 +3980,13 @@
       const list = (filter === 'ALL' ? bins : bins.filter(b => b.dist === filter)).sort((a, b) => (b.hz ? 1000 : 0) + b.fill - ((a.hz ? 1000 : 0) + a.fill));
       el.innerHTML = list.map(b => {
         const c = fillColor(b);
-        const chip = b.hz ? '<span class="chip cp">☣️ Berbahaya</span>' : b.fill >= 85 ? '<span class="chip cr">🔴 Kritikal</span>' : b.fill >= 60 ? '<span class="chip cy">🟡 Amaran</span>' : '<span class="chip cg">🟢 Normal</span>';
+        const chip = b.hz
+          ? `<span class="chip cp"><span style="width:6px;height:6px;border-radius:50%;background:#9333ea;display:inline-block;margin-right:4px;"></span>Berbahaya</span>`
+          : b.fill >= 85
+          ? `<span class="chip cr"><span style="width:6px;height:6px;border-radius:50%;background:#dc2626;display:inline-block;margin-right:4px;"></span>Kritikal</span>`
+          : b.fill >= 60
+          ? `<span class="chip cy"><span style="width:6px;height:6px;border-radius:50%;background:#d97706;display:inline-block;margin-right:4px;"></span>Amaran</span>`
+          : `<span class="chip cg"><span style="width:6px;height:6px;border-radius:50%;background:#16a34a;display:inline-block;margin-right:4px;"></span>Normal</span>`;
         return `<div class="card" style="cursor:pointer;" onclick="openPopup('${b.id}')"><div class="cb" style="padding:13px 15px;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;"><div><div style="font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-bottom:2px;">${b.id} · ${b.zone}</div><div style="font-size:13px;font-weight:700;">${b.name}</div></div>${chip}</div><div style="display:flex;align-items:center;gap:10px;"><div class="fb" style="flex:1;"><div class="fbi" style="width:${Math.round(b.fill)}%;background:${c};"></div></div><span style="font-size:12px;font-weight:800;color:${c};font-family:'JetBrains Mono',monospace;">${Math.round(b.fill)}%</span></div></div></div>`;
       }).join('');
     }
