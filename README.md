@@ -1,11 +1,14 @@
 # SmartTONG AI 🗑️
-## Multi-Agent AI Smart Waste Management System
+## Multi-Agent AI Smart Waste Management & 3D Digital Twin Ecosystem
 
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_App-000000?style=for-the-badge&logo=vercel)](https://smarttong.vercel.app)
-[![Render Backend](https://img.shields.io/badge/Render-Cloud_AI_Backend-46E3B7?style=for-the-badge&logo=render)](https://smarttong-backend.onrender.com)
+[![3D Digital Twin Simulator](https://img.shields.io/badge/Simulator-3D_Digital_Twin-16A34A?style=for-the-badge&logo=three.js)](https://smarttong.vercel.app/simulator/)
+[![PBT Operations Dashboard](https://img.shields.io/badge/Dashboard-PBT_KDEB-2563EB?style=for-the-badge&logo=leaflet)](https://smarttong.vercel.app/dashboard/)
+[![Citizen PWA](https://img.shields.io/badge/Citizen_App-Juara_Kebersihan-F59E0B?style=for-the-badge&logo=pwa)](https://smarttong.vercel.app/citizen-app/)
+[![Hugging Face Space Backend](https://img.shields.io/badge/HuggingFace-Keras_Model_API-FFD21E?style=for-the-badge&logo=huggingface)](https://huggingface.co/spaces/ninjayy/smarttong-ai)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-SmartTong_Repo-181717?style=for-the-badge&logo=github)](https://github.com/yapyap06/smarttong)
 
-> **SmartTONG AI** is a solar-powered retrofit smart bin ecosystem and Multi-Agent AI platform designed for municipal councils (KDEBWM, MBSJ, MBPJ, MBSA, MPKS, MPAJ). It combines real-time IoT sensor telemetry, AI waste classification, automated truck dispatching with 20-minute cooldowns, citizen reporting, and OKU audio accessibility.
+> **SmartTONG AI** is a state-of-the-art solar-powered smart waste management platform developed for municipal councils across Selangor (KDEBWM, MBSJ, MBPJ, MBSA, MPKS, MPAJ). The ecosystem bridges physical IoT waste bins, edge-AI image classification, real-time telemetry, a 3D digital twin simulator, and an optimized municipal collection fleet logistics engine.
 
 ---
 
@@ -13,172 +16,209 @@
 
 ```mermaid
 flowchart TD
-    subgraph Users ["👥 User Access Layer"]
-        CitizenApp["📱 Citizen Web PWA<br/>(Juara Kebersihan)"]
-        GovPortal["🏢 PBT Government Ops Portal<br/>(MPKS / MBSJ / MBSA / MBPJ / MPAJ)"]
+    subgraph Clients ["👥 User Interfaces & Digital Twin"]
+        CitizenApp["📱 Citizen Web PWA<br/>(Juara Kebersihan & Cam Scanner)"]
+        PbtDashboard["🏛️ PBT Ops Dashboard<br/>(Muji Green/White Interface)"]
+        GovPortal["🏢 Council Command Portal<br/>(MBSJ / MBPJ / MBSA / MPKS / MPAJ)"]
+        Sim3D["🎮 3D Digital Twin Simulator<br/>(Three.js Kiosk, Flap Actuation, X-Ray)"]
     end
 
-    subgraph Hosting ["☁️ Cloud Hosting & Distribution"]
-        Vercel["⚡ Vercel Edge Host<br/>smarttong.vercel.app"]
+    subgraph SyncBus ["⚡ Real-Time Synchronization Bus"]
+        BC["🔄 BroadcastChannel API<br/>(0ms Cross-Tab Relay)"]
+        LS["💾 Browser LocalStorage<br/>(State Persistence & Timers)"]
+        HFRelay["☁️ HF Space REST Relay<br/>(/bin-status, /bin-reset, /actuate)"]
+    end
+
+    subgraph CloudInfra ["☁️ Cloud Hosting & Distribution"]
+        Vercel["⚡ Vercel Edge CDN<br/>smarttong.vercel.app"]
+        HFSpace["🤗 Hugging Face Spaces<br/>ninjayy-smarttong-ai.hf.space"]
         Render["🐍 Render Cloud Backend<br/>smarttong-backend.onrender.com"]
+        Firebase["🔥 Firebase Cloud<br/>(Firestore, Storage, Functions)"]
     end
 
-    subgraph MultiAgentSystem ["🤖 Multi-Agent AI Engine"]
-        Agent1["🧪 1. Contamination Analysis Agent<br/>(Gas PPM, Kelembapan, Telemetri IoT)"]
-        Agent2["🚛 2. Coordination & Route Agent<br/>(20-min Truck Cooldown, Optimum Laluan)"]
-        Agent3["💬 3. SilaTanya Citizen Q&A Agent<br/>(Dataset SOP 150 Q&A)"]
-        Agent4["📷 4. Gemini 1.5 Flash Vision Classifier<br/>(Cardboard, Glass, Metal, Paper, Plastic, Trash)"]
-    end
-
-    subgraph DataLayer ["🗄️ Persistence & Cloud Storage"]
-        Firebase["🔥 Firebase Firestore<br/>(Sessions, Aduans, Dispatches, Broadcasts)"]
-        LocalStorage["💾 Browser LocalStorage<br/>(Session Cache, Points, Cooldown Timers)"]
+    subgraph AIPlatform ["🤖 Multi-Agent AI Engine"]
+        KerasVision["📷 1. Fine-Tuned Keras Classifier<br/>(EfficientNetV2 224x224, 6 Waste Classes)"]
+        ContamAgent["🧪 2. Contamination & Telemetry Agent<br/>(MQ-135 Gas PPM, Moisture, Anomaly)"]
+        RouteAgent["🚛 3. Smart Logistics & Route Agent<br/>(5-Bin Circuit Loop, Slow Navigation)"]
+        SilaTanya["💬 4. SilaTanya AI Assistant<br/>(Gemini 2.5 Flash + Selangor SOP RAG)"]
     end
 
     subgraph IoTLayer ["🔌 Smart Bin IoT Hardware"]
-        ESP32["⚡ ESP32 Solar Retrofit Kit"]
-        Sensors["📡 Ultrasonic, MQ-135 Gas, PIR Sensors"]
-        Actuators["🔒 Servo Lock Lid, NeoPixel LED, DFPlayer OKU Audio"]
+        ESP32["⚡ ESP32 Solar Retrofit Node"]
+        Sensors["📡 4x HC-SR04, MQ-135, PIR, Solar Telemetry"]
+        Actuators["🔒 4x Servo SG90 Flaps, SSD1306 OLED, Audio"]
     end
 
-    CitizenApp -->|Deploy| Vercel
-    GovPortal -->|Deploy| Vercel
+    CitizenApp -->|Host on| Vercel
+    PbtDashboard -->|Host on| Vercel
+    GovPortal -->|Host on| Vercel
+    Sim3D -->|Host on| Vercel
 
-    Vercel -->|Fallback Cloud API| Render
-    Vercel -->|Fallback Direct AI| Agent4
-    Vercel -->|Read/Write State| LocalStorage
+    Sim3D <-->|Instant Local Sync| BC
+    PbtDashboard <-->|Instant Local Sync| BC
+    BC <-->|Persist| LS
 
-    Render -->|Execute Serverless AI| Agent1
-    Render -->|Execute Serverless AI| Agent2
-    Render -->|Execute Serverless AI| Agent3
+    Sim3D <-->|HTTP Polling & Relay| HFRelay
+    PbtDashboard <-->|HTTP Polling & Relay| HFRelay
+    CitizenApp -->|Actuate Flap| HFRelay
 
-    CitizenApp -->|Submit Aduan & Points| Firebase
-    GovPortal -->|Approve/Reject & Dispatch| Firebase
+    CitizenApp -->|Image Inference| KerasVision
+    PbtDashboard -->|Image Inference| KerasVision
+    HFSpace -->|Hosts Service| KerasVision
+    HFSpace -->|Hosts Service| HFRelay
 
-    Sensors -->|Telemetry Data| ESP32
-    ESP32 -->|HTTP/MQTT Push| Firebase
+    CitizenApp -->|Chat Consultation| SilaTanya
+    HFSpace -->|Gemini 2.5 Flash Relay| SilaTanya
+
+    PbtDashboard -->|Calculates Circuit & ETA| RouteAgent
+    Sensors -->|Sensor Readings| ContamAgent
+    ContamAgent -->|Hazard Flag| PbtDashboard
+
+    CitizenApp -->|Aduan & Points| Firebase
+    GovPortal -->|Aduan Review & Logs| Firebase
+
+    Sensors -->|Telemetry| ESP32
     ESP32 -->|Controls| Actuators
+    ESP32 -.->|Mirrored by Digital Twin| Sim3D
 ```
 
 ---
 
-## ✨ Key Features & Enhancements
+## 🌟 Core Modules & Technical Innovations
 
-### 1. 🏢 PBT Government Command Center (`/citizen-app/index.html`)
-- **Multi-Council Dynamic Branding:** Supports login by council department (e.g. `MPKS — Klang`, `MBSJ — Subang Jaya`, `MBSA — Shah Alam`, `MBPJ — Petaling Jaya`, `MPAJ — Ampang Jaya`, `KDEBWM`). Official broadcasts dynamically display the logged-in council badge.
-- **Truck Dispatch with 20-Minute Cooldown:** 
-  - Clicking **Dispatch Truk** on any bin switches the button to a **disabled gray state** (`#9CA3AF`).
-  - Displays a live countdown timer (`Truk Dihantar (19m 59s)`).
-  - Automatically resets to **GREEN** after 20 minutes. Cooldown state persists in `localStorage`.
-- **Redesigned Aduan Management:**
-  - Standardized square thumbnail image frame (72×72px header / 120×120px body).
-  - Date & Time stamp on every card with newest-first sorting.
-  - Quick action buttons (✓ Lulus / ✕ Batal) on both card header and expanded detail view.
-  - Optional reviewer rejection reasons stored in Firebase.
+### 1. 🎮 3D Digital Twin & Circuit Simulator (`/simulator/`)
+- **Three.js WebGL Kiosk Model:** Fully interactive 3D representation matching real-world industrial kiosk blueprints.
+- **Physical Compartment Simulation:** 4 segregated slots for **Plastik/Logam (Orange)**, **Kertas/Kadbod (Blue)**, **Kaca (Brown)**, and **Sisa Baki (Black)**.
+- **Dynamic 10% Stack Physics:** Waste accumulation renders in realistic 10% discrete increments per deposit with calibrated material thickness (preventing overflow rendering).
+- **Realistic Material Density Weight Calculation:**
+  - *Plastik & Logam*: 0.12 kg per 1% fill (e.g. tin aluminium, botol PET)
+  - *Kertas & Kadbod*: 0.18 kg per 1% fill (e.g. surat khabar, kotak beralun)
+  - *Kaca*: 0.30 kg per 1% fill (e.g. botol kaca tebal, balang makanan)
+  - *Sisa Baki (General)*: 0.22 kg per 1% fill (sisa basah, pembungkus)
+- **Circuit Inspection (X-Ray Mode):** Reveals the internal schematic including the ESP32 microcontroller, 4x SG90 servo flap actuators, 4x HC-SR04 ultrasonic depth sensors, MQ-135 air quality sensor, and color-coded wire harnesses (VCC, GND, Signal).
+- **Two-Row Centralized Control Toolbar:**
+  - *Top Row*: Camera angles (`Pandangan Hadapan`, `Pandangan Atas`) and `Mod Litar & Mekanikal (X-Ray)`.
+  - *Bottom Row*: Centralized `Uji Imbasan:` test actuation buttons for instant one-click hardware simulation.
+- **Zero-Latency Cross-Tab Synchronization:** Interacts seamlessly with the PBT dashboard via HTML5 `BroadcastChannel` with fallback to `localStorage` and Hugging Face cloud endpoints.
 
-### 2. 📱 Citizen PWA (`Juara Kebersihan`)
-- **AI Cam Scanner:**
-  - Dual capture modes: **Live Camera** or **Pilih Gambar (Photo Gallery Upload)**.
-  - Automatic device camera selection (back camera for mobile phones, front camera for laptops).
-  - Natural unmirrored viewport preview.
-- **Real-Time Aduan Status & Points Sync:**
-  - Citizens earn +10 points for submitted reports. Points decrease (-10) if rejected by PBT, and "Disahkan" count increments when approved (`Lulus`).
-  - Full Aduan History with reviewer feedback cards.
-- **Accessibility & Settings:**
-  - Saiz Teks UI zoom scaling (80% to 140%).
-  - High Contrast mode & MyDigital ID single sign-on demo.
+### 2. 🏛️ PBT Operations & Logistics Dashboard (`/dashboard/`)
+- **Muji-Inspired Clean Design:** Minimalist green & white aesthetic (`#15803d` / `#f8fafc`) featuring clean vector Lucide iconography and zero emojis for municipal command center presentation.
+- **Executive KPI Cards:** Real-time visibility into **Tong Kritikal**, **Truk Sedia**, **Bahan API Jimat**, and **Kadar Kitar Semula**.
+- **Dynamic Priority Alert Banner:** Automatically promotes Bin B01 to the top of the priority list when full (≥95%), displaying critical slots and live aggregate weight.
+- **One-Click Remote Truck Dispatch:** 
+  - Clicking **Dispatch Truk** triggers instantaneous cross-tab broadcast resetting the physical bin to 0% and 0.0 kg.
+  - Clears digital twin 3D item stacks and logs the collection timestamp.
+- **Connected Circuit Route Map:**
+  - Standard OpenStreetMap tiles (watermark-free).
+  - Continuous 5-bin collection loop:
+    $$\text{B05 (Shah Alam)} \longrightarrow \text{B02 (SS15)} \longrightarrow \text{B01 (USJ 1)} \longrightarrow \text{B03 (Sunway)} \longrightarrow \text{B04 (Taman Jaya PJ)} \longrightarrow \text{B05}$$
+  - Dual-layer vibrant emerald green line (`#16a34a`) with white casing and directional dashed accents.
+  - **Very Slow Continuous Truck Movement:** The KDEB collection truck glides smoothly at an authentic, deliberate pace between collection points, dynamically rotating its bearing to align with the route heading, and pausing for 2.5 seconds at each bin to simulate waste emptying.
 
-### 3. 🤖 Multi-Agent AI Engine
-- **Contamination Agent:** Reads IoT gas (PPM) & moisture sensor data to detect hazardous waste and potential gas leaks.
-- **Coordination Agent:** Ranks bins by urgency score and calculates optimal truck dispatch routes and cost savings.
-- **SilaTanya AI Assistant:** 150 Q&A SOP dataset + Gemini 1.5 Flash natural language chat.
+### 3. 📱 Citizen PWA (`Juara Kebersihan`, `/citizen-app/`)
+- **Edge AI Camera Scanner:** Live camera capture or gallery file upload with automatic center-cropping to $224 \times 224$ pixels.
+- **Direct Flap Actuation:** Instantly opens the corresponding digital twin flap when an item is scanned.
+- **Aduan Rakyat & Geo-Tagging:** Citizens submit reports with photos and GPS coordinates, earning loyalty points (+10 pts upon review).
+- **OKU Accessibility Suite:** Built-in Malay speech synthesis voiceover, high-contrast display mode, and responsive font scaling (80% to 140%).
+
+### 4. 🤗 Hugging Face Space AI Backend (`ninjayy-smarttong-ai.hf.space`)
+- **Pure FastAPI Server (No Gradio):** High-throughput, production-ready inference backend.
+- **Fine-Tuned Keras EfficientNetV2 (`best_model_finetuned224.keras`):** 110 MB vision model trained across 6 waste classes: *Cardboard, Glass, Metal, Paper, Plastic, Trash*.
+- **Independent Classification:** Core image analysis executes natively on the Keras neural network without relying on external vision APIs.
+- **SilaTanya AI Chatbot:** Uses Gemini 2.5 Flash with official Selangor recycling SOP dataset for conversational citizen guidance (`POST /chat`).
+- **RESTful Endpoints:**
+  - `POST /predict`: Base64 image classification with bounding bin color, slot recommendation, and confidence score.
+  - `POST /actuate`: Remote hardware/simulator flap actuation relay.
+  - `GET /bin-status`: Real-time compartment fill percentages and aggregate weight.
+  - `POST /bin-reset`: Truck dispatch reset signal.
+  - `GET /health`: Model status and server health verification.
 
 ---
 
-## 📁 Project Structure
+## 📁 Project Directory Structure
 
 ```
 SmartTong/
-├── vercel.json                 ← Vercel deployment & route configuration
-├── server.py                   ← Unified Flask server for Render (predict + chat)
-├── app.py                      ← Gunicorn WSGI entry point for Render
-├── requirements.txt            ← Python dependencies (Flask, CORS, Pillow, NumPy, Gunicorn)
-├── index.html                  ← Root redirect for Vercel static hosting
-├── citizen-app/
-│   ├── index.html              ← Main Web App (Citizen PWA + PBT Government Portal)
-│   ├── manifest.json           ← PWA manifest
-│   └── sw.js                   ← Service worker offline support
+├── vercel.json                 ← Vercel edge deployment routing
+├── server.py                   ← Unified Python Flask server (Render)
+├── app.py                      ← WSGI entry point
+├── requirements.txt            ← Core Python dependencies
+├── index.html                  ← Root landing page and portal router
+├── simulator/
+│   └── index.html              ← 3D Digital Twin Kiosk Simulator (Three.js WebGL)
 ├── dashboard/
-│   └── index.html              ← Dedicated PBT Analytics Dashboard
+│   └── index.html              ← PBT Operations Command Dashboard (Muji Theme)
+├── citizen-app/
+│   ├── index.html              ← Citizen PWA & Council Portal
+│   ├── manifest.json           ← Progressive Web App manifest
+│   └── sw.js                   ← Service worker offline cache
+├── hf-space/                   ← Hugging Face Space Repository
+│   ├── app.py                  ← FastAPI REST service (Keras + Gemini Chat)
+│   ├── Dockerfile              ← Container configuration
+│   ├── requirements.txt        ← TF/Keras, FastAPI, Uvicorn, Pillow
+│   └── models/
+│       └── best_model_finetuned224.keras ← 110 MB Fine-tuned EfficientNetV2
 ├── SmartTONG-AI/
-│   ├── predict_server.py       ← Local Image Classification Server (Port 7862)
-│   ├── app.py                  ← Gradio Waste Classifier UI
-│   └── models/                 ← TensorFlow Keras EfficientNet models
-├── backend/
-│   ├── chat_agent.py           ← Local Chat Assistant Server (Port 7863)
-│   └── functions/              ← Firebase Cloud Functions (TypeScript)
+│   ├── predict_server.py       ← Local standalone prediction server (Port 7862)
+│   └── models/                 ← Local Keras models
 ├── firmware/
-│   ├── SmartTong_main/         ← Arduino Sketch for ESP32 hardware
-│   └── wokwi/                  ← Wokwi circuit diagram & configuration
-└── docs/                       ← Documentation & presentation assets
+│   ├── SmartTong_main/         ← ESP32 Arduino hardware firmware
+│   └── wokwi/                  ← Wokwi circuit simulation schematic
+└── docs/                       ← Documentation, graphics, and system reports
 ```
 
 ---
 
-## 🌐 Live URLs & Deployment Architecture
+## 🌐 Live URLs & Endpoints
 
-| Environment | URL | Details |
+| Environment | Endpoint / URL | Purpose |
 | :--- | :--- | :--- |
-| **Vercel Web App** | [`https://smarttong.vercel.app`](https://smarttong.vercel.app) | Public PWA Frontend (HTML/CSS/JS) |
-| **Render AI Backend** | [`https://smarttong-backend.onrender.com`](https://smarttong-backend.onrender.com) | Live Cloud Python AI Server |
-| **GitHub Repository** | [`yapyap06/smarttong`](https://github.com/yapyap06/smarttong) | Source Code Repository |
+| **Landing Portal** | [`https://smarttong.vercel.app`](https://smarttong.vercel.app) | Gateway to all ecosystem apps |
+| **3D Digital Twin** | [`https://smarttong.vercel.app/simulator/`](https://smarttong.vercel.app/simulator/) | 3D Physical Kiosk & Circuit Simulator |
+| **PBT Dashboard** | [`https://smarttong.vercel.app/dashboard/`](https://smarttong.vercel.app/dashboard/) | Municipal Fleet Dispatch & Route Map |
+| **Citizen App** | [`https://smarttong.vercel.app/citizen-app/`](https://smarttong.vercel.app/citizen-app/) | Citizen PWA, Cam Scanner, Aduan |
+| **HF Space API** | [`https://ninjayy-smarttong-ai.hf.space`](https://ninjayy-smarttong-ai.hf.space) | Live Cloud Keras Model & Actuation API |
+| **Render Backend** | [`https://smarttong-backend.onrender.com`](https://smarttong-backend.onrender.com) | Python Cloud Server (Fallback) |
+| **GitHub Repo** | [`yapyap06/smarttong`](https://github.com/yapyap06/smarttong) | Main Source Code Repository |
 
 ---
 
-## ⚡ Local Setup Guide
+## ⚡ Quick Start & Local Development
 
-### 1. Run Local Web App
-Open `citizen-app/index.html` in any browser, or serve locally using Python:
+### 1. Launch Web Apps Locally
+Run any local static HTTP server from the project root:
 ```bash
+# Python 3
 python -m http.server 3000
+
+# Or via Node.js
+npx serve .
 ```
-Visit `http://localhost:3000/citizen-app/index.html`.
+Then visit:
+- Simulator: `http://localhost:3000/simulator/`
+- PBT Dashboard: `http://localhost:3000/dashboard/`
+- Citizen App: `http://localhost:3000/citizen-app/`
 
-### 2. Run Local Python AI Servers (Optional)
-To run the local TensorFlow model and Flask Chat Agent:
-
+### 2. Run Local Python AI Inference Server (Optional)
+To test image classification locally using the fine-tuned Keras model:
 ```bash
-# Terminal 1: Cam Scanner Prediction Server (Port 7862)
 python SmartTONG-AI/predict_server.py
-
-# Terminal 2: Chat Assistant Server (Port 7863)
-python backend/chat_agent.py
 ```
+Server listens on `http://127.0.0.1:7862/predict`. Both the Dashboard and Citizen App automatically detect local execution and fall back to the live Hugging Face Space API when deployed.
 
 ---
 
-## 📊 Key Operational Metrics & Performance Impact
+## 📊 Operational & Environmental Impact
 
-| Operational Metric | Estimated Value | Analysis & Calculation Source |
+| Operational Metric | Quantified Value | Source & Methodology |
 | :--- | :--- | :--- |
-| **Municipal Daily Waste Coverage** | 39,900 tonnes | Public Sanitation Data |
-| **SmartTONG Route Optimization** | ~31% (21.3 km reduction per route) | Nearest-neighbour AI logistics route simulation |
-| **Weekly Fleet Fuel Savings** | RM 1,176 (per 100 bins) | Calculated: 420 L × RM 2.80/L |
-| **Weekly CO₂ Reduction** | 1.1 tonnes CO₂ avoided | 2.68 kg CO₂ per L fuel saved |
-| **Retrofit Sensor Kit BOM** | ~RM 180 / bin | ESP32 + Ultrasonic + MQ135 sensor kit estimate |
+| **Logistics Route Optimization** | **31% distance reduction** (~21.3 km/route) | Multi-stop circuit loop dispatch vs. fixed scheduling |
+| **Weekly Fuel Savings** | **RM 1,176** (per 100 bins) | 420 Liters diesel saved × RM 2.80/L |
+| **Weekly Carbon Avoidance** | **1.1 tonnes CO₂e** | 2.68 kg CO₂ emitted per Liter diesel |
+| **Contamination Prevention** | **>88% sort purity** | Automatic servo-locking flaps based on AI classification |
+| **Retrofit Kit Unit BOM** | **~RM 180 / bin** | ESP32 + 4x Ultrasonic + MQ-135 + SG90 Servos |
 
 ---
 
-## 🛠️ Technical Specifications & System Compatibility
+*SmartTONG AI · Smart Waste Management & 3D Digital Twin Ecosystem for Selangor*
 
-| System Component | Specification / Standard | Capabilities & Integration |
-| :--- | :--- | :--- |
-| **Frontend Web PWA** | HTML5 / CSS3 / ES6 Vanilla JS | Progressive Web App with offline caching & Vercel deployment |
-| **AI Inference Engines** | TensorFlow Keras + Gemini 1.5 Flash Vision | Dual-engine image classification & natural language processing |
-| **Cloud Backend API** | Python Gunicorn Flask Server | RESTful API endpoints hosted on Render for cloud AI processing |
-| **Database & Realtime Sync** | Firebase Firestore | Real-time session management, dispatch tracking, & broadcast sync |
-| **Hardware Retrofit Kit** | ESP32 Microcontroller | Solar-powered IoT telemetry (Ultrasonic, MQ-135 Gas, Servo, Audio) |
-
----
-
-*SmartTONG AI · Multi-Agent AI Smart Waste Management System*

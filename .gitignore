@@ -23,3 +23,8 @@ ImplementationPlan*.md
 Updateinterface.md
 *.log
 temp.js
+scratch/
+test_*.py
+laporanAINS.txt
+videorequirement.txt
+hf-space/
