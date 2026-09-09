@@ -1227,6 +1227,397 @@
       margin-top: 12px;
     }
 
+    .gone {
+      display: none !important;
+    }
+
+    /* ═══ MUJI STYLE DISPATCH THEME (Green & White Simplicity) ═══════ */
+    .muji-krow {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      padding: 0 14px 16px;
+    }
+    @media (min-width: 640px) {
+      .muji-krow {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .muji-kcard {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .muji-kcard:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .muji-ki {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #f0fdf4;
+      color: #15803d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .muji-kcard .kn {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      margin-bottom: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .muji-kcard .kl {
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      letter-spacing: 0.3px;
+      text-transform: none;
+    }
+    .muji-kcard .ks {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 3px;
+    }
+
+    .muji-section-header {
+      padding: 4px 14px 10px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .muji-section-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.2px;
+    }
+    .muji-section-sub {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    /* Muji B01 Alert Card */
+    .muji-alert-card {
+      background: #ffffff;
+      border: 1px solid #fee2e2;
+      border-left: 4px solid #dc2626;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 0 14px 14px;
+      box-shadow: 0 2px 10px rgba(220, 38, 38, 0.08);
+      animation: alertPulse 2s infinite;
+    }
+    .muji-alert-header {
+      padding: 11px 16px;
+      background: #fef2f2;
+      border-bottom: 1px solid #fee2e2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .muji-alert-tag {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #991b1b;
+      letter-spacing: 0.4px;
+    }
+    .muji-alert-close {
+      background: transparent;
+      border: none;
+      color: #991b1b;
+      cursor: pointer;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      border-radius: 4px;
+    }
+    .muji-alert-close:hover {
+      background: rgba(153, 27, 27, 0.08);
+    }
+    .muji-alert-body {
+      padding: 14px 16px;
+    }
+    .muji-alert-loc {
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+    .muji-comp-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 480px) {
+      .muji-comp-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .muji-comp-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .muji-comp-item.is-crit {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+    .muji-comp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      font-size: 11px;
+    }
+    .muji-comp-name {
+      font-weight: 600;
+      color: #334155;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .muji-comp-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .muji-comp-pct {
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .muji-comp-bar {
+      height: 5px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .muji-comp-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s;
+    }
+    .muji-alert-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Muji Bin Cards (B01 - B05) */
+    .muji-bin-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .muji-bin-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+    .muji-bin-card.is-critical {
+      border-left: 4px solid #dc2626;
+    }
+    .muji-bin-card.is-warning {
+      border-left: 4px solid #f59e0b;
+    }
+    .muji-bin-card.is-normal {
+      border-left: 4px solid #16a34a;
+    }
+
+    .muji-bin-header {
+      padding: 13px 16px;
+      cursor: pointer;
+    }
+    .muji-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .muji-bin-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .muji-bin-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 800;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 2px 7px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+    .muji-bin-zone {
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .muji-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .muji-status-pill.is-critical {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fee2e2;
+    }
+    .muji-status-pill.is-warning {
+      background: #fffbeb;
+      color: #b45309;
+      border: 1px solid #fef3c7;
+    }
+    .muji-status-pill.is-normal {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #dcfce7;
+    }
+    .muji-status-pill.is-hazard {
+      background: #faf5ff;
+      color: #7e22ce;
+      border: 1px solid #f3e8ff;
+    }
+    .muji-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .muji-bin-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 10px;
+    }
+    .muji-meter-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .muji-meter-bar {
+      flex: 1;
+      height: 6px;
+      background: #f1f5f9;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .muji-meter-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+    .muji-meter-val {
+      font-size: 12px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: #0f172a;
+      min-width: 38px;
+      text-align: right;
+    }
+
+    /* Muji Card Body & Telemetry Grid */
+    .muji-bin-body {
+      padding: 14px 16px 16px;
+      background: #fafcfb;
+      border-top: 1px solid #edf2f0;
+    }
+    .muji-telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 580px) {
+      .muji-telemetry-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .muji-tele-item {
+      background: #ffffff;
+      border: 1px solid #eef2f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .muji-tele-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 3px;
+    }
+    .muji-tele-label svg {
+      color: #15803d;
+      flex-shrink: 0;
+    }
+    .muji-tele-val {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .muji-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .muji-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .muji-btn-primary {
+      background: #15803d;
+      color: #ffffff;
+      border: 1px solid #14532d;
+    }
+    .muji-btn-primary:hover {
+      background: #166534;
+    }
+    .muji-btn-secondary {
+      background: #ffffff;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .muji-btn-secondary:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
     /* ═══ DISTRICT FILTER ════════════════════════════════════ */
     .dist-filter {
       display: flex;
@@ -1894,69 +2285,84 @@
             <div class="ph-title" id="home-title">AI Logistik Dispatch</div>
             <div class="ph-sub" id="home-sub">Penjadualan automatik KDEBWM · Selangor</div>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <a href="/simulator" target="_blank" class="btn bg bsm" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;background:#2ea043;color:#fff;">🎮 Simulator Kiosk</a>
-            <button class="btn by bsm" id="sim-tick-btn" onclick="triggerSimTick()">⏱️ Simulasikan Timbul (+1
-              Tick)</button>
-            <button class="btn br bsm" id="override-btn" onclick="overrideDispatch()">⚡ Override</button>
-          </div>
         </div>
 
-        <!-- ── Real-Time B01 Live Alert Banner (hidden by default, shown when 95%+ full) ── -->
-        <div id="b01-alert-banner" style="display:none;margin:0 14px 10px;border-radius:12px;overflow:hidden;border:2px solid #fca5a5;box-shadow:0 4px 16px rgba(220,38,38,0.18);animation:alertPulse 2s infinite;">
-          <div style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:12px 16px;display:flex;align-items:flex-start;gap:10px;">
-            <div style="font-size:22px;flex-shrink:0;">🚨</div>
-            <div style="flex:1;">
-              <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;">AMARAN MASA NYATA — TONG B01 HAMPIR PENUH</div>
-              <div style="font-size:11px;color:#fecaca;" id="b01-alert-sub">Isyarat diterima daripada Simulator Kiosk B01...</div>
+        <!-- 4 KPI Cards at Top (Muji Green & White Simplicity) -->
+        <div class="muji-krow">
+          <div class="muji-kcard">
+            <div class="muji-ki">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
-            <button onclick="document.getElementById('b01-alert-banner').style.display='none'" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-weight:700;">Tutup</button>
-          </div>
-          <!-- Compartment fill bars -->
-          <div style="background:#fef2f2;padding:12px 16px;" id="b01-alert-detail">
-            <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
-              📡 Tong B01 · Persiaran Kewajipan, USJ 1 · Masa Nyata
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="b01-comp-grid">
-              <!-- Populated by JS -->
-            </div>
-            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-              <button class="btn br bsm" onclick="dispatchB01Truck()" style="font-size:11px;">🚛 Hantar Truk ke B01</button>
-              <button class="btn by bsm" onclick="showToast('🔔 Notifikasi dihantar ke pegawai bertugas!','ty')" style="font-size:11px;">📲 Notifikasi Pegawai</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- KPI -->
-        <div class="krow">
-          <div class="kc au d1">
-            <div class="ki">🚨</div>
-            <div class="kn tr" id="k-crit">2</div>
+            <div class="kn" id="k-crit">0</div>
             <div class="kl">Tong Kritikal</div>
-            <div class="ks">≥85% penuh</div>
+            <div class="ks">≥85% kapasiti</div>
           </div>
-          <div class="kc au d2">
-            <div class="ki">🚛</div>
-            <div class="kn tb" id="k-trucks">3</div>
-            <div class="kl">Truk Aktif</div>
-            <div class="ks">En route</div>
+
+          <div class="muji-kcard">
+            <div class="muji-ki">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            </div>
+            <div class="kn" id="k-trucks">3</div>
+            <div class="kl">Truk Sedia</div>
+            <div class="ks">Sedia beroperasi</div>
           </div>
-          <div class="kc au d3">
-            <div class="ki">💰</div>
-            <div class="kn tg" id="k-saved">RM 336</div>
-            <div class="kl">Bahan Api Jimat</div>
+
+          <div class="muji-kcard">
+            <div class="muji-ki">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="kn" id="k-saved">RM 336</div>
+            <div class="kl">Bahan API Jimat</div>
             <div class="ks">Minggu ini</div>
           </div>
-          <div class="kc au d4">
-            <div class="ki">♻️</div>
-            <div class="kn tb" id="k-recycle">38.1%</div>
+
+          <div class="muji-kcard">
+            <div class="muji-ki">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </div>
+            <div class="kn" id="k-recycle">38.1%</div>
             <div class="kl">Kadar Kitar Semula</div>
-            <div class="ks">vs 31% baseline</div>
+            <div class="ks">+7.1% vs baseline</div>
           </div>
         </div>
 
-        <!-- Dispatch grid -->
-        <div class="sl">Tong Mengikut Keutamaan</div>
+        <!-- Section: Tong Mengikut Keutamaan -->
+        <div class="muji-section-header">
+          <span class="muji-section-title">Tong Mengikut Keutamaan</span>
+          <span class="muji-section-sub">5 Unit Aktif · Selangor</span>
+        </div>
+
+        <!-- Real-Time B01 Alert Card (Moved inside Tong Mengikut Keutamaan at the top) -->
+        <div id="b01-alert-banner" class="muji-alert-card" style="display:none;">
+          <div class="muji-alert-header">
+            <div class="muji-alert-tag">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span>MAKLUMAN KRITIKAL · TONG B01 PENUH</span>
+            </div>
+            <button onclick="document.getElementById('b01-alert-banner').style.display='none'" class="muji-alert-close" aria-label="Tutup">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="muji-alert-body">
+            <div class="muji-alert-loc" id="b01-alert-sub">Tong B01 · Persiaran Kewajipan, USJ 1 · Memerlukan pengosongan segera</div>
+            <div class="muji-comp-grid" id="b01-comp-grid">
+              <!-- Populated dynamically by updateB01AlertUI -->
+            </div>
+            <div class="muji-alert-actions">
+              <button class="muji-btn muji-btn-primary" onclick="dispatchB01Truck()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                Hantar Truk ke B01
+              </button>
+              <button class="muji-btn muji-btn-secondary" onclick="showToast('Notifikasi telah dihantar kepada pegawai bertugas.','ty')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Notifikasi Pegawai
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dispatch grid (Bins B01 - B05) -->
         <div id="dispatch-grid" style="margin:0 14px 20px;"></div>
       </div>
 
@@ -2747,29 +3153,33 @@
       const grid = document.getElementById('b01-comp-grid');
       if (grid) {
         const slotDefs = [
-          { key: 'orange', label: 'Plastik/Logam', color: '#f59e0b', emoji: '🟠' },
-          { key: 'blue',   label: 'Kertas/Kadbod', color: '#0284c7', emoji: '🔵' },
-          { key: 'brown',  label: 'Kaca',           color: '#854d0e', emoji: '🟤' },
-          { key: 'black',  label: 'Sisa Baki',      color: '#18181b', emoji: '⚫' }
+          { key: 'orange', label: 'Plastik & Logam', color: '#15803d' },
+          { key: 'blue',   label: 'Kertas & Kadbod', color: '#0284c7' },
+          { key: 'brown',  label: 'Kaca',           color: '#854d0e' },
+          { key: 'black',  label: 'Sisa Baki',      color: '#334155' }
         ];
         grid.innerHTML = slotDefs.map(s => {
           const info = comps[s.key] || {};
           const pct = Math.round(info.fill_pct || 0);
           const isCrit = pct >= 95;
-          const isWarn = pct >= 70;
-          const barColor = isCrit ? '#dc2626' : isWarn ? '#f59e0b' : s.color;
-          return `<div style="background:${isCrit ? '#fef2f2' : '#f9fafb'};border:1.5px solid ${isCrit ? '#fca5a5' : '#e5e7eb'};border-radius:8px;padding:8px;">
-            <div style="font-size:10px;font-weight:700;color:#374151;margin-bottom:4px;">${s.emoji} ${s.label}</div>
-            <div style="height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin-bottom:3px;">
-              <div style="height:100%;background:${barColor};border-radius:3px;width:${pct}%;transition:width 0.5s;"></div>
+          const barColor = isCrit ? '#dc2626' : pct >= 70 ? '#f59e0b' : '#15803d';
+          return `<div class="muji-comp-item ${isCrit ? 'is-crit' : ''}">
+            <div class="muji-comp-header">
+              <span class="muji-comp-name">
+                <span class="muji-comp-dot" style="background:${s.color};"></span>
+                ${s.label}
+              </span>
+              <span class="muji-comp-pct" style="color:${isCrit ? '#dc2626' : '#1e293b'}">${pct}%</span>
             </div>
-            <div style="font-size:12px;font-weight:800;color:${isCrit ? '#dc2626' : '#374151'};font-family:'JetBrains Mono',monospace;">${pct}%${isCrit ? ' 🚨' : isWarn ? ' ⚠️' : ''}</div>
+            <div class="muji-comp-bar">
+              <div class="muji-comp-fill" style="width:${pct}%;background:${barColor};"></div>
+            </div>
           </div>`;
         }).join('');
       }
 
       if (hasAlert) {
-        // ── Show alert banner ──
+        // ── Show alert banner at top of Tong Mengikut Keutamaan ──
         banner.style.display = 'block';
         const sub = document.getElementById('b01-alert-sub');
         if (sub) {
@@ -2777,7 +3187,7 @@
           const critSlotNames = alertSlots.map(s => slotNames[s] || s.toUpperCase()).join(', ');
           const now = new Date();
           const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-          sub.textContent = `Slot kritikal: ${critSlotNames} — Dikemas kini: ${timeStr}`;
+          sub.textContent = `Tong B01 · Slot kritikal: ${critSlotNames} — Kemas kini: ${timeStr}`;
         }
 
         // ── Promote B01 to KRITIKAL in dispatch grid ──
@@ -2785,22 +3195,20 @@
         if (b01) {
           const allPcts = Object.values(comps).map(c => c.fill_pct || 0);
           const maxPct = Math.max(...allPcts);
-          // Force fill to 95%+ so it sorts to top of dispatch grid as KRITIKAL
           b01.fill = Math.max(95, maxPct);
-          b01.hz = false; // not hazardous, just critical fill
+          b01.hz = false;
           b01.wtype = 'Pelbagai (Kitar Semula)';
-          b01.hrsLeft = 0.3; // urgent
+          b01.hrsLeft = 0.3;
           b01.status = 'CRITICAL';
         }
 
         // ── Toast + KPI (only once per new alert) ──
         if (!b01AlertShown) {
           b01AlertShown = true;
-          showToast('🚨 AMARAN: Tong B01 hampir penuh! Hantar truk segera!', 'tr');
-          renderDispatchGrid();   // Re-render so B01 floats to top as KRITIKAL
+          showToast('AMARAN: Tong B01 hampir penuh. Sila hantar truk.', 'tr');
+          renderDispatchGrid();
           renderMapBinList();
           if (appMap) renderMarkers();
-          // Bump KPI critical count
           const kCrit = document.getElementById('k-crit');
           if (kCrit) {
             const curr = parseInt(kCrit.textContent) || 0;
@@ -2831,7 +3239,7 @@
 
     async function dispatchB01Truck() {
       const btn = event ? event.currentTarget : null;
-      if (btn) { btn.disabled = true; btn.textContent = '⏳ Menghantar...'; }
+      if (btn) { btn.disabled = true; btn.textContent = 'Menghantar...'; }
 
       // 1. Instant cross-tab broadcast to Simulator tab (0ms latency)
       try {
@@ -2878,86 +3286,155 @@
       renderMapBinList();
       if (appMap) renderMarkers();
 
-      showToast('🚛 Truk dihantar ke Tong B01! Tong B01 telah dikosongkan (0%).', 'tg');
-      if (btn) { btn.disabled = false; btn.textContent = '🚛 Hantar Truk ke B01'; }
+      showToast('Truk dihantar ke Tong B01. Tong telah dikosongkan.', 'tg');
+      if (btn) { btn.disabled = false; btn.textContent = 'Hantar Truk ke B01'; }
     }
 
 
-    /* ── Dispatch Grid ────────────────────────────────────────── */
+    /* ── Dispatch Grid (Muji Style: B01 - B05) ─────────────────── */
     function dispatchColor(b) {
-      if (b.hz) return 'var(--purple)';
-      if (b.fill >= 85) return 'var(--red)';
-      if (b.fill >= 60) return 'var(--yellow-dark)';
-      return 'var(--green)';
+      if (b.hz) return '#7c3aed';
+      if (b.fill >= 85) return '#dc2626';
+      if (b.fill >= 60) return '#d97706';
+      return '#16a34a';
     }
-    function dispatchClass(b) { return b.hz || b.fill >= 85 ? 'critical' : b.fill >= 60 ? 'warning' : 'normal'; }
-    function dispatchLabel(b) { return b.hz ? '☣️ KRITIKAL — Berbahaya' : b.fill >= 85 ? '🔴 KRITIKAL — Perlu Kosong Segera' : b.fill >= 60 ? '🟡 AMARAN — Hampir Penuh' : '🟢 NORMAL'; }
+    function dispatchClass(b) { 
+      return b.hz ? 'is-hazard' : b.fill >= 85 ? 'is-critical' : b.fill >= 60 ? 'is-warning' : 'is-normal'; 
+    }
+    function dispatchLabel(b) { 
+      return b.hz ? 'Bahan Berbahaya' : b.fill >= 85 ? 'Kritikal' : b.fill >= 60 ? 'Amaran' : 'Normal'; 
+    }
 
     function renderDispatchGrid() {
       const sorted = [...bins].sort((a, b) => (b.hz ? 1000 : 0) + b.fill - ((a.hz ? 1000 : 0) + a.fill));
       const el = document.getElementById('dispatch-grid');
       if (!el) return;
-      el.innerHTML = sorted.map(b => `
-    <div class="crit-card ${dispatchClass(b)}">
-      <div class="crit-header" onclick="this.parentElement.querySelector('.crit-body').classList.toggle('gone')">
-        <div>
-          <div class="crit-id">${b.id} · ${b.zone} · ${b.dist}</div>
-          <div class="crit-name">${b.name}</div>
-          <div style="margin-top:6px;display:flex;align-items:center;gap:8px;">
-            <div class="fb" style="flex:1;"><div class="fbi" style="width:${Math.round(b.fill)}%;background:${dispatchColor(b)};"></div></div>
-            <span style="font-size:12px;font-weight:800;color:${dispatchColor(b)};font-family:'JetBrains Mono',monospace;">${Math.round(b.fill)}%</span>
+
+      el.innerHTML = sorted.map(b => {
+        const isHazard = Boolean(b.hz);
+        const isCrit = b.fill >= 85 || isHazard;
+        const isWarn = b.fill >= 60 && !isCrit;
+        
+        const cardClass = isCrit ? 'is-critical' : isWarn ? 'is-warning' : 'is-normal';
+        const pillClass = isHazard ? 'is-hazard' : isCrit ? 'is-critical' : isWarn ? 'is-warning' : 'is-normal';
+        const pillLabel = isHazard ? 'Bahan Berbahaya' : isCrit ? 'Kritikal' : isWarn ? 'Amaran' : 'Normal';
+        
+        const barColor = isHazard ? '#7c3aed' : isCrit ? '#dc2626' : isWarn ? '#d97706' : '#16a34a';
+
+        return `
+    <div class="muji-bin-card ${cardClass}">
+      <div class="muji-bin-header" onclick="this.parentElement.querySelector('.muji-bin-body').classList.toggle('gone')">
+        <div class="muji-header-top">
+          <div class="muji-bin-tag">
+            <span class="muji-bin-id">${b.id}</span>
+            <span class="muji-bin-zone">${b.zone} · ${b.dist}</span>
+          </div>
+          <span class="muji-status-pill ${pillClass}">
+            <span class="muji-status-dot"></span>
+            ${pillLabel}
+          </span>
+        </div>
+        <div class="muji-bin-name">${b.name}</div>
+        <div class="muji-meter-row">
+          <div class="muji-meter-bar">
+            <div class="muji-meter-fill" style="width:${Math.round(b.fill)}%;background:${barColor};"></div>
+          </div>
+          <div class="muji-meter-val" style="color:${isCrit ? '#dc2626' : '#0f172a'};">${Math.round(b.fill)}%</div>
+        </div>
+      </div>
+      <div class="muji-bin-body">
+        <div class="muji-telemetry-grid">
+          <div class="muji-tele-item">
+            <div class="muji-tele-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h2M6 8v8M10 5v14M14 8v8M18 10v4M22 12h-2"/></svg>
+              Tahap Isian
+            </div>
+            <div class="muji-tele-val" style="color:${barColor};">${Math.round(b.fill)}%</div>
+          </div>
+          <div class="muji-tele-item">
+            <div class="muji-tele-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+              Kelembapan
+            </div>
+            <div class="muji-tele-val">${Math.round(b.moist)}%</div>
+          </div>
+          <div class="muji-tele-item">
+            <div class="muji-tele-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+              Gas Sisa
+            </div>
+            <div class="muji-tele-val">${b.gas} ppm</div>
+          </div>
+          <div class="muji-tele-item">
+            <div class="muji-tele-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM2 16l3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1zM7 21h10M12 3v18M3 7h18"/></svg>
+              Berat Sisa
+            </div>
+            <div class="muji-tele-val">${b.weight.toFixed(1)} kg</div>
+          </div>
+          <div class="muji-tele-item">
+            <div class="muji-tele-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+              Kategori AI
+            </div>
+            <div class="muji-tele-val">${b.wtype}</div>
+          </div>
+          <div class="muji-tele-item">
+            <div class="muji-tele-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Ramalan Limpah
+            </div>
+            <div class="muji-tele-val">${b.hrsLeft ? b.hrsLeft + ' jam' : 'Terkawal'}</div>
           </div>
         </div>
-        <span class="chip ${b.hz ? 'cp' : b.fill >= 85 ? 'cr' : b.fill >= 60 ? 'cy' : 'cg'}">${dispatchLabel(b)}</span>
-      </div>
-      <div class="crit-body">
-        <div class="sensor-row"><div class="sensor-icon">📡</div><div class="sensor-label">Ultrasonic</div><div class="sensor-val" style="color:${dispatchColor(b)}">${Math.round(b.fill)}% penuh</div></div>
-        <div class="sensor-row"><div class="sensor-icon">💧</div><div class="sensor-label">Kelembapan</div><div class="sensor-val" style="color:${b.moist > 70 ? 'var(--red)' : 'var(--text)'}">${Math.round(b.moist)}% ${b.moist > 70 ? '⚠️ Tinggi' : ''}</div></div>
-        <div class="sensor-row"><div class="sensor-icon">💨</div><div class="sensor-label">Gas (ppm)</div><div class="sensor-val" style="color:${b.gas > 300 ? 'var(--orange)' : 'var(--text)'}">${b.gas} ppm ${b.gas > 300 ? '🔶' : ''}</div></div>
-        <div class="sensor-row"><div class="sensor-icon">⚖️</div><div class="sensor-label">Berat</div><div class="sensor-val">${b.weight.toFixed(1)} kg</div></div>
-        <div class="sensor-row"><div class="sensor-icon">🤖</div><div class="sensor-label">Jenis Sisa AI</div><div class="sensor-val" style="color:${b.hz ? 'var(--purple)' : 'var(--green)'}">${b.wtype}</div></div>
-        ${b.hrsLeft ? `<div class="sensor-row"><div class="sensor-icon">⏰</div><div class="sensor-label">Limpah dalam</div><div class="sensor-val" style="color:${b.hrsLeft < 4 ? 'var(--red)' : 'var(--text)'}">${b.hrsLeft} jam</div></div>` : ''}
-        <div class="dispatch-actions">
-          <button class="btn bg bsm" onclick="dispatch(this,'${b.id}')">🚛 Hantar Truk</button>
-          <button class="btn by bsm" onclick="showToast('🔧 Dijadualkan untuk penyelenggaraan — ${b.id}','')">🔧 Penyelenggaraan</button>
+        <div class="muji-actions">
+          <button class="muji-btn muji-btn-primary" onclick="dispatch(this,'${b.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Hantar Truk
+          </button>
+          <button class="muji-btn muji-btn-secondary" onclick="showToast('Dijadualkan untuk penyelenggaraan — ${b.id}','')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            Penyelenggaraan
+          </button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+      }).join('');
     }
 
     function dispatch(btn, id) {
-      btn.textContent = '⏳ Dihantar...';
+      btn.textContent = 'Menghantar...';
       btn.disabled = true;
 
       // Find bin and update status
       const bin = bins.find(b => b.id === id);
       if (bin) {
         bin.status = 'DISPATCHED';
-        bin.fill = 5; // Reset fill
+        bin.fill = 0; // Reset fill
       }
 
       setTimeout(() => {
-        btn.textContent = '✅ Truk En Route';
-        showToast(`🚛 Truk dihantar ke ${id}!`, 'tg');
+        btn.textContent = 'Truk Dihantar';
+        showToast(`Truk dihantar ke ${id}.`, 'tg');
         renderDispatchGrid();
         renderMapBinList();
         if (appMap) renderMarkers();
-      }, 1200);
+      }, 1000);
     }
 
     function overrideDispatch() {
-      showToast('⚡ Override aktif — semua truk dihantar!', 'ty');
+      showToast('Override aktif — semua truk dihantar.', 'ty');
       bins.forEach(b => {
         if (b.fill >= 70 || b.hz) {
           b.status = 'DISPATCHED';
-          b.fill = 5;
+          b.fill = 0;
         }
       });
       setTimeout(() => {
         renderDispatchGrid();
         renderMapBinList();
         if (appMap) renderMarkers();
-      }, 1200);
+      }, 1000);
     }
 
     /* ── Live Simulation Ticker (Phase 4) ─────────────────────── */
