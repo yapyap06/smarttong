@@ -2499,7 +2499,7 @@
 
     /* ── Data ─────────────────────────────────────────────── */
     const BINS = [
-      { id: 'B01', name: 'Persiaran Kewajipan, USJ 1', zone: 'MBSJ', dist: 'Petaling', lat: 3.0481, lng: 101.5787, fill: 85, wtype: 'Organik', gas: 220, moist: 68, weight: 14.2, hz: false, hrsLeft: 3.2 },
+      { id: 'B01', name: 'Persiaran Kewajipan, USJ 1', zone: 'MBSJ', dist: 'Petaling', lat: 3.0481, lng: 101.5787, fill: 0, wtype: 'Pelbagai', gas: 220, moist: 68, weight: 0.0, hz: false, hrsLeft: null },
       { id: 'B02', name: 'Jalan SS15/4, Subang Jaya', zone: 'MBSJ', dist: 'Petaling', lat: 3.0754, lng: 101.5843, fill: 62, wtype: 'Plastik', gas: 89, moist: 22, weight: 8.1, hz: false, hrsLeft: 9.5 },
       { id: 'B03', name: 'Dataran Sunway, PJS 11', zone: 'MBPJ', dist: 'Petaling', lat: 3.0680, lng: 101.6014, fill: 93, wtype: 'Organik', gas: 380, moist: 81, weight: 18.7, hz: false, hrsLeft: 0.8 },
       { id: 'B04', name: 'Taman Jaya Park, Petaling Jaya', zone: 'MBPJ', dist: 'Petaling', lat: 3.1069, lng: 101.6380, fill: 28, wtype: 'Kertas', gas: 55, moist: 18, weight: 4.2, hz: false, hrsLeft: null },
@@ -2809,13 +2809,19 @@
         }
 
       } else {
-        // Alert cleared (e.g. after truck dispatch)
+        // Alert cleared (e.g. after truck dispatch or normal level)
         if (b01AlertShown) {
           b01AlertShown = false;
           banner.style.display = 'none';
-          // Reset B01 fill in dispatch grid
-          const b01 = bins.find(b => b.id === 'B01');
-          if (b01) { b01.fill = 5; b01.status = 'NORMAL'; b01.hrsLeft = null; }
+        }
+        // Sync B01 fill in dispatch grid to actual live max compartment percentage
+        const b01 = bins.find(b => b.id === 'B01');
+        if (b01) {
+          const allPcts = Object.values(comps).map(c => c.fill_pct || 0);
+          const maxPct = allPcts.length > 0 ? Math.max(...allPcts) : 0;
+          b01.fill = maxPct;
+          b01.status = maxPct >= 85 ? 'CRITICAL' : maxPct >= 60 ? 'WARNING' : 'NORMAL';
+          b01.hrsLeft = null;
           renderDispatchGrid();
           renderMapBinList();
           if (appMap) renderMarkers();
@@ -2827,7 +2833,14 @@
       const btn = event ? event.currentTarget : null;
       if (btn) { btn.disabled = true; btn.textContent = '⏳ Menghantar...'; }
 
-      // 1. POST /bin-reset to HF Space → clears simulator waste levels
+      // 1. Instant cross-tab broadcast to Simulator tab (0ms latency)
+      try {
+        const bc = new BroadcastChannel('smarttong_channel');
+        bc.postMessage({ type: 'BIN_RESET', binId: 'B01', timestamp: Date.now() });
+        localStorage.setItem('smarttong_bin_reset', Date.now().toString());
+      } catch(e) {}
+
+      // 2. POST /bin-reset to HF Space → clears simulator waste levels & cloud backend
       try {
         const res = await fetch('https://ninjayy-smarttong-ai.hf.space/bin-reset', {
           method: 'POST',
@@ -2842,21 +2855,30 @@
         console.warn('[B01 Reset] Network error, resetting locally only:', e);
       }
 
-      // 2. Update local bins state
+      // 3. Update local bins state to 0%
       const b01 = bins.find(b => b.id === 'B01');
-      if (b01) { b01.status = 'DISPATCHED'; b01.fill = 5; b01.hrsLeft = null; }
+      if (b01) { b01.status = 'NORMAL'; b01.fill = 0; b01.hrsLeft = null; }
 
-      // 3. Hide banner and reset alert flag
+      // Also reset lastB01Status compartments locally
+      if (lastB01Status && lastB01Status.compartments) {
+        Object.keys(lastB01Status.compartments).forEach(k => {
+          lastB01Status.compartments[k].fill_pct = 0;
+        });
+        lastB01Status.alert = false;
+        lastB01Status.alert_slots = [];
+      }
+
+      // 4. Hide banner and reset alert flag
       const banner = document.getElementById('b01-alert-banner');
       if (banner) banner.style.display = 'none';
       b01AlertShown = false;
 
-      // 4. Re-render UI
+      // 5. Re-render UI
       renderDispatchGrid();
       renderMapBinList();
       if (appMap) renderMarkers();
 
-      showToast('🚛 Truk dihantar ke Tong B01! Tong akan dikosongkan.', 'tg');
+      showToast('🚛 Truk dihantar ke Tong B01! Tong B01 telah dikosongkan (0%).', 'tg');
       if (btn) { btn.disabled = false; btn.textContent = '🚛 Hantar Truk ke B01'; }
     }
 
@@ -2969,7 +2991,8 @@
         } else {
           // Fallback local simulation tick
           bins = bins.map(b => {
-            const rate = { B01: 8, B02: 5, B03: 12, B04: 3, B05: 7 }[b.id] || 5;
+            if (b.id === 'B01') return b; // B01 is live-connected to physical kiosk simulator
+            const rate = { B02: 5, B03: 12, B04: 3, B05: 7 }[b.id] || 5;
             const newFill = Math.min(100, b.fill + rate + (Math.random() * 4 - 1.5));
             const hzRand = Math.random() < 0.08;
             return {
@@ -2987,7 +3010,8 @@
         showToast('⚠️ Ralat simulation. Menjalankan secara lokal...', 'tr');
         // Local fallback
         bins = bins.map(b => {
-          const rate = { B01: 8, B02: 5, B03: 12, B04: 3, B05: 7 }[b.id] || 5;
+          if (b.id === 'B01') return b; // B01 is live-connected
+          const rate = { B02: 5, B03: 12, B04: 3, B05: 7 }[b.id] || 5;
           return { ...b, fill: Math.min(100, b.fill + rate) };
         });
       } finally {

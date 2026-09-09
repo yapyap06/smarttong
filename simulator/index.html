@@ -419,37 +419,37 @@
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
             <span style="color:#f59e0b;font-weight:700;">🟠 Plastik/Logam</span>
-            <span id="fill-orange" style="font-weight:800;font-family:'JetBrains Mono';">20%</span>
+            <span id="fill-orange" style="font-weight:800;font-family:'JetBrains Mono';">0%</span>
           </div>
           <div style="height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
-            <div id="bar-orange" style="height:100%;background:#f59e0b;border-radius:4px;width:20%;transition:width 0.5s;"></div>
+            <div id="bar-orange" style="height:100%;background:#f59e0b;border-radius:4px;width:0%;transition:width 0.5s;"></div>
           </div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
             <span style="color:#0284c7;font-weight:700;">🔵 Kertas/Kadbod</span>
-            <span id="fill-blue" style="font-weight:800;font-family:'JetBrains Mono';">20%</span>
+            <span id="fill-blue" style="font-weight:800;font-family:'JetBrains Mono';">0%</span>
           </div>
           <div style="height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
-            <div id="bar-blue" style="height:100%;background:#0284c7;border-radius:4px;width:20%;transition:width 0.5s;"></div>
+            <div id="bar-blue" style="height:100%;background:#0284c7;border-radius:4px;width:0%;transition:width 0.5s;"></div>
           </div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
             <span style="color:#854d0e;font-weight:700;">🟤 Kaca</span>
-            <span id="fill-brown" style="font-weight:800;font-family:'JetBrains Mono';">20%</span>
+            <span id="fill-brown" style="font-weight:800;font-family:'JetBrains Mono';">0%</span>
           </div>
           <div style="height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
-            <div id="bar-brown" style="height:100%;background:#854d0e;border-radius:4px;width:20%;transition:width 0.5s;"></div>
+            <div id="bar-brown" style="height:100%;background:#854d0e;border-radius:4px;width:0%;transition:width 0.5s;"></div>
           </div>
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
             <span style="color:#18181b;font-weight:700;">⚫ Sisa Baki</span>
-            <span id="fill-black" style="font-weight:800;font-family:'JetBrains Mono';">20%</span>
+            <span id="fill-black" style="font-weight:800;font-family:'JetBrains Mono';">0%</span>
           </div>
           <div style="height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
-            <div id="bar-black" style="height:100%;background:#18181b;border-radius:4px;width:20%;transition:width 0.5s;"></div>
+            <div id="bar-black" style="height:100%;background:#18181b;border-radius:4px;width:0%;transition:width 0.5s;"></div>
           </div>
         </div>
       </div>
@@ -767,10 +767,11 @@
       const wasteFill = new THREE.Mesh(wasteGeo, wasteMat);
       wasteFill.position.set(0, 0.15, 0); // Identical baseline for orange, blue, brown, black
 
-      const initHeight = 0.28; // Uniform baseline height for all bins
-      wasteFill.scale.set(1, initHeight, 1);
+      // Start completely empty (no default stack visible)
+      wasteFill.scale.set(1, 0.001, 1);
+      wasteFill.visible = false;
       group.add(wasteFill);
-      wasteLevels[cfg.key] = { mesh: wasteFill, height: initHeight };
+      wasteLevels[cfg.key] = { mesh: wasteFill, height: 0 };
 
       // ─── Intake Flap Row (Dark High-Contrast Flap Doors with Silver Handle) ───
       // Flap outer white bezel
@@ -1240,9 +1241,12 @@
           // Increase waste height in compartment (stacks up step by step from fixed floor)
           const waste = wasteLevels[slotKey];
           if (waste) {
-            waste.height = Math.min(1.42, waste.height + 0.12);
-            waste.mesh.scale.y = waste.height; // Bottom is locked at floor, grows purely upward!
-            const pct = Math.min(100, Math.round((waste.height / 1.42) * 100));
+            const maxH = 1.40;
+            // Each throw adds 0.35 height (25% per throw, 4 throws = 100%)
+            waste.height = Math.min(maxH, waste.height + 0.35);
+            waste.mesh.visible = true;
+            waste.mesh.scale.y = Math.max(0.001, waste.height); // Bottom is locked at floor, grows purely upward!
+            const pct = Math.min(100, Math.round((waste.height / maxH) * 100));
             addLog(`Sensor ultrasonik mengesan pertambahan isipadu dalam slot ${slotKey.toUpperCase()} (${pct}% penuh).`);
             // Update UI fill bars and report to HF Space
             updateBinFillUI();
@@ -1256,13 +1260,11 @@
     // Compute fill percentages for all 4 compartments
     function getBinFillPcts() {
       const result = {};
-      const maxH = 1.42;
-      const minH = 0.28; // Initial baseline
+      const maxH = 1.40;
       binConfigs.forEach(cfg => {
         const w = wasteLevels[cfg.key];
-        if (w) {
-          // Normalize: minH = 0%, maxH = 100%
-          const pct = Math.min(100, Math.max(0, Math.round(((w.height - minH) / (maxH - minH)) * 100)));
+        if (w && w.height > 0.01) {
+          const pct = Math.min(100, Math.max(0, Math.round((w.height / maxH) * 100)));
           result[cfg.key] = pct;
         } else {
           result[cfg.key] = 0;
@@ -1341,25 +1343,45 @@
     let lastResetId = 0;
 
     function resetAllWasteLevels() {
-      const initHeight = 0.28; // Baseline height (= 0%)
+      // 1. Reset all compartments to 0 immediately
       binConfigs.forEach(cfg => {
         const waste = wasteLevels[cfg.key];
         if (waste) {
-          // Animate the waste smoothly shrinking back to baseline
           const startH = waste.height;
-          const startTime = performance.now();
-          function shrink(now) {
-            const t = Math.min(1, (now - startTime) / 1200); // 1.2s animation
-            waste.height = startH + (initHeight - startH) * t;
-            waste.mesh.scale.y = waste.height;
-            if (t < 1) requestAnimationFrame(shrink);
-            else waste.height = initHeight;
+          waste.height = 0; // Immediate logical reset to 0%
+          if (startH > 0.01) {
+            // Smoothly animate shrinking down to empty base
+            const startTime = performance.now();
+            function shrink(now) {
+              const t = Math.min(1, (now - startTime) / 800);
+              const curH = startH * (1 - t);
+              waste.mesh.scale.y = Math.max(0.001, curH);
+              if (t < 1) {
+                requestAnimationFrame(shrink);
+              } else {
+                waste.mesh.visible = false;
+                waste.mesh.scale.y = 0.001;
+              }
+            }
+            requestAnimationFrame(shrink);
+          } else {
+            waste.mesh.visible = false;
+            waste.mesh.scale.y = 0.001;
           }
-          requestAnimationFrame(shrink);
         }
       });
-      // Update UI bars back to 0%
+
+      // 2. Immediately update UI fill bars and percentages to 0%
       updateBinFillUI();
+
+      // 3. Immediately hide alert banner
+      const alertEl = document.getElementById('bin-full-alert');
+      if (alertEl) alertEl.style.display = 'none';
+
+      // 4. Report cleared 0% status to cloud
+      reportBinStatusToCloud();
+
+      // 5. User feedback in logs & OLED
       addLog('[B01 RESET] 🚛 Truk telah datang. Semua ruang tong dikosongkan & diset semula.');
       document.getElementById('oled-disp').innerHTML = `TRUCK COLLECTED ✓<br/>Tong B01 Dikosongkan — Standby`;
       setTimeout(() => {
@@ -1368,39 +1390,45 @@
     }
 
     function initBinResetListener() {
+      // Initialize lastResetId from backend at startup so initial load doesn't trigger spurious reset
+      fetch(HF_BIN_RESET_URL, { cache: 'no-store' })
+        .then(r => r.json())
+        .then(d => { if (d && d.reset_id) lastResetId = d.reset_id; })
+        .catch(() => {});
+
       // 1. SSE: listen on /bin-status/stream for RESET messages
       try {
         const resetEs = new EventSource(HF_BIN_STATUS_URL + '/stream');
         resetEs.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            // A RESET broadcast comes through with type='RESET' and all fill_pct=0
-            if (data && data.type === 'RESET') {
-              if (data.reset_id && data.reset_id > lastResetId) {
-                lastResetId = data.reset_id;
-                resetAllWasteLevels();
-              }
+            if (data && (data.type === 'RESET' || (data.reset_id && data.reset_id > lastResetId))) {
+              if (data.reset_id) lastResetId = data.reset_id;
+              resetAllWasteLevels();
             }
           } catch(e) {}
         };
         resetEs.onerror = () => {};
       } catch(e) {}
 
-      // 2. Polling fallback: check /bin-reset every 3s for new reset_id
+      // 2. Polling fallback: check /bin-reset every 2s for new reset_id
       setInterval(async () => {
         try {
           const res = await fetch(HF_BIN_RESET_URL, { cache: 'no-store' });
           if (res.ok) {
             const d = await res.json();
-            if (d.reset_id && d.reset_id > lastResetId && d.reset_ts && (Date.now() - d.reset_ts < 30000)) {
+            if (d.reset_id && d.reset_id > lastResetId) {
               lastResetId = d.reset_id;
               resetAllWasteLevels();
             }
           }
         } catch(e) {}
-      }, 3000);
+      }, 2000);
     }
     initBinResetListener();
+
+    // Call updateBinFillUI at startup to ensure 0% is rendered
+    updateBinFillUI();
 
     // 6. Realtime Multi-Tier Cloud Sync (HF Space + Render + Firebase + BroadcastChannel)
     const CLOUD_RELAY_URLS = [
@@ -1507,6 +1535,9 @@
     bc.onmessage = (e) => {
       if (e.data && e.data.type === 'ACTUATION') {
         handleIncomingScan(e.data.payload, 'Citizen App (BroadcastChannel)');
+      } else if (e.data && (e.data.type === 'BIN_RESET' || e.data.type === 'RESET_B01')) {
+        addLog('[B01 RESET] 🚛 Menerima arahan pengosongan tong daripada Dashboard PBT.');
+        resetAllWasteLevels();
       }
     };
 
@@ -1516,6 +1547,9 @@
           const payload = JSON.parse(e.newValue);
           handleIncomingScan(payload, 'Cross-Tab Storage');
         } catch(err){}
+      } else if (e.key === 'smarttong_bin_reset' && e.newValue) {
+        addLog('[B01 RESET] 🚛 Menerima arahan pengosongan tong (Cross-Tab).');
+        resetAllWasteLevels();
       }
     });
 
