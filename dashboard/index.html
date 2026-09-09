@@ -2743,7 +2743,7 @@
       const alertSlots = (status.alert_slots || []);
       const hasAlert = status.alert === true || alertSlots.length > 0;
 
-      // Update compartment grid
+      // Update compartment grid inside the alert banner
       const grid = document.getElementById('b01-comp-grid');
       if (grid) {
         const slotDefs = [
@@ -2769,7 +2769,7 @@
       }
 
       if (hasAlert) {
-        // Show alert banner
+        // ── Show alert banner ──
         banner.style.display = 'block';
         const sub = document.getElementById('b01-alert-sub');
         if (sub) {
@@ -2779,40 +2779,87 @@
           const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
           sub.textContent = `Slot kritikal: ${critSlotNames} — Dikemas kini: ${timeStr}`;
         }
-        // Sound alert once when newly triggered
+
+        // ── Promote B01 to KRITIKAL in dispatch grid ──
+        const b01 = bins.find(b => b.id === 'B01');
+        if (b01) {
+          const allPcts = Object.values(comps).map(c => c.fill_pct || 0);
+          const maxPct = Math.max(...allPcts);
+          // Force fill to 95%+ so it sorts to top of dispatch grid as KRITIKAL
+          b01.fill = Math.max(95, maxPct);
+          b01.hz = false; // not hazardous, just critical fill
+          b01.wtype = 'Pelbagai (Kitar Semula)';
+          b01.hrsLeft = 0.3; // urgent
+          b01.status = 'CRITICAL';
+        }
+
+        // ── Toast + KPI (only once per new alert) ──
         if (!b01AlertShown) {
           b01AlertShown = true;
-          showToast('🚨 AMARAN: Tong B01 hampir penuh! Semak Dashboard!', 'tr');
-          // Update KPI counter
+          showToast('🚨 AMARAN: Tong B01 hampir penuh! Hantar truk segera!', 'tr');
+          renderDispatchGrid();   // Re-render so B01 floats to top as KRITIKAL
+          renderMapBinList();
+          if (appMap) renderMarkers();
+          // Bump KPI critical count
           const kCrit = document.getElementById('k-crit');
           if (kCrit) {
             const curr = parseInt(kCrit.textContent) || 0;
             kCrit.textContent = curr + 1;
           }
         }
-        // Also update B01 in bins array (if it's tracked there)
-        const b01 = bins.find(b => b.id === 'B01');
-        if (b01) {
-          const allPcts = Object.values(comps).map(c => c.fill_pct || 0);
-          const maxPct = Math.max(...allPcts);
-          b01.fill = Math.max(b01.fill, maxPct);
-          if (!b01AlertShown) renderDispatchGrid();
-        }
+
       } else {
-        b01AlertShown = false;
+        // Alert cleared (e.g. after truck dispatch)
+        if (b01AlertShown) {
+          b01AlertShown = false;
+          banner.style.display = 'none';
+          // Reset B01 fill in dispatch grid
+          const b01 = bins.find(b => b.id === 'B01');
+          if (b01) { b01.fill = 5; b01.status = 'NORMAL'; b01.hrsLeft = null; }
+          renderDispatchGrid();
+          renderMapBinList();
+          if (appMap) renderMarkers();
+        }
       }
     }
 
-    function dispatchB01Truck() {
-      showToast('🚛 Truk dihantar ke Tong B01, USJ 1!', 'tg');
+    async function dispatchB01Truck() {
+      const btn = event ? event.currentTarget : null;
+      if (btn) { btn.disabled = true; btn.textContent = '⏳ Menghantar...'; }
+
+      // 1. POST /bin-reset to HF Space → clears simulator waste levels
+      try {
+        const res = await fetch('https://ninjayy-smarttong-ai.hf.space/bin-reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dispatched_by: 'PBT Dashboard', timestamp: Date.now() })
+        });
+        if (res.ok) {
+          const d = await res.json();
+          console.log('[B01 Reset] Truck dispatched, simulator notified:', d.reset_id);
+        }
+      } catch(e) {
+        console.warn('[B01 Reset] Network error, resetting locally only:', e);
+      }
+
+      // 2. Update local bins state
       const b01 = bins.find(b => b.id === 'B01');
-      if (b01) { b01.status = 'DISPATCHED'; b01.fill = 5; }
-      document.getElementById('b01-alert-banner').style.display = 'none';
+      if (b01) { b01.status = 'DISPATCHED'; b01.fill = 5; b01.hrsLeft = null; }
+
+      // 3. Hide banner and reset alert flag
+      const banner = document.getElementById('b01-alert-banner');
+      if (banner) banner.style.display = 'none';
       b01AlertShown = false;
+
+      // 4. Re-render UI
       renderDispatchGrid();
       renderMapBinList();
       if (appMap) renderMarkers();
+
+      showToast('🚛 Truk dihantar ke Tong B01! Tong akan dikosongkan.', 'tg');
+      if (btn) { btn.disabled = false; btn.textContent = '🚛 Hantar Truk ke B01'; }
     }
+
 
     /* ── Dispatch Grid ────────────────────────────────────────── */
     function dispatchColor(b) {

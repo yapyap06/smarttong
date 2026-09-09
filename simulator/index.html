@@ -1336,6 +1336,72 @@
       }
     }
 
+    // ── Listen for PBT truck dispatch → reset simulator waste levels ──────────
+    const HF_BIN_RESET_URL = 'https://ninjayy-smarttong-ai.hf.space/bin-reset';
+    let lastResetId = 0;
+
+    function resetAllWasteLevels() {
+      const initHeight = 0.28; // Baseline height (= 0%)
+      binConfigs.forEach(cfg => {
+        const waste = wasteLevels[cfg.key];
+        if (waste) {
+          // Animate the waste smoothly shrinking back to baseline
+          const startH = waste.height;
+          const startTime = performance.now();
+          function shrink(now) {
+            const t = Math.min(1, (now - startTime) / 1200); // 1.2s animation
+            waste.height = startH + (initHeight - startH) * t;
+            waste.mesh.scale.y = waste.height;
+            if (t < 1) requestAnimationFrame(shrink);
+            else waste.height = initHeight;
+          }
+          requestAnimationFrame(shrink);
+        }
+      });
+      // Update UI bars back to 0%
+      updateBinFillUI();
+      addLog('[B01 RESET] 🚛 Truk telah datang. Semua ruang tong dikosongkan & diset semula.');
+      document.getElementById('oled-disp').innerHTML = `TRUCK COLLECTED ✓<br/>Tong B01 Dikosongkan — Standby`;
+      setTimeout(() => {
+        document.getElementById('oled-disp').innerHTML = `SYSTEM STANDBY...<br/>Sedia Menerima Imbasan Sisa`;
+      }, 3500);
+    }
+
+    function initBinResetListener() {
+      // 1. SSE: listen on /bin-status/stream for RESET messages
+      try {
+        const resetEs = new EventSource(HF_BIN_STATUS_URL + '/stream');
+        resetEs.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            // A RESET broadcast comes through with type='RESET' and all fill_pct=0
+            if (data && data.type === 'RESET') {
+              if (data.reset_id && data.reset_id > lastResetId) {
+                lastResetId = data.reset_id;
+                resetAllWasteLevels();
+              }
+            }
+          } catch(e) {}
+        };
+        resetEs.onerror = () => {};
+      } catch(e) {}
+
+      // 2. Polling fallback: check /bin-reset every 3s for new reset_id
+      setInterval(async () => {
+        try {
+          const res = await fetch(HF_BIN_RESET_URL, { cache: 'no-store' });
+          if (res.ok) {
+            const d = await res.json();
+            if (d.reset_id && d.reset_id > lastResetId && d.reset_ts && (Date.now() - d.reset_ts < 30000)) {
+              lastResetId = d.reset_id;
+              resetAllWasteLevels();
+            }
+          }
+        } catch(e) {}
+      }, 3000);
+    }
+    initBinResetListener();
+
     // 6. Realtime Multi-Tier Cloud Sync (HF Space + Render + Firebase + BroadcastChannel)
     const CLOUD_RELAY_URLS = [
       'https://ninjayy-smarttong-ai.hf.space/actuate',
