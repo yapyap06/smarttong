@@ -4997,6 +4997,87 @@
       return txt;
     }
 
+    // ── Groq Cloud API for Ultra-Fast Agent Reports ─────────────
+    // Free API Key: https://console.groq.com/keys
+    let GROQ_KEY = localStorage.getItem('groq_api_key') || '';
+
+    function isValidGroqKey(k) {
+      return typeof k === 'string' && k.startsWith('gsk_') && k.length >= 30;
+    }
+
+    function saveGroqKey() {
+      const inp = document.getElementById('groq-key-input');
+      const val = (inp ? inp.value.trim() : '') || prompt('Masukkan Kunci API Groq (gsk_...):', GROQ_KEY || '');
+      if (val !== null) {
+        GROQ_KEY = val.trim();
+        localStorage.setItem('groq_api_key', GROQ_KEY);
+        if (inp) inp.value = GROQ_KEY;
+        showToast(GROQ_KEY ? '✅ Kunci Groq API berjaya disimpan!' : 'Kunci Groq dipadamkan.');
+      }
+    }
+
+    async function callGroq(prompt, systemPrompt = '', model = 'llama-3.3-70b-versatile') {
+      const key = GROQ_KEY || localStorage.getItem('groq_api_key') || '';
+      if (!isValidGroqKey(key)) {
+        throw new Error('NO_GROQ_KEY');
+      }
+
+      const messages = [];
+      if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
+      messages.push({ role: 'user', content: prompt });
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: messages,
+          temperature: 0.35,
+          max_tokens: 2048
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error?.message || `Groq HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const content = data?.choices?.[0]?.message?.content || '';
+      if (!content.trim()) throw new Error('Empty Groq response');
+      return content;
+    }
+
+    // Multi-provider Agent runner: Groq -> Gemini -> Live Telemetry Fallback
+    async function runAgentLLM(prompt, systemPrompt, liveFallbackFn) {
+      // 1. Try Groq API first (Llama 3.3 70B Versatile)
+      try {
+        const key = GROQ_KEY || localStorage.getItem('groq_api_key') || '';
+        if (isValidGroqKey(key)) {
+          const res = await callGroq(prompt, systemPrompt);
+          if (res && res.length > 100) return { text: res, source: 'Groq (Llama 3.3 70B)' };
+        }
+      } catch (err) {
+        console.warn('[Groq Report Notice]', err);
+      }
+
+      // 2. Try Gemini API
+      try {
+        const res = await gemini(prompt, systemPrompt);
+        if (res && res.length > 100 && !res.endsWith('...')) {
+          return { text: res, source: 'Gemini 2.5 Flash' };
+        }
+      } catch (err) {
+        console.warn('[Gemini Report Notice]', err);
+      }
+
+      // 3. Fall back to Real-Time Dynamic Telemetry Generator
+      return { text: liveFallbackFn(), source: 'SmartTONG Multi-Agent Engine' };
+    }
+
     //  SmartTONG Official SOP — Full 150 QnA Dataset 
     // Bahasa Melayu | KDEBWM Selangor | AINS 2026
     // Used as Gemini system context + local keyword matching
