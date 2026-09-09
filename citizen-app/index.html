@@ -1130,6 +1130,101 @@
       margin-top: 2px;
     }
 
+    /* ── Real-time Gov Bin Alert Banner ─────────────────────── */
+    .gov-bin-alert {
+      margin: 0 20px 14px;
+      background: #fff5f5;
+      border: 1.5px solid #fca5a5;
+      border-radius: 12px;
+      overflow: hidden;
+      animation: govAlertPulse 2.4s ease-in-out infinite;
+    }
+    @keyframes govAlertPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+      50%      { box-shadow: 0 0 0 6px rgba(239,68,68,.15); }
+    }
+    .gov-alert-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #fee2e2;
+      gap: 8px;
+    }
+    .gov-alert-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #dc2626;
+      letter-spacing: .4px;
+    }
+    .gov-alert-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #dc2626;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+    }
+    .gov-alert-body {
+      padding: 10px 14px 12px;
+    }
+    .gov-alert-loc {
+      font-size: 12px;
+      color: #374151;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+    .gov-alert-bins {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .gov-alert-bin-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      background: white;
+      border: 1.5px solid #fca5a5;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #dc2626;
+    }
+    .gov-alert-bin-chip.warn {
+      border-color: #fcd34d;
+      color: #b45309;
+    }
+    .gov-alert-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .gov-alert-btn {
+      flex: 1;
+      min-width: 130px;
+      padding: 9px 12px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: opacity .15s;
+    }
+    .gov-alert-btn:hover { opacity: .88; }
+    .gov-alert-btn-primary   { background: #dc2626; color: white; }
+    .gov-alert-btn-secondary { background: white; color: #374151; border: 1.5px solid #d1d5db; }
+
     /* Schedule table */
     .sched-wrap {
       margin: 0 20px 14px;
@@ -3547,6 +3642,35 @@
           </div>
         </div>
 
+        <!-- ── Real-Time Bin Full Alert Banner (Gov Only) ───────── -->
+        <div id="gov-bin-alert" style="display:none;">
+          <div class="gov-bin-alert">
+            <div class="gov-alert-hdr">
+              <div class="gov-alert-tag">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="gov-alert-title">MAKLUMAN KRITIKAL · TONG PENUH</span>
+              </div>
+              <button class="gov-alert-close" onclick="document.getElementById('gov-bin-alert').style.display='none'" aria-label="Tutup">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div class="gov-alert-body">
+              <div class="gov-alert-loc" id="gov-alert-loc">Satu atau lebih tong telah mencapai had kapasiti kritikal. Tindakan segera diperlukan.</div>
+              <div class="gov-alert-bins" id="gov-alert-chips"></div>
+              <div class="gov-alert-actions">
+                <button class="gov-alert-btn gov-alert-btn-primary" onclick="govDispatchAlert()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                  Hantar Truk Segera
+                </button>
+                <button class="gov-alert-btn gov-alert-btn-secondary" onclick="govNotifyOfficer()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  Notifikasi Pegawai
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Schedule table -->
         <div style="padding:0 20px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
           <div style="font-size:13px;font-weight:700;color:var(--dark);display:flex;align-items:center;gap:6px;">
@@ -5136,6 +5260,7 @@ Jawapan standard: Maaf, saya hanya dilatih untuk menjawab soalan berkaitan pengu
         updateGovKPIs();
         renderGovBinList();
         setInterval(liveSim, 8000);
+        initGovBinListener();  // real-time bin-full alert (BroadcastChannel + Firebase)
       } else {
         renderCitizenSched();
         renderCitizenBinList();
@@ -6030,6 +6155,134 @@ Penjimatan: 21.3km (31%)  RM 96 petrol | 4.2kg CO dikurangkan`;
       </div>
       <div class="bc-text">${s.msg}</div>
     </div>`).join('');
+    }
+
+    // ── Real-time bin fill tracking for Gov alert ──────────────
+    const _govCritBins = {};  // binId -> { fill, loc }
+
+    function updateGovBinAlert(binId, fillPct, locLabel) {
+      const pct = parseFloat(fillPct) || 0;
+      if (pct >= 85) {
+        _govCritBins[binId] = { fill: pct, loc: locLabel || binId };
+      } else {
+        delete _govCritBins[binId];
+      }
+      _renderGovAlert();
+      // Also refresh schedule priority
+      _refreshSchedulePriority(binId, pct);
+    }
+
+    function _renderGovAlert() {
+      const banner = document.getElementById('gov-bin-alert');
+      const chips  = document.getElementById('gov-alert-chips');
+      const title  = document.getElementById('gov-alert-title');
+      const loc    = document.getElementById('gov-alert-loc');
+      if (!banner) return;
+      const keys = Object.keys(_govCritBins);
+      if (keys.length === 0) {
+        banner.style.display = 'none';
+        return;
+      }
+      banner.style.display = 'block';
+      const critKeys = keys.filter(k => _govCritBins[k].fill >= 95);
+      const warnKeys = keys.filter(k => _govCritBins[k].fill >= 85 && _govCritBins[k].fill < 95);
+      title.textContent = critKeys.length > 0
+        ? `MAKLUMAN KRITIKAL · ${critKeys.map(k=>k).join(', ')} PENUH`
+        : `AMARAN · ${warnKeys.map(k=>k).join(', ')} HAMPIR PENUH`;
+      loc.textContent = `${keys.length} tong memerlukan perhatian segera — ` +
+        keys.map(k => `${k} (${Math.round(_govCritBins[k].fill)}%)`).join(', ');
+      chips.innerHTML = keys.map(k => {
+        const isCrit = _govCritBins[k].fill >= 95;
+        return `<div class="gov-alert-bin-chip${isCrit ? '' : ' warn'}">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          ${k} — ${Math.round(_govCritBins[k].fill)}%
+        </div>`;
+      }).join('');
+    }
+
+    function _refreshSchedulePriority(binId, pct) {
+      const row = SCHEDULE.find(s => s.binId === binId);
+      if (!row) return;
+      if (pct >= 95)      { row.pri = 'KRITIKAL'; row.cls = 'pc-red';   row.eta = '8 min'; }
+      else if (pct >= 85) { row.pri = 'TINGGI';   row.cls = 'pc-amber'; row.eta = '25 min'; }
+      else if (pct >= 60) { row.pri = 'SEDERHANA';row.cls = 'pc-blue';  row.eta = '45 min'; }
+      else                { row.pri = 'NORMAL';   row.cls = 'pc-green'; row.eta = '1j+'; }
+      renderSchedule();
+    }
+
+    function govDispatchAlert() {
+      const keys = Object.keys(_govCritBins);
+      if (keys.length === 0) return;
+      showToast(`🚛 Truk dihantar ke ${keys.join(', ')}!`);
+      // Optionally clear from alert after dispatch
+      document.getElementById('gov-bin-alert').style.display = 'none';
+    }
+    function govNotifyOfficer() {
+      showToast('📩 Notifikasi telah dihantar kepada pegawai bertugas.');
+    }
+
+    // ── Listen for bin updates via BroadcastChannel + Firebase ───
+    function initGovBinListener() {
+      // 1. BroadcastChannel for instant same-browser sync (from Simulator)
+      try {
+        const syncBc = new BroadcastChannel('smarttong_channel');
+        syncBc.onmessage = e => {
+          const d = e.data;
+          if (!d) return;
+          const payload = d.payload || d;
+          _applyGovBinPayload(payload);
+        };
+      } catch(err) { console.warn('[GovAlert BC]', err); }
+
+      // 2. Firebase Firestore real-time listener
+      try {
+        const binIds = ['B01','B02','B03','B04','B05'];
+        const binLocs = { B01:'USJ 1', B02:'SS15', B03:'Dataran Sunway', B04:'Taman Jaya', B05:'Shah Alam' };
+        binIds.forEach(bid => {
+          db.collection('bins').doc(bid).onSnapshot(doc => {
+            if (!doc.exists) return;
+            const data = doc.data();
+            const pct = data.fill_level ?? data.fillLevel ?? data.level ?? 0;
+            updateGovBinAlert(bid, parseFloat(pct), binLocs[bid]);
+          }, err => console.warn('[GovAlert Firebase]', bid, err));
+        });
+      } catch(err) { console.warn('[GovAlert Firebase init]', err); }
+
+      // 3. Also poll HF Space as tertiary fallback every 30s
+      _pollHFSpaceGov();
+    }
+
+    async function _pollHFSpaceGov() {
+      const HF = 'https://ninjayy-smarttong-ai.hf.space';
+      const binLocs = { B01:'USJ 1', B02:'SS15', B03:'Dataran Sunway', B04:'Taman Jaya', B05:'Shah Alam' };
+      try {
+        const r = await fetch(`${HF}/bin_status`, { signal: AbortSignal.timeout(6000) });
+        if (r.ok) {
+          const data = await r.json();
+          _applyGovBinPayload(data);
+        }
+      } catch(e) { /* silent */ }
+      setTimeout(_pollHFSpaceGov, 30000);
+    }
+
+    function _applyGovBinPayload(payload) {
+      // payload can be: { B01: {fill_level:80,...}, ... } or { bins: [...] } or flat object
+      const binLocs = { B01:'USJ 1', B02:'SS15', B03:'Dataran Sunway', B04:'Taman Jaya', B05:'Shah Alam' };
+      if (payload && typeof payload === 'object') {
+        ['B01','B02','B03','B04','B05'].forEach(bid => {
+          const bdata = payload[bid] || payload[bid.toLowerCase()];
+          if (bdata != null) {
+            const pct = typeof bdata === 'number' ? bdata :
+                        (bdata.fill_level ?? bdata.fillLevel ?? bdata.level ?? 0);
+            updateGovBinAlert(bid, parseFloat(pct), binLocs[bid]);
+          }
+        });
+        // Also handle flat fill_level from single-bin payloads (B01-specific pattern)
+        if (payload.fill_level !== undefined && payload.bin_id) {
+          const bid = (payload.bin_id || '').toUpperCase();
+          if (binLocs[bid]) updateGovBinAlert(bid, parseFloat(payload.fill_level), binLocs[bid]);
+        }
+      }
     }
 
     function renderSchedule() {
