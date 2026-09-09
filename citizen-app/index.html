@@ -1310,6 +1310,81 @@
       display: block;
     }
 
+    .kdeb-truck-div-icon {
+      background: transparent !important;
+      border: none !important;
+    }
+
+    .truck-marker-wrap {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .truck-radar-ring {
+      position: absolute;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(22, 163, 74, 0.22);
+      border: 1.5px solid rgba(22, 163, 74, 0.5);
+      animation: radarWave 2.2s infinite ease-out;
+      pointer-events: none;
+    }
+
+    @keyframes radarWave {
+      0% { transform: scale(0.5); opacity: 0.95; }
+      100% { transform: scale(2.1); opacity: 0; }
+    }
+
+    .truck-vehicle {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.4s ease;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));
+      cursor: pointer;
+    }
+
+    .truck-tag-badge {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.96);
+      border: 1.5px solid #16a34a;
+      border-radius: 20px;
+      padding: 3px 9px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #15803d;
+      white-space: nowrap;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.14);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .truck-tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #16a34a;
+      animation: truckDotBlink 1.2s infinite ease-in-out;
+    }
+
+    @keyframes truckDotBlink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.7); }
+    }
+
     /* Filter chips */
     .fchips {
       display: flex;
@@ -5235,7 +5310,12 @@ Jawapan standard: Maaf, saya hanya dilatih untuk menjawab soalan berkaitan pengu
       document.getElementById('scroll-area').scrollTop = 0;
 
       if (pgId === 'g-peta' && !govMap) setTimeout(initGovMap, 80);
-      else if (pgId === 'g-peta' && govMap) setTimeout(() => govMap.invalidateSize(), 80);
+      else if (pgId === 'g-peta' && govMap) {
+        setTimeout(() => {
+          govMap.invalidateSize();
+          if (govActiveRouteLines.length) govMap.fitBounds(govActiveRouteLines[0].getBounds(), { padding: [40, 40] });
+        }, 100);
+      }
       if (pgId === 'c-peta' && !citizenMap) setTimeout(initCitizenMap, 80);
       else if (pgId === 'c-peta' && citizenMap) setTimeout(() => citizenMap.invalidateSize(), 80);
       if (pgId === 'c-tanya' && !document.getElementById('chat-msgs').children.length) initChat();
@@ -5744,12 +5824,229 @@ Penjimatan: 21.3km (31%)  RM 96 petrol | 4.2kg CO dikurangkan`;
       return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
     }
 
-    //  Maps 
+    //  Maps & KDEB Route Optimization 
+    let govActiveRouteLines = [];
+    let govActiveTruckMarker = null;
+    let govTruckAnimTimer = null;
+    let govTruckAnimState = {
+      legIndex: 0,
+      step: 0,
+      isPaused: false
+    };
+
+    function calcGovBearing(lat1, lng1, lat2, lng2) {
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const phi1 = lat1 * Math.PI / 180;
+      const phi2 = lat2 * Math.PI / 180;
+      const y = Math.sin(dLng) * Math.cos(phi2);
+      const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLng);
+      const brng = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+      return brng;
+    }
+
+    function getGovTruckSvg() {
+      return `
+        <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 100 100">
+          <rect x="22" y="32" width="56" height="54" rx="8" fill="#15803d" stroke="#052e16" stroke-width="3.5" />
+          <rect x="28" y="38" width="44" height="42" rx="4" fill="#16a34a" />
+          <line x1="28" y1="52" x2="72" y2="52" stroke="#14532d" stroke-width="2" />
+          <line x1="28" y1="66" x2="72" y2="66" stroke="#14532d" stroke-width="2" />
+          <path d="M26 32 L26 18 Q26 12 34 12 L66 12 Q74 12 74 18 L74 32 Z" fill="#22c55e" stroke="#052e16" stroke-width="3.5" />
+          <path d="M30 26 L30 18 Q30 15 36 15 L64 15 Q70 15 70 18 L70 26 Z" fill="#93c5fd" opacity="0.9" />
+          <rect x="14" y="22" width="8" height="16" rx="3" fill="#1e293b" />
+          <rect x="78" y="22" width="8" height="16" rx="3" fill="#1e293b" />
+          <rect x="14" y="66" width="8" height="18" rx="3" fill="#1e293b" />
+          <rect x="78" y="66" width="8" height="18" rx="3" fill="#1e293b" />
+          <circle cx="34" cy="13" r="3" fill="#fbbf24" />
+          <circle cx="66" cy="13" r="3" fill="#fbbf24" />
+        </svg>
+      `;
+    }
+
+    function createGovTruckDivIcon(bearing = 0, tagText = 'Truk KDEB: Dalam Laluan') {
+      const html = `
+        <div class="truck-marker-wrap">
+          <div class="truck-radar-ring"></div>
+          <div class="truck-vehicle" id="gov-truck-vehicle-svg" style="transform: rotate(${Math.round(bearing)}deg);">
+            ${getGovTruckSvg()}
+          </div>
+          <div class="truck-tag-badge" id="gov-truck-tag-badge">
+            <span class="truck-tag-dot"></span>
+            <span class="truck-tag-text" id="gov-truck-tag-text">${tagText}</span>
+          </div>
+        </div>
+      `;
+      return L.divIcon({
+        html: html,
+        className: 'kdeb-truck-div-icon',
+        iconSize: [42, 42],
+        iconAnchor: [21, 21],
+        popupAnchor: [0, -26]
+      });
+    }
+
+    function updateGovTruckVisual(bearing, text) {
+      if (!govActiveTruckMarker) return;
+      const markerEl = govActiveTruckMarker.getElement();
+      if (!markerEl) return;
+
+      if (bearing !== null && bearing !== undefined) {
+        const veh = markerEl.querySelector('#gov-truck-vehicle-svg');
+        if (veh) veh.style.transform = `rotate(${Math.round(bearing)}deg)`;
+      }
+
+      if (text) {
+        const txtEl = markerEl.querySelector('#gov-truck-tag-text');
+        if (txtEl) txtEl.textContent = text;
+      }
+    }
+
+    function getGovOrderedRouteStops() {
+      const stopIds = ['B05', 'B02', 'B01', 'B03', 'B04'];
+      const stops = stopIds.map(id => BINS.find(b => b.id === id)).filter(Boolean);
+      return stops;
+    }
+
+    function drawGovOptimizedRoute() {
+      if (!govMap) return;
+
+      const stops = getGovOrderedRouteStops();
+      if (stops.length < 2) return;
+
+      // Create closed loop coordinates: B05 -> B02 -> B01 -> B03 -> B04 -> B05
+      const routeCoords = stops.map(s => [s.lat, s.lng]);
+      routeCoords.push([stops[0].lat, stops[0].lng]);
+
+      // Remove existing polylines if any
+      if (govActiveRouteLines.length) {
+        govActiveRouteLines.forEach(line => govMap.removeLayer(line));
+        govActiveRouteLines = [];
+      }
+
+      // Layer 1: Clean outer casing (white halo)
+      const casingLine = L.polyline(routeCoords, {
+        color: '#ffffff',
+        weight: 8.5,
+        opacity: 0.96,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(govMap);
+
+      // Layer 2: Main KDEB Emerald line
+      const mainLine = L.polyline(routeCoords, {
+        color: '#16a34a',
+        weight: 4.5,
+        opacity: 0.96,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(govMap);
+
+      // Layer 3: Dashed accent pulse line
+      const dashLine = L.polyline(routeCoords, {
+        color: '#bbf7d0',
+        weight: 2.2,
+        opacity: 0.88,
+        dashArray: '7, 11',
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(govMap);
+
+      govActiveRouteLines = [casingLine, mainLine, dashLine];
+
+      if (govActiveTruckMarker && govTruckAnimTimer) {
+        return;
+      }
+
+      // Initialize truck marker at starting stop (B05)
+      const initialFrom = stops[0];
+      const initialTo = stops[1];
+      const initialBearing = calcGovBearing(initialFrom.lat, initialFrom.lng, initialTo.lat, initialTo.lng);
+      const truckIcon = createGovTruckDivIcon(initialBearing, `Truk KDEB: Ke arah ${initialTo.id}`);
+
+      govActiveTruckMarker = L.marker([initialFrom.lat, initialFrom.lng], {
+        icon: truckIcon,
+        zIndexOffset: 1000
+      }).addTo(govMap);
+
+      govActiveTruckMarker.bindPopup(`
+        <div style="font-family:'Inter',sans-serif;padding:4px 2px;min-width:200px;">
+          <div style="font-size:10px;color:#15803d;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;">Armada KDEB SmartTong</div>
+          <div style="font-size:13px;font-weight:800;color:#1e293b;margin:3px 0;">Truk Pengutipan Pintar #07</div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:8px;">Laluan Bersepadu: B05 &rarr; B02 &rarr; B01 &rarr; B03 &rarr; B04</div>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:6px 8px;font-size:11px;color:#166534;font-weight:600;display:flex;align-items:center;gap:6px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;"></span>
+            Status: Rondaan Masa Nyata (Perlahan)
+          </div>
+        </div>
+      `);
+
+      startSlowGovTruckLoop(stops);
+    }
+
+    function startSlowGovTruckLoop(stops) {
+      if (govTruckAnimTimer) {
+        clearTimeout(govTruckAnimTimer);
+        govTruckAnimTimer = null;
+      }
+
+      const legDurations = [22000, 16000, 16000, 19000, 28000];
+      const numLegs = stops.length;
+      const STEP_INTERVAL = 50;
+
+      function tick() {
+        if (!govActiveTruckMarker || !govMap) return;
+
+        const fromStop = stops[govTruckAnimState.legIndex];
+        const toStop = stops[(govTruckAnimState.legIndex + 1) % numLegs];
+        const duration = legDurations[govTruckAnimState.legIndex] || 18000;
+        const totalSteps = Math.round(duration / STEP_INTERVAL);
+
+        if (govTruckAnimState.step === 0) {
+          const brng = calcGovBearing(fromStop.lat, fromStop.lng, toStop.lat, toStop.lng);
+          updateGovTruckVisual(brng, `Truk KDEB: Ke arah ${toStop.id} (${toStop.name.split(',')[0]})`);
+        }
+
+        govTruckAnimState.step++;
+        const progress = Math.min(1, govTruckAnimState.step / totalSteps);
+
+        const curLat = fromStop.lat + (toStop.lat - fromStop.lat) * progress;
+        const curLng = fromStop.lng + (toStop.lng - fromStop.lng) * progress;
+        govActiveTruckMarker.setLatLng([curLat, curLng]);
+
+        if (progress < 1) {
+          govTruckAnimTimer = setTimeout(tick, STEP_INTERVAL);
+        } else {
+          updateGovTruckVisual(null, `Tiba di ${toStop.id}: Mengutip sisa...`);
+          govTruckAnimState.isPaused = true;
+          govTruckAnimTimer = setTimeout(() => {
+            govTruckAnimState.isPaused = false;
+            govTruckAnimState.step = 0;
+            govTruckAnimState.legIndex = (govTruckAnimState.legIndex + 1) % numLegs;
+            tick();
+          }, 2500);
+        }
+      }
+
+      tick();
+    }
+
     function initGovMap() {
       if (govMap) return;
       govMap = L.map('gov-map', { zoomControl: false }).setView([3.075, 101.58], 12);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 }).addTo(govMap);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '©CartoDB', maxZoom: 19 }).addTo(govMap);
       renderGovMarkers();
+      drawGovOptimizedRoute();
+
+      setTimeout(() => {
+        if (govMap) {
+          if (govActiveRouteLines.length) {
+            govMap.fitBounds(govActiveRouteLines[0].getBounds(), { padding: [40, 40] });
+          } else {
+            govMap.fitBounds([[3.040, 101.510], [3.118, 101.648]], { padding: [40, 40] });
+          }
+          govMap.invalidateSize();
+        }
+      }, 300);
     }
     function renderGovMarkers(filter = 'ALL') {
       if (!govMap) return;
