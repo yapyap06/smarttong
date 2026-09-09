@@ -408,6 +408,56 @@
         </div>
       </div>
     </div>
+
+    <!-- Bin B01 Fill Level Panel -->
+    <div class="widget-glass" id="bin-level-panel">
+      <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+        <span>📊 Tahap Isian Tong B01</span>
+        <span style="font-size:9px;font-weight:600;color:#64748b;" id="bin-sync-label">Menghubung...</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:11px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="color:#f59e0b;font-weight:700;">🟠 Plastik/Logam</span>
+            <span id="fill-orange" style="font-weight:800;font-family:'JetBrains Mono';">20%</span>
+          </div>
+          <div style="height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+            <div id="bar-orange" style="height:100%;background:#f59e0b;border-radius:4px;width:20%;transition:width 0.5s;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="color:#0284c7;font-weight:700;">🔵 Kertas/Kadbod</span>
+            <span id="fill-blue" style="font-weight:800;font-family:'JetBrains Mono';">20%</span>
+          </div>
+          <div style="height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+            <div id="bar-blue" style="height:100%;background:#0284c7;border-radius:4px;width:20%;transition:width 0.5s;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="color:#854d0e;font-weight:700;">🟤 Kaca</span>
+            <span id="fill-brown" style="font-weight:800;font-family:'JetBrains Mono';">20%</span>
+          </div>
+          <div style="height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+            <div id="bar-brown" style="height:100%;background:#854d0e;border-radius:4px;width:20%;transition:width 0.5s;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="color:#18181b;font-weight:700;">⚫ Sisa Baki</span>
+            <span id="fill-black" style="font-weight:800;font-family:'JetBrains Mono';">20%</span>
+          </div>
+          <div style="height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+            <div id="bar-black" style="height:100%;background:#18181b;border-radius:4px;width:20%;transition:width 0.5s;"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Full Alert Banner -->
+      <div id="bin-full-alert" style="display:none;margin-top:10px;padding:8px 10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:11px;color:#dc2626;font-weight:700;">
+        🚨 AMARAN: Tong hampir penuh! Makluman dihantar ke Dashboard PBT.
+      </div>
+    </div>
   </div>
 
   <!-- Right Side: Virtual OLED & Event Logs -->
@@ -1194,10 +1244,96 @@
             waste.mesh.scale.y = waste.height; // Bottom is locked at floor, grows purely upward!
             const pct = Math.min(100, Math.round((waste.height / 1.42) * 100));
             addLog(`Sensor ultrasonik mengesan pertambahan isipadu dalam slot ${slotKey.toUpperCase()} (${pct}% penuh).`);
+            // Update UI fill bars and report to HF Space
+            updateBinFillUI();
+            reportBinStatusToCloud();
           }
         }
       }
       requestAnimationFrame(stepThrow);
+    }
+
+    // Compute fill percentages for all 4 compartments
+    function getBinFillPcts() {
+      const result = {};
+      const maxH = 1.42;
+      const minH = 0.28; // Initial baseline
+      binConfigs.forEach(cfg => {
+        const w = wasteLevels[cfg.key];
+        if (w) {
+          // Normalize: minH = 0%, maxH = 100%
+          const pct = Math.min(100, Math.max(0, Math.round(((w.height - minH) / (maxH - minH)) * 100)));
+          result[cfg.key] = pct;
+        } else {
+          result[cfg.key] = 0;
+        }
+      });
+      return result;
+    }
+
+    // Update the fill level UI bars in left panel
+    function updateBinFillUI() {
+      const pcts = getBinFillPcts();
+      const colorMap = { orange: '#f59e0b', blue: '#0284c7', brown: '#854d0e', black: '#18181b' };
+      let hasAlert = false;
+      binConfigs.forEach(cfg => {
+        const pct = pcts[cfg.key] || 0;
+        const fillEl = document.getElementById(`fill-${cfg.key}`);
+        const barEl = document.getElementById(`bar-${cfg.key}`);
+        if (fillEl) fillEl.textContent = pct + '%';
+        if (barEl) {
+          barEl.style.width = pct + '%';
+          // Color: green < 70, yellow 70-89, red 90+
+          barEl.style.background = pct >= 90 ? '#dc2626' : pct >= 70 ? '#f59e0b' : colorMap[cfg.key];
+        }
+        if (pct >= 95) hasAlert = true;
+      });
+      const alertEl = document.getElementById('bin-full-alert');
+      if (alertEl) alertEl.style.display = hasAlert ? 'block' : 'none';
+      const syncLbl = document.getElementById('bin-sync-label');
+      if (syncLbl) syncLbl.textContent = 'B01 · Dikemas kini';
+    }
+
+    // Report bin fill levels to HF Space backend
+    const HF_BIN_STATUS_URL = 'https://ninjayy-smarttong-ai.hf.space/bin-status';
+    let lastBinReportTime = 0;
+    async function reportBinStatusToCloud() {
+      const now = Date.now();
+      if (now - lastBinReportTime < 800) return; // debounce
+      lastBinReportTime = now;
+
+      const pcts = getBinFillPcts();
+      const payload = {
+        binId: 'B01',
+        location: 'Persiaran Kewajipan, USJ 1',
+        compartments: {
+          orange: { name: 'Plastik/Logam', fill_pct: pcts.orange || 0, color: '#f59e0b' },
+          blue:   { name: 'Kertas/Kadbod', fill_pct: pcts.blue   || 0, color: '#0284c7' },
+          brown:  { name: 'Kaca',           fill_pct: pcts.brown  || 0, color: '#854d0e' },
+          black:  { name: 'Sisa Baki',      fill_pct: pcts.black  || 0, color: '#18181b' }
+        },
+        timestamp: now
+      };
+
+      try {
+        const res = await fetch(HF_BIN_STATUS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          mode: 'cors'
+        });
+        if (res.ok) {
+          const d = await res.json();
+          if (d.bin_status && d.bin_status.alert) {
+            addLog(`[B01 ALERT] 🚨 Makluman tong penuh dihantar ke Dashboard PBT! Slot: ${d.bin_status.alert_slots.join(', ').toUpperCase()}`);
+          }
+          const syncLbl = document.getElementById('bin-sync-label');
+          if (syncLbl) syncLbl.textContent = '🟢 B01 · Disegerakkan';
+        }
+      } catch (err) {
+        const syncLbl = document.getElementById('bin-sync-label');
+        if (syncLbl) syncLbl.textContent = '🔴 B01 · Gagal Sambung';
+      }
     }
 
     // 6. Realtime Multi-Tier Cloud Sync (HF Space + Render + Firebase + BroadcastChannel)
