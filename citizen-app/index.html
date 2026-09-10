@@ -5886,34 +5886,97 @@ Jawapan standard: Maaf, saya hanya dilatih untuk menjawab soalan berkaitan pengu
       document.getElementById('k-saved').textContent = 'RM ' + BINS.filter(b => b.fill < 70).length * 96;
     }
 
+    // ── Table Formatter for Markdown Tables in Reports ──
+    function formatTableHTML(rows) {
+      if (!rows || !rows.length) return '';
+      let html = '<div style="overflow-x:auto;margin:8px 0;border-radius:8px;border:1px solid #e2e8f0;background:#ffffff;box-shadow:0 1px 3px rgba(0,0,0,0.05);">';
+      html += '<table style="width:100%;border-collapse:collapse;font-size:11px;font-family:inherit;min-width:320px;">';
+      rows.forEach((r, idx) => {
+        html += '<tr style="' + (idx % 2 === 1 ? 'background:#f8fafc;' : 'background:#ffffff;') + '">';
+        r.forEach(c => {
+          const isHdr = idx === 0;
+          const tag = isHdr ? 'th' : 'td';
+          const style = isHdr
+            ? 'background:#f1f5f9;padding:6px 10px;font-weight:700;color:#1e293b;border-bottom:1.5px solid #cbd5e1;white-space:nowrap;text-align:left;'
+            : 'padding:6px 10px;border-bottom:1px solid #f1f5f9;color:#334155;line-height:1.4;';
+          html += `<${tag} style="${style}">${c}</${tag}>`;
+        });
+        html += '</tr>';
+      });
+      html += '</table></div>';
+      return html;
+    }
+
     // ── Markdown Parser for Agent Reports ──
     function renderAgentMarkdown(text) {
       if (!text) return '';
-      let clean = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-      // Headings
+      // 1. Normalize line breaks and tag entities
+      let clean = text.replace(/<br\s*\/?>/gi, '__HTML_BR__');
+      clean = clean.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      clean = clean.replace(/__HTML_BR__/g, '<br/>');
+      clean = clean.replace(/&lt;br\s*\/?&gt;/gi, '<br/>');
+
+      // 2. Parse Markdown Tables (| header | ... |)
+      const lines = clean.split('\n');
+      const processed = [];
+      let inTable = false;
+      let tableRows = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const rawLine = lines[i].trim();
+        if (rawLine.startsWith('|') && rawLine.endsWith('|') && rawLine.includes('|')) {
+          // Check if separator line e.g. |---|---|
+          if (/^\|[\s\-:|]+\|$/.test(rawLine)) {
+            continue;
+          }
+          const cells = rawLine.slice(1, -1).split('|').map(c => c.trim());
+          tableRows.push(cells);
+          inTable = true;
+        } else {
+          if (inTable) {
+            processed.push(formatTableHTML(tableRows));
+            tableRows = [];
+            inTable = false;
+          }
+          processed.push(lines[i]);
+        }
+      }
+      if (inTable) {
+        processed.push(formatTableHTML(tableRows));
+      }
+      clean = processed.join('\n');
+
+      // 3. Headings
       clean = clean.replace(/^### (.*$)/gim, '<div class="report-sec-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> $1</div>');
       clean = clean.replace(/^## (.*$)/gim, '<div class="report-sec-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> $1</div>');
       clean = clean.replace(/^# (.*$)/gim, '<div class="report-sec-title">$1</div>');
 
-      // Bold text
-      clean = clean.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      // 4. Bold and italics formatting
+      clean = clean.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      clean = clean.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      // Clean up stray double asterisks
+      clean = clean.replace(/\*\*/g, '');
 
-      // Bullet points
-      clean = clean.replace(/^\s*[-•*]\s+(.*$)/gim, '<div class="report-bullet-row"><span class="report-bullet-dot">•</span><span>$1</span></div>');
+      // 5. Clean up stray pipe clusters e.g. ||| or ||
+      clean = clean.replace(/\|{2,}/g, '');
 
-      // Numbered items
+      // 6. Bullet points & list items
+      clean = clean.replace(/^\s*[-•]\s+(.*$)/gim, '<div class="report-bullet-row"><span class="report-bullet-dot">•</span><span>$1</span></div>');
+
+      // 7. Numbered items
       clean = clean.replace(/^\s*(\d+)\.\s+(.*$)/gim, '<div class="report-num-row"><span class="report-num-badge">$1.</span><span>$2</span></div>');
 
-      // Badges
+      // 8. Status Badges
       clean = clean.replace(/\[KRITIKAL\]/gi, '<span class="report-tag-chip red">KRITIKAL</span>');
       clean = clean.replace(/\[BERBAHAYA\]/gi, '<span class="report-tag-chip red">BERBAHAYA</span>');
       clean = clean.replace(/\[AMARAN MERAH\]/gi, '<span class="report-tag-chip red">AMARAN MERAH</span>');
       clean = clean.replace(/\[TINGGI\]/gi, '<span class="report-tag-chip amber">TINGGI</span>');
+      clean = clean.replace(/\[SEDERHANA\]/gi, '<span class="report-tag-chip amber">SEDERHANA</span>');
       clean = clean.replace(/\[PECAH\]/gi, '<span class="report-tag-chip amber">PECAH</span>');
       clean = clean.replace(/\[NORMAL\]/gi, '<span class="report-tag-chip green">NORMAL</span>');
 
-      // Clean empty lines
+      // 9. Clean empty lines & paragraph spacing
       clean = clean.replace(/\n\n+/g, '<div style="height:6px;"></div>');
       clean = clean.replace(/\n/g, '<br/>');
 
@@ -6019,30 +6082,43 @@ Jawapan standard: Maaf, saya hanya dilatih untuk menjawab soalan berkaitan pengu
       ).join('\n');
 
       const systemPrompt = `Anda adalah Contamination Analysis Agent untuk sistem SmartTONG AI Selangor (KDEBWM).
-Tugas: Jana laporan analisis pencemaran yang rasmi, padat, lengkap, dan berstruktur dalam Bahasa Melayu.
+Tugas: Jana laporan analisis pencemaran yang rasmi, sangat kemas, mudah dibaca pada aplikasi telefon pintar, dan berstruktur dalam Bahasa Melayu.
 
-PANDUAN PENTING:
-1. Tarikh dan Masa: WAJIB gunakan tarikh dan masa semasa yang dibekalkan iaitu:
+PANDUAN FORMAT PENTING (SILA IKUT DENGAN KETAT):
+1. JANGAN GUNAKAN JADUAL BERPALANG (TIADA SIMBOL '|' DAN TIADA TABLE SYNTAX DENGAN SIMBOL PALANG).
+2. JANGAN GUNAKAN TAG HTML SEPERTI <br> ATAU <div>. Gunakan perenggan biasa dan senarai bullet point sahaja.
+3. Tarikh dan Masa: WAJIB gunakan tarikh dan masa semasa yang dibekalkan iaitu:
    Tarikh: ${tarikhStr}
    Masa: ${masaStr}
-   JANGAN sesekali mereka tarikh tahun 2023 atau tarikh lama lain.
+   JANGAN sesekali guna tahun 2023 atau tarikh lama lain.
 
-2. Struktur Laporan:
+4. FORMAT STRUKTUR WAJIB:
    # Laporan Analisis Pencemaran SmartTONG AI Selangor
-   **Tarikh:** ${tarikhStr}  
-   **Masa:** ${masaStr}  
+   **Tarikh:** ${tarikhStr} | **Masa:** ${masaStr}  
    **Pegawai Penjana:** Sistem Pemantauan PBT / KDEBWM
 
    ## 1. RINGKASAN EKSEKUTIF PENCEMARAN
-   (Ringkasan tahap pencemaran keseluruhan berdasarkan data 5 tong di Selangor)
+   - Tulis 1 atau 2 perenggan ringkas mengenai status pencemaran keseluruhan 5 tong di Selangor.
 
    ## 2. STATUS TONG BERISIKO & ANALISIS SENSOR
-   (Analisis padat dan tepat untuk tong yang memerlukan perhatian: B05, B03, B01, B02, B04. Nyatakan punca dan tahap risiko secara ringkas dan padat)
+   Untuk setiap tong (B05, B03, B01, B04, B02), gunakan format kemas berikut tanpa jadual berpalang:
+   
+   1. **B05 — Pasar Malam Shah Alam (MBSA)**
+      • Status: [BERBAHAYA] / [AMARAN MERAH]
+      • Bacaan Sensor: Gas 456 ppm, Kelembapan 74%, Pengisian 78%, Bateri 12%
+      • Analisis Punca: Penguraian sisa organik aktif menghasilkan gas metana pekat.
+      • Penilaian Risiko: Tinggi — Bau busuk merebak dan bateri lemah berisiko matikan sensor.
+
+   (Ulangi format kemas ini untuk B03, B01, B04, B02)
 
    ## 3. CADANGAN TINDAKAN OPERASI SEGERA
-   (Cadangan tindakan praktikal untuk pihak PBT dan KDEBWM seperti dispatch truk, pembaikan, atau semburan nyah-bau)
+   Senaraikan tindakan segera mengikut nombor:
+   1. **Tindakan B05 (MBSA):** Dispatch unit segera untuk pengosongan dan penukaran bateri.
+   2. **Tindakan B03 (MBPJ):** Pengosongan segera sebelum waktu puncak petang.
+   3. **Tindakan B04 (MBPJ):** Pembaikan struktur penutup tong yang pecah.
+   4. **Penyelenggaraan Rutin:** Jadualkan pemantauan berkala untuk B01 dan B02.
 
-3. KELENGKAPAN: Pastikan laporan LENGKAP dan SELESAI sehingga bahagian terakhir (Cadangan Tindakan). Sampaikan poin secara padat, tajam, dan elakkan ayat berulang-ulang supaya laporan TIDAK terpotong di tengah jalan.`;
+5. KELENGKAPAN: Pastikan laporan LENGKAP dan SELESAI sehingga bahagian terakhir. Poin mesti padat, profesional, kemas, dan bebas daripada sebarang simbol aneh seperti ||| atau <br>.`;
 
       const prompt = `Data Sensor Tong SmartTONG Selangor (Tarikh: ${tarikhStr}, Masa: ${masaStr}):
 ${binData}
