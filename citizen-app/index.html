@@ -4431,13 +4431,13 @@
         <div class="sec-hdr">
           <div>
             <div class="sec-title">Imbas Item</div>
-            <div class="sec-sub">AI pengkelasan sisa — Model Python Keras (EfficientNetV2)</div>
+            <div class="sec-sub">AI Pengkelasan Sisa</div>
           </div>
         </div>
 
-        <!-- Simulator Companion Banner -->
-        <div
-          style="margin:0 20px 12px; padding:10px 14px; background:rgba(46,160,67,0.1); border:1px solid rgba(46,160,67,0.3); border-radius:10px; display:flex; align-items:center; justify-content:space-between; font-size:12px;">
+        <!-- Simulator Companion Banner (Hidden for Citizen, accessible to PBT only) -->
+        <div id="imbas-sim-banner"
+          style="display:none; margin:0 20px 12px; padding:10px 14px; background:rgba(46,160,67,0.1); border:1px solid rgba(46,160,67,0.3); border-radius:10px; align-items:center; justify-content:space-between; font-size:12px;">
           <span style="font-weight:600; color:var(--primary); display:flex; align-items:center; gap:6px;">
             <span>🎮</span> Simulator Digital Twin (Skrin Laptop)
           </span>
@@ -5738,6 +5738,8 @@ Jawapan standard: Maaf, saya hanya dilatih untuk menjawab soalan berkaitan pengu
 
       buildNav();
       initData();
+      const simBanner = document.getElementById('imbas-sim-banner');
+      if (simBanner) simBanner.style.display = role === 'gov' ? 'flex' : 'none';
       showPage(role === 'gov' ? 'g-utama' : 'c-utama');
       updateCitizenUI();
     }
@@ -5801,6 +5803,10 @@ Jawapan standard: Maaf, saya hanya dilatih untuk menjawab soalan berkaitan pengu
       if (pgId === 'c-peta' && !citizenMap) setTimeout(initCitizenMap, 80);
       else if (pgId === 'c-peta' && citizenMap) setTimeout(() => citizenMap.invalidateSize(), 80);
       if (pgId === 'c-tanya' && !document.getElementById('chat-msgs').children.length) initChat();
+      if (pgId === 'c-imbas') {
+        const simBanner = document.getElementById('imbas-sim-banner');
+        if (simBanner) simBanner.style.display = role === 'gov' ? 'flex' : 'none';
+      }
 
       if (pgId !== 'c-imbas' && camStream) {
         camStream.getTracks().forEach(t => t.stop()); camStream = null;
