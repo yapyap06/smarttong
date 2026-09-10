@@ -1779,6 +1779,31 @@
       background: rgba(22, 163, 74, 0.2);
     }
 
+    .gov-peta-sim-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 11px;
+      background: #f97316;
+      color: #ffffff !important;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 8px;
+      border: 1px solid rgba(234, 88, 12, 0.4);
+      box-shadow: 0 3px 10px rgba(249, 115, 22, 0.4);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all .15s ease;
+      cursor: pointer;
+    }
+
+    .gov-peta-sim-btn:hover {
+      background: #ea580c;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.55);
+      transform: translateY(-1px);
+    }
+
     .fchip {
       display: flex;
       align-items: center;
@@ -4242,7 +4267,12 @@
         <div class="map-wrap">
           <div id="gov-map"></div>
         </div>
-        <div style="padding:0 20px 8px;font-size:12px;font-weight:700;color:var(--dark);">Senarai Tong</div>
+        <div style="padding:0 20px 8px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:12px;font-weight:700;color:var(--dark);">Senarai Tong</div>
+          <a href="/simulator" target="_blank" class="gov-peta-sim-btn" title="Lihat Simulasi SmartTONG">
+            <span>🎮</span> Lihat Simulasi SmartTONG
+          </a>
+        </div>
         <div class="bin-list" id="gov-bin-list"></div>
       </div>
 
