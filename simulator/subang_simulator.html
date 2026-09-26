@@ -124,7 +124,7 @@ input[type=range]{width:100%;accent-color:#16a34a;height:3px;}
       <div class="sec-title">Live Fleet KPI</div>
       <div class="kpi-grid">
         <div class="kpi"><div class="kv c-blue" id="k-trucks">5</div><div class="kl">Active Trucks</div><div class="ks">of 77 fleet</div></div>
-        <div class="kpi"><div class="kv c-green" id="k-bins">0</div><div class="kl">Stops Cleared</div><div class="ks">all spots visited</div></div>
+        <div class="kpi"><div class="kv c-green" id="k-bins">0</div><div class="kl">Stops Cleared</div><div class="ks">daripada 300 tong IoT</div></div>
         <div class="kpi"><div class="kv c-orange" id="k-km">-</div><div class="kl">Total km (OSRM)</div><div class="ks" id="k-saved">Loading...</div></div>
         <div class="kpi"><div class="kv c-green" id="k-diesel">-</div><div class="kl">Diesel Saved</div><div class="ks">vs fixed sched</div></div>
       </div>
@@ -202,100 +202,336 @@ var TRANSFER = { lat:3.03718, lng:101.61589, label:'Puchong Waste Transfer Stati
 
 // 47 named bin spots across 12 zones — real Subang Jaya GPS
 var BIN_SPOTS = [
-  // ─── Z1: SS15 Subang Jaya (6 stops) ───
-  { id:'Z1-1', z:'Z1', lat:3.07278, lng:101.58453, n:'Subang Parade Entrance', fill:0 },
-  { id:'Z1-2', z:'Z1', lat:3.07391, lng:101.58207, n:'SS15/4A Junction Park', fill:0 },
-  { id:'Z1-3', z:'Z1', lat:3.07452, lng:101.58128, n:'SS15 LRT Bus Terminal', fill:0 },
-  { id:'Z1-4', z:'Z1', lat:3.07563, lng:101.57994, n:'SS15/2 Medan Selera', fill:0 },
-  { id:'Z1-5', z:'Z1', lat:3.07156, lng:101.58612, n:'Empire Subang', fill:0 },
-  { id:'Z1-6', z:'Z1', lat:3.07089, lng:101.58301, n:'SS15 Courtyard Mall', fill:0 },
 
-  // ─── Z2: SS18 LRT Station (4 stops) ───
-  { id:'Z2-1', z:'Z2', lat:3.06698, lng:101.57587, n:'LRT SS18 Station Hub', fill:0 },
-  { id:'Z2-2', z:'Z2', lat:3.06853, lng:101.57634, n:'SS18/1 Community Park', fill:0 },
-  { id:'Z2-3', z:'Z2', lat:3.06543, lng:101.57512, n:'SS18 Pasar Pagi', fill:0 },
-  { id:'Z2-4', z:'Z2', lat:3.06934, lng:101.57489, n:'SS18/8 Playground', fill:0 },
+  // ─── Z1: SS12 – SS19 Subang Jaya (60 tong) ───
+  { id:'B-001', z:'Z1', lat:3.07466, lng:101.59995, n:'Playground 01 (SS Subang)', fill:0 },
+  { id:'B-002', z:'Z1', lat:3.07878, lng:101.59456, n:'Food Lodge (SS Subang)', fill:0 },
+  { id:'B-003', z:'Z1', lat:3.07201, lng:101.57978, n:'Lim Tayar (SS Subang)', fill:0 },
+  { id:'B-004', z:'Z1', lat:3.07292, lng:101.60076, n:'Kompleks 3C (SS Subang)', fill:0 },
+  { id:'B-005', z:'Z1', lat:3.07818, lng:101.58855, n:'Q Bistro (SS Subang)', fill:0 },
+  { id:'B-006', z:'Z1', lat:3.06558, lng:101.57752, n:'Agrobank SS19 (SS Subang)', fill:0 },
+  { id:'B-007', z:'Z1', lat:3.07273, lng:101.58973, n:'Baba Ali Enterprise (SS Subang)', fill:0 },
+  { id:'B-008', z:'Z1', lat:3.08156, lng:101.58206, n:'CIMB Bank (SS Subang)', fill:0 },
+  { id:'B-009', z:'Z1', lat:3.08177, lng:101.58429, n:'HSBC (SS Subang)', fill:0 },
+  { id:'B-010', z:'Z1', lat:3.08294, lng:101.58769, n:'Tealive (SS Subang)', fill:0 },
+  { id:'B-011', z:'Z1', lat:3.08181, lng:101.58245, n:'Auntie Anne\'s (SS Subang)', fill:0 },
+  { id:'B-012', z:'Z1', lat:3.07406, lng:101.58882, n:'Chilly Pan Mee (SS Subang)', fill:0 },
+  { id:'B-013', z:'Z1', lat:3.07376, lng:101.58779, n:'Maybank (SS Subang)', fill:0 },
+  { id:'B-014', z:'Z1', lat:3.07069, lng:101.60286, n:'Anwar Maju (SS Subang)', fill:0 },
+  { id:'B-015', z:'Z1', lat:3.07452, lng:101.56015, n:'99 Speedmart (SS Subang)', fill:0 },
+  { id:'B-016', z:'Z1', lat:3.06736, lng:101.58595, n:'LRT SS18 (SS Subang)', fill:0 },
+  { id:'B-017', z:'Z1', lat:3.07023, lng:101.59689, n:'eco mart (SS Subang)', fill:0 },
+  { id:'B-018', z:'Z1', lat:3.07487, lng:101.57782, n:'Playground 18 (SS Subang)', fill:0 },
+  { id:'B-019', z:'Z1', lat:3.06710, lng:101.56078, n:'Subang Hitech Industrial Park (SS Subang)', fill:0 },
+  { id:'B-020', z:'Z1', lat:3.07795, lng:101.58652, n:'Jaya Grocer (SS Subang)', fill:0 },
+  { id:'B-021', z:'Z1', lat:3.06570, lng:101.60240, n:'Kim Heng Car Care (SS Subang)', fill:0 },
+  { id:'B-022', z:'Z1', lat:3.08212, lng:101.58808, n:'Aeon Big Subang Jaya (SS Subang)', fill:0 },
+  { id:'B-023', z:'Z1', lat:3.06788, lng:101.58233, n:'Bus Stop 23 (SS Subang)', fill:0 },
+  { id:'B-024', z:'Z1', lat:3.08135, lng:101.58507, n:'Subang Parade (SS Subang)', fill:0 },
+  { id:'B-025', z:'Z1', lat:3.08191, lng:101.60110, n:'Unfold Cafe (SS Subang)', fill:0 },
+  { id:'B-026', z:'Z1', lat:3.07500, lng:101.58700, n:'Nasi Lemak Burung Hantu (SS Subang)', fill:0 },
+  { id:'B-027', z:'Z1', lat:3.07578, lng:101.58677, n:'KGB (SS Subang)', fill:0 },
+  { id:'B-028', z:'Z1', lat:3.07887, lng:101.58573, n:'First Subang (SS Subang)', fill:0 },
+  { id:'B-029', z:'Z1', lat:3.07714, lng:101.58775, n:'Pusat Akuarium Batu Karang Laut (SS Subang)', fill:0 },
+  { id:'B-030', z:'Z1', lat:3.07713, lng:101.58659, n:'Northern Village Noodles (SS Subang)', fill:0 },
+  { id:'B-031', z:'Z1', lat:3.07799, lng:101.58669, n:'nasi lemak shop. (SS Subang)', fill:0 },
+  { id:'B-032', z:'Z1', lat:3.08278, lng:101.58593, n:'Village Grocer @ Subang Parade (SS Subang)', fill:0 },
+  { id:'B-033', z:'Z1', lat:3.07611, lng:101.58869, n:'Superme • SS15 Subang Jaya (SS Subang)', fill:0 },
+  { id:'B-034', z:'Z1', lat:3.07606, lng:101.58865, n:'Honor (SS Subang)', fill:0 },
+  { id:'B-035', z:'Z1', lat:3.07404, lng:101.58693, n:'7-Eleven (SS Subang)', fill:0 },
+  { id:'B-036', z:'Z1', lat:3.07669, lng:101.58670, n:'Moonalisa (SS Subang)', fill:0 },
+  { id:'B-037', z:'Z1', lat:3.07533, lng:101.58726, n:'Mega Kulim Pharmacy SS15 Suban.. (SS Subang)', fill:0 },
+  { id:'B-038', z:'Z1', lat:3.07586, lng:101.59052, n:'Lol Soon Kee Desserts SS15 (SS Subang)', fill:0 },
+  { id:'B-039', z:'Z1', lat:3.07806, lng:101.58656, n:'Mama Jo Launderette (Courtyard.. (SS Subang)', fill:0 },
+  { id:'B-040', z:'Z1', lat:3.07371, lng:101.58842, n:'Domino\'s (SS Subang)', fill:0 },
+  { id:'B-041', z:'Z1', lat:3.07405, lng:101.58671, n:'Panasonic (SS Subang)', fill:0 },
+  { id:'B-042', z:'Z1', lat:3.08184, lng:101.58206, n:'Decathlon NU Empire (SS Subang)', fill:0 },
+  { id:'B-043', z:'Z1', lat:3.08225, lng:101.58622, n:'Chagee (SS Subang)', fill:0 },
+  { id:'B-044', z:'Z1', lat:3.07706, lng:101.58824, n:'Bee Ho Steamboat (SS Subang)', fill:0 },
+  { id:'B-045', z:'Z1', lat:3.07769, lng:101.58858, n:'QCPLUS Egg and Grocery (SS Subang)', fill:0 },
+  { id:'B-046', z:'Z1', lat:3.08019, lng:101.58654, n:'Tailoring & Alteration (SS Subang)', fill:0 },
+  { id:'B-047', z:'Z1', lat:3.07713, lng:101.58683, n:'Huan Leong Auto Parts (SS Subang)', fill:0 },
+  { id:'B-048', z:'Z1', lat:3.08183, lng:101.60081, n:'tomo tomo cafe (SS Subang)', fill:0 },
+  { id:'B-049', z:'Z1', lat:3.07603, lng:101.58963, n:'WBL Penang (SS Subang)', fill:0 },
+  { id:'B-050', z:'Z1', lat:3.07575, lng:101.58931, n:'Auntea Jenny (SS Subang)', fill:0 },
+  { id:'B-051', z:'Z1', lat:3.07576, lng:101.58894, n:'CU (SS Subang)', fill:0 },
+  { id:'B-052', z:'Z1', lat:3.07698, lng:101.58855, n:'Warung Pojok Indonesian Cuisine (SS Subang)', fill:0 },
+  { id:'B-053', z:'Z1', lat:3.08242, lng:101.58956, n:'Benjy Cafe (SS Subang)', fill:0 },
+  { id:'B-054', z:'Z1', lat:3.07455, lng:101.58676, n:'Buttermilk Kitchen (SS Subang)', fill:0 },
+  { id:'B-055', z:'Z1', lat:3.07450, lng:101.58696, n:'YSK (SS Subang)', fill:0 },
+  { id:'B-056', z:'Z1', lat:3.08243, lng:101.59065, n:'Mini Mart (SS Subang)', fill:0 },
+  { id:'B-057', z:'Z1', lat:3.08244, lng:101.59091, n:'Bubbles Clips (SS Subang)', fill:0 },
+  { id:'B-058', z:'Z1', lat:3.07714, lng:101.58719, n:'Sports Toto (SS Subang)', fill:0 },
+  { id:'B-059', z:'Z1', lat:3.06547, lng:101.55820, n:'Pangsapuri Suria Subang (SS Subang)', fill:0 },
+  { id:'B-060', z:'Z1', lat:3.07128, lng:101.56644, n:'Pandora / Paloma Residences (SS Subang)', fill:0 },
 
-  // ─── Z3: Taipan USJ 10 (5 stops) ───
-  { id:'Z3-1', z:'Z3', lat:3.05149, lng:101.58134, n:'Taipan USJ Roundabout', fill:0 },
-  { id:'Z3-2', z:'Z3', lat:3.05056, lng:101.58213, n:'Giant Taipan USJ', fill:0 },
-  { id:'Z3-3', z:'Z3', lat:3.05234, lng:101.58067, n:'USJ10/1 Commercial', fill:0 },
-  { id:'Z3-4', z:'Z3', lat:3.05312, lng:101.57989, n:'USJ 10 Recreation Park', fill:0 },
-  { id:'Z3-5', z:'Z3', lat:3.04978, lng:101.58301, n:'USJ 10/2 Hawker Row', fill:0 },
+  // ─── Z2: Bandar Sunway PJS 7/9/11 (45 tong) ───
+  { id:'B-061', z:'Z2', lat:3.07831, lng:101.60852, n:'Restaurant 01 (Bandar Sunway)', fill:0 },
+  { id:'B-062', z:'Z2', lat:3.07582, lng:101.61178, n:'Restoran Foong Lei (Bandar Sunway)', fill:0 },
+  { id:'B-063', z:'Z2', lat:3.06641, lng:101.60316, n:'Ceramico Coating Services (Bandar Sunway)', fill:0 },
+  { id:'B-064', z:'Z2', lat:3.07348, lng:101.61042, n:'CIMB Bank (Bandar Sunway)', fill:0 },
+  { id:'B-065', z:'Z2', lat:3.07374, lng:101.60373, n:'Sunway Clio (Opp) (Bandar Sunway)', fill:0 },
+  { id:'B-066', z:'Z2', lat:3.07500, lng:101.61227, n:'Washaway (Bandar Sunway)', fill:0 },
+  { id:'B-067', z:'Z2', lat:3.07489, lng:101.61171, n:'Burger King (Bandar Sunway)', fill:0 },
+  { id:'B-068', z:'Z2', lat:3.06058, lng:101.61046, n:'99 Speedmart (Bandar Sunway)', fill:0 },
+  { id:'B-069', z:'Z2', lat:3.07219, lng:101.60965, n:'99 Speedmart (Bandar Sunway)', fill:0 },
+  { id:'B-070', z:'Z2', lat:3.06643, lng:101.60304, n:'99 Speedmart (Bandar Sunway)', fill:0 },
+  { id:'B-071', z:'Z2', lat:3.07244, lng:101.60592, n:'AEON (Bandar Sunway)', fill:0 },
+  { id:'B-072', z:'Z2', lat:3.07311, lng:101.60548, n:'Popular (Bandar Sunway)', fill:0 },
+  { id:'B-073', z:'Z2', lat:3.07200, lng:101.60721, n:'MR.DIY (Bandar Sunway)', fill:0 },
+  { id:'B-074', z:'Z2', lat:3.07192, lng:101.60580, n:'Texas Chicken (Bandar Sunway)', fill:0 },
+  { id:'B-075', z:'Z2', lat:3.07286, lng:101.60884, n:'Tealive (Bandar Sunway)', fill:0 },
+  { id:'B-076', z:'Z2', lat:3.07314, lng:101.60750, n:'Zara (Bandar Sunway)', fill:0 },
+  { id:'B-077', z:'Z2', lat:3.07215, lng:101.60687, n:'The Chicken Rice Shop (Bandar Sunway)', fill:0 },
+  { id:'B-078', z:'Z2', lat:3.07309, lng:101.60712, n:'MR.DOLLAR (Bandar Sunway)', fill:0 },
+  { id:'B-079', z:'Z2', lat:3.07172, lng:101.60852, n:'Sports Direct (Bandar Sunway)', fill:0 },
+  { id:'B-080', z:'Z2', lat:3.07117, lng:101.60725, n:'Restaurant 20 (Bandar Sunway)', fill:0 },
+  { id:'B-081', z:'Z2', lat:3.06996, lng:101.61036, n:'myNEWS.com (Bandar Sunway)', fill:0 },
+  { id:'B-082', z:'Z2', lat:3.07424, lng:101.60885, n:'Masjid Al-Husna (Bandar Sunway)', fill:0 },
+  { id:'B-083', z:'Z2', lat:3.07327, lng:101.60989, n:'KK Super Mart (Bandar Sunway)', fill:0 },
+  { id:'B-084', z:'Z2', lat:3.07282, lng:101.61041, n:'Guardian (Bandar Sunway)', fill:0 },
+  { id:'B-085', z:'Z2', lat:3.07409, lng:101.60580, n:'Sunway Pyramid (Opp) (Bandar Sunway)', fill:0 },
+  { id:'B-086', z:'Z2', lat:3.07295, lng:101.60691, n:'Laneige (Bandar Sunway)', fill:0 },
+  { id:'B-087', z:'Z2', lat:3.07235, lng:101.60364, n:'ShahNor BM Fresh Mart (Bandar Sunway)', fill:0 },
+  { id:'B-088', z:'Z2', lat:3.06478, lng:101.60851, n:'Mixue (Bandar Sunway)', fill:0 },
+  { id:'B-089', z:'Z2', lat:3.07248, lng:101.60533, n:'ZUS Signature (Bandar Sunway)', fill:0 },
+  { id:'B-090', z:'Z2', lat:3.07584, lng:101.61098, n:'eco-shop (Bandar Sunway)', fill:0 },
+  { id:'B-091', z:'Z2', lat:3.07331, lng:101.60580, n:'Luckin Coffee (Bandar Sunway)', fill:0 },
+  { id:'B-092', z:'Z2', lat:3.07357, lng:101.60816, n:'Seminyak (Bandar Sunway)', fill:0 },
+  { id:'B-093', z:'Z2', lat:3.06515, lng:101.60848, n:'KK Super Mart (Bandar Sunway)', fill:0 },
+  { id:'B-094', z:'Z2', lat:3.06479, lng:101.60448, n:'The Library by Bookxcess (Bandar Sunway)', fill:0 },
+  { id:'B-095', z:'Z2', lat:3.06776, lng:101.60308, n:'Subway (Bandar Sunway)', fill:0 },
+  { id:'B-096', z:'Z2', lat:3.07252, lng:101.60982, n:'AllAce (Bandar Sunway)', fill:0 },
+  { id:'B-097', z:'Z2', lat:3.07333, lng:101.60615, n:'Pop Mart (Bandar Sunway)', fill:0 },
+  { id:'B-098', z:'Z2', lat:3.06991, lng:101.61020, n:'Restaurant 38 (Bandar Sunway)', fill:0 },
+  { id:'B-099', z:'Z2', lat:3.07184, lng:101.60748, n:'Taco Bell (Bandar Sunway)', fill:0 },
+  { id:'B-100', z:'Z2', lat:3.07490, lng:101.61154, n:'DFD Dance Company (Bandar Sunway)', fill:0 },
+  { id:'B-101', z:'Z2', lat:3.07481, lng:101.61117, n:'MBF Mattress (Bandar Sunway)', fill:0 },
+  { id:'B-102', z:'Z2', lat:3.07475, lng:101.61093, n:'Mat Rock (Bandar Sunway)', fill:0 },
+  { id:'B-103', z:'Z2', lat:3.07500, lng:101.61050, n:'KK Super Mart (Bandar Sunway)', fill:0 },
+  { id:'B-104', z:'Z2', lat:3.07622, lng:101.61076, n:'Papasan Japanese Fusion (Bandar Sunway)', fill:0 },
+  { id:'B-105', z:'Z2', lat:3.07621, lng:101.61096, n:'O\'Frenz (Bandar Sunway)', fill:0 },
 
-  // ─── Z4: USJ 9 (3 stops) ───
-  { id:'Z4-1', z:'Z4', lat:3.04521, lng:101.57443, n:'USJ 9/3A Taman', fill:0 },
-  { id:'Z4-2', z:'Z4', lat:3.04678, lng:101.57567, n:'USJ 9/1L Eco Centre', fill:0 },
-  { id:'Z4-3', z:'Z4', lat:3.04389, lng:101.57389, n:'USJ 9 Pasar Malam Area', fill:0 },
+  // ─── Z3: USJ 1 – USJ 8 USJ Utara (65 tong) ───
+  { id:'B-106', z:'Z3', lat:3.06201, lng:101.55751, n:'Rejab Tomyam (USJ Utara)', fill:0 },
+  { id:'B-107', z:'Z3', lat:3.04979, lng:101.58375, n:'Maybank (USJ Utara)', fill:0 },
+  { id:'B-108', z:'Z3', lat:3.05006, lng:101.55671, n:'Restoran Rempah Bonda (USJ Utara)', fill:0 },
+  { id:'B-109', z:'Z3', lat:3.04822, lng:101.58581, n:'McDonald\'s (USJ Utara)', fill:0 },
+  { id:'B-110', z:'Z3', lat:3.05871, lng:101.59607, n:'Each A Cup (USJ Utara)', fill:0 },
+  { id:'B-111', z:'Z3', lat:3.04715, lng:101.57130, n:'Playground 06 (USJ Utara)', fill:0 },
+  { id:'B-112', z:'Z3', lat:3.04673, lng:101.58638, n:'Tomaz (USJ Utara)', fill:0 },
+  { id:'B-113', z:'Z3', lat:3.04726, lng:101.58748, n:'Meteora (USJ Utara)', fill:0 },
+  { id:'B-114', z:'Z3', lat:3.04720, lng:101.58690, n:'Chilly Pan Mee (USJ Utara)', fill:0 },
+  { id:'B-115', z:'Z3', lat:3.04759, lng:101.58743, n:'Tuisyen Kancil (USJ Utara)', fill:0 },
+  { id:'B-116', z:'Z3', lat:3.04703, lng:101.59029, n:'Pasar Raya JV (USJ Utara)', fill:0 },
+  { id:'B-117', z:'Z3', lat:3.04734, lng:101.59025, n:'Restoran Yeo Ye (USJ Utara)', fill:0 },
+  { id:'B-118', z:'Z3', lat:3.04681, lng:101.59005, n:'Vision Look (USJ Utara)', fill:0 },
+  { id:'B-119', z:'Z3', lat:3.04698, lng:101.58993, n:'Restoran Tien Tien Fatt (USJ Utara)', fill:0 },
+  { id:'B-120', z:'Z3', lat:3.05809, lng:101.59654, n:'Bus Stop 15 (USJ Utara)', fill:0 },
+  { id:'B-121', z:'Z3', lat:3.05910, lng:101.59445, n:'FGM Toys (USJ Utara)', fill:0 },
+  { id:'B-122', z:'Z3', lat:3.04674, lng:101.58728, n:'Othrs. (USJ Utara)', fill:0 },
+  { id:'B-123', z:'Z3', lat:3.04615, lng:101.60157, n:'Apartment Meranti (USJ Utara)', fill:0 },
+  { id:'B-124', z:'Z3', lat:3.04646, lng:101.58982, n:'Waste Disposal 19 (USJ Utara)', fill:0 },
+  { id:'B-125', z:'Z3', lat:3.04643, lng:101.58676, n:'Terimee (USJ Utara)', fill:0 },
+  { id:'B-126', z:'Z3', lat:3.04614, lng:101.58676, n:'Beyond Beauty (USJ Utara)', fill:0 },
+  { id:'B-127', z:'Z3', lat:3.04574, lng:101.58671, n:'Warisan Sambal Opah (USJ Utara)', fill:0 },
+  { id:'B-128', z:'Z3', lat:3.04599, lng:101.58637, n:'UNI Pharmacy (USJ Utara)', fill:0 },
+  { id:'B-129', z:'Z3', lat:3.04630, lng:101.58636, n:'Alliance Bank (USJ Utara)', fill:0 },
+  { id:'B-130', z:'Z3', lat:3.04687, lng:101.58653, n:'Sushi Zens (USJ Utara)', fill:0 },
+  { id:'B-131', z:'Z3', lat:3.04677, lng:101.58702, n:'Khean Tim Sum Restaurant (USJ Utara)', fill:0 },
+  { id:'B-132', z:'Z3', lat:3.04668, lng:101.58613, n:'Pasembor Husin USJ9 (USJ Utara)', fill:0 },
+  { id:'B-133', z:'Z3', lat:3.05913, lng:101.58220, n:'USJ 2/6 Playground (USJ Utara)', fill:0 },
+  { id:'B-134', z:'Z3', lat:3.04771, lng:101.58421, n:'RHB Bank (USJ Utara)', fill:0 },
+  { id:'B-135', z:'Z3', lat:3.04766, lng:101.58326, n:'99 Speedmart (USJ Utara)', fill:0 },
+  { id:'B-136', z:'Z3', lat:3.05836, lng:101.59235, n:'Starbucks (USJ Utara)', fill:0 },
+  { id:'B-137', z:'Z3', lat:3.04972, lng:101.58427, n:'Logenhaus Roast & Grill (USJ Utara)', fill:0 },
+  { id:'B-138', z:'Z3', lat:3.04757, lng:101.58625, n:'OldTown White Coffee (USJ Utara)', fill:0 },
+  { id:'B-139', z:'Z3', lat:3.05015, lng:101.58393, n:'Chef & I (USJ Utara)', fill:0 },
+  { id:'B-140', z:'Z3', lat:3.05760, lng:101.60045, n:'99 Speedmart (USJ Utara)', fill:0 },
+  { id:'B-141', z:'Z3', lat:3.04534, lng:101.57547, n:'99 Speedmart (USJ Utara)', fill:0 },
+  { id:'B-142', z:'Z3', lat:3.05746, lng:101.59055, n:'99 Speedmart (USJ Utara)', fill:0 },
+  { id:'B-143', z:'Z3', lat:3.04770, lng:101.58479, n:'FamilyMart (USJ Utara)', fill:0 },
+  { id:'B-144', z:'Z3', lat:3.05718, lng:101.57752, n:'Radi Corner (USJ Utara)', fill:0 },
+  { id:'B-145', z:'Z3', lat:3.05768, lng:101.55641, n:'Seksyen 22 / Petronas (USJ Utara)', fill:0 },
+  { id:'B-146', z:'Z3', lat:3.04994, lng:101.55945, n:'Taman Pinggiran USJ 2 (Selatan) (USJ Utara)', fill:0 },
+  { id:'B-147', z:'Z3', lat:3.06333, lng:101.59407, n:'Bus Stop 42 (USJ Utara)', fill:0 },
+  { id:'B-148', z:'Z3', lat:3.05685, lng:101.57725, n:'Millenium Hair Saloon (USJ Utara)', fill:0 },
+  { id:'B-149', z:'Z3', lat:3.05712, lng:101.57742, n:'Willee Design Furnishing (USJ Utara)', fill:0 },
+  { id:'B-150', z:'Z3', lat:3.05346, lng:101.59162, n:'KK Super Mart (USJ Utara)', fill:0 },
+  { id:'B-151', z:'Z3', lat:3.05960, lng:101.57951, n:'Perumaham USJ 3 (USJ Utara)', fill:0 },
+  { id:'B-152', z:'Z3', lat:3.05686, lng:101.58230, n:'SAM Bestari (Opp) (USJ Utara)', fill:0 },
+  { id:'B-153', z:'Z3', lat:3.04965, lng:101.60243, n:'SJKC Chee Wen (Opp) (USJ Utara)', fill:0 },
+  { id:'B-154', z:'Z3', lat:3.06122, lng:101.59312, n:'SEGi College (USJ Utara)', fill:0 },
+  { id:'B-155', z:'Z3', lat:3.05309, lng:101.59130, n:'99 Speedmart (USJ Utara)', fill:0 },
+  { id:'B-156', z:'Z3', lat:3.06189, lng:101.59570, n:'MeMiZoooZooo (USJ Utara)', fill:0 },
+  { id:'B-157', z:'Z3', lat:3.04958, lng:101.58462, n:'Joo Hing (USJ Utara)', fill:0 },
+  { id:'B-158', z:'Z3', lat:3.04950, lng:101.58471, n:'Puchong Snack (USJ Utara)', fill:0 },
+  { id:'B-159', z:'Z3', lat:3.05491, lng:101.59210, n:'17 Gram Beans (USJ Utara)', fill:0 },
+  { id:'B-160', z:'Z3', lat:3.04769, lng:101.55306, n:'SM Teknik Vokasional (Opp) (USJ Utara)', fill:0 },
+  { id:'B-161', z:'Z3', lat:3.05347, lng:101.55542, n:'Taman Perindustrian Lion (USJ Utara)', fill:0 },
+  { id:'B-162', z:'Z3', lat:3.06212, lng:101.55696, n:'Kampung Kebun Bunga (Selatan) (USJ Utara)', fill:0 },
+  { id:'B-163', z:'Z3', lat:3.06409, lng:101.56898, n:'Subang Hitech (Selatan) (USJ Utara)', fill:0 },
+  { id:'B-164', z:'Z3', lat:3.04849, lng:101.58382, n:'TK Bakery (USJ Utara)', fill:0 },
+  { id:'B-165', z:'Z3', lat:3.04771, lng:101.58394, n:'Majestic Fish House (USJ Utara)', fill:0 },
+  { id:'B-166', z:'Z3', lat:3.04791, lng:101.58464, n:'You Pharmacy (USJ Utara)', fill:0 },
+  { id:'B-167', z:'Z3', lat:3.04834, lng:101.58627, n:'Pretty Polished Parlour (USJ Utara)', fill:0 },
+  { id:'B-168', z:'Z3', lat:3.04791, lng:101.58474, n:'Sentano (USJ Utara)', fill:0 },
+  { id:'B-169', z:'Z3', lat:3.04775, lng:101.58560, n:'AA Pharmacy (USJ Utara)', fill:0 },
+  { id:'B-170', z:'Z3', lat:3.04827, lng:101.58619, n:'Three Guys (USJ Utara)', fill:0 },
 
-  // ─── Z5: USJ 21 LRT Wawasan (3 stops) ───
-  { id:'Z5-1', z:'Z5', lat:3.03437, lng:101.58142, n:'LRT Wawasan USJ21', fill:0 },
-  { id:'Z5-2', z:'Z5', lat:3.03278, lng:101.58034, n:'USJ 21/10 Taman', fill:0 },
-  { id:'Z5-3', z:'Z5', lat:3.03567, lng:101.58256, n:'USJ 21 Commercial', fill:0 },
+  // ─── Z4: Taipan USJ 9 – USJ 15 Sentral (45 tong) ───
+  { id:'B-171', z:'Z4', lat:3.04404, lng:101.55399, n:'Siti Tomyam (Taipan USJ)', fill:0 },
+  { id:'B-172', z:'Z4', lat:3.04385, lng:101.56086, n:'Proton Center of Excellence (Taipan USJ)', fill:0 },
+  { id:'B-173', z:'Z4', lat:3.03366, lng:101.57887, n:'Restoran Weng Soon Jaya (Taipan USJ)', fill:0 },
+  { id:'B-174', z:'Z4', lat:3.03360, lng:101.57895, n:'Vapehero (Taipan USJ)', fill:0 },
+  { id:'B-175', z:'Z4', lat:3.03345, lng:101.57917, n:'Yu Mi Zhi Xiang (Taipan USJ)', fill:0 },
+  { id:'B-176', z:'Z4', lat:3.03850, lng:101.57611, n:'Adventure Touring Equipment (Taipan USJ)', fill:0 },
+  { id:'B-177', z:'Z4', lat:3.04320, lng:101.59157, n:'Bus Stop 07 (Taipan USJ)', fill:0 },
+  { id:'B-178', z:'Z4', lat:3.04335, lng:101.59041, n:'Restoran Khalifah Usj (Taipan USJ)', fill:0 },
+  { id:'B-179', z:'Z4', lat:3.04320, lng:101.59320, n:'Subang Perdana Goodyear Court 6 (Taipan USJ)', fill:0 },
+  { id:'B-180', z:'Z4', lat:3.04371, lng:101.58861, n:'Tj-Three Electrical Sales & Se.. (Taipan USJ)', fill:0 },
+  { id:'B-181', z:'Z4', lat:3.04371, lng:101.58874, n:'BEST Baking Solutions (Taipan USJ)', fill:0 },
+  { id:'B-182', z:'Z4', lat:3.04371, lng:101.58878, n:'OME Cycle (Taipan USJ)', fill:0 },
+  { id:'B-183', z:'Z4', lat:3.04319, lng:101.60384, n:'Klasik Food (Taipan USJ)', fill:0 },
+  { id:'B-184', z:'Z4', lat:3.04399, lng:101.60369, n:'Kios Enterprise (Taipan USJ)', fill:0 },
+  { id:'B-185', z:'Z4', lat:3.04362, lng:101.60310, n:'D\'Mewah Café (Taipan USJ)', fill:0 },
+  { id:'B-186', z:'Z4', lat:3.04338, lng:101.60319, n:'Mkay Segar (Taipan USJ)', fill:0 },
+  { id:'B-187', z:'Z4', lat:3.04338, lng:101.60316, n:'EC Laundry (Taipan USJ)', fill:0 },
+  { id:'B-188', z:'Z4', lat:3.04487, lng:101.60162, n:'Pangsapuri Jati1 (Taipan USJ)', fill:0 },
+  { id:'B-189', z:'Z4', lat:3.04496, lng:101.60256, n:'Kimberly Photo & Trading (Taipan USJ)', fill:0 },
+  { id:'B-190', z:'Z4', lat:3.04488, lng:101.60233, n:'7-Eleven (Taipan USJ)', fill:0 },
+  { id:'B-191', z:'Z4', lat:3.04483, lng:101.60216, n:'STI (Taipan USJ)', fill:0 },
+  { id:'B-192', z:'Z4', lat:3.04492, lng:101.60296, n:'Dobi Alyan (Taipan USJ)', fill:0 },
+  { id:'B-193', z:'Z4', lat:3.04481, lng:101.60303, n:'Supermarket 23 (Taipan USJ)', fill:0 },
+  { id:'B-194', z:'Z4', lat:3.04460, lng:101.60293, n:'Pak Grocer (Taipan USJ)', fill:0 },
+  { id:'B-195', z:'Z4', lat:3.04057, lng:101.59260, n:'Bao van (Taipan USJ)', fill:0 },
+  { id:'B-196', z:'Z4', lat:3.04323, lng:101.59992, n:'Market food and clothes (Taipan USJ)', fill:0 },
+  { id:'B-197', z:'Z4', lat:3.03474, lng:101.59388, n:'99 Speedmart (Taipan USJ)', fill:0 },
+  { id:'B-198', z:'Z4', lat:3.04477, lng:101.57459, n:'Bus Stop 28 (Taipan USJ)', fill:0 },
+  { id:'B-199', z:'Z4', lat:3.04352, lng:101.59982, n:'Restoran A Hassan (Taipan USJ)', fill:0 },
+  { id:'B-200', z:'Z4', lat:3.03826, lng:101.58905, n:'Cita Auto Parts (Taipan USJ)', fill:0 },
+  { id:'B-201', z:'Z4', lat:3.03366, lng:101.57790, n:'Starbucks (Taipan USJ)', fill:0 },
+  { id:'B-202', z:'Z4', lat:3.04335, lng:101.59032, n:'Hardware 32 (Taipan USJ)', fill:0 },
+  { id:'B-203', z:'Z4', lat:3.04335, lng:101.59027, n:'7-Eleven (Taipan USJ)', fill:0 },
+  { id:'B-204', z:'Z4', lat:3.04298, lng:101.60062, n:'Apartment Angsana (Selatan) (Taipan USJ)', fill:0 },
+  { id:'B-205', z:'Z4', lat:3.04303, lng:101.59608, n:'Zon Perindustraian USJ1 (Taipan USJ)', fill:0 },
+  { id:'B-206', z:'Z4', lat:3.04329, lng:101.59556, n:'Zon Perindustraian USJ1 (Taipan USJ)', fill:0 },
+  { id:'B-207', z:'Z4', lat:3.04327, lng:101.58299, n:'USJ 9 (Barat) (Taipan USJ)', fill:0 },
+  { id:'B-208', z:'Z4', lat:3.03795, lng:101.59087, n:'Goodyear Court 10 (Taipan USJ)', fill:0 },
+  { id:'B-209', z:'Z4', lat:3.04020, lng:101.59257, n:'Goodyear Court 9C (Opp) (Taipan USJ)', fill:0 },
+  { id:'B-210', z:'Z4', lat:3.03378, lng:101.57798, n:'7-Eleven (Taipan USJ)', fill:0 },
+  { id:'B-211', z:'Z4', lat:3.03317, lng:101.57900, n:'Ru Yu Xuan Kopitiam (Taipan USJ)', fill:0 },
+  { id:'B-212', z:'Z4', lat:3.03348, lng:101.57913, n:'Giant Mini (Taipan USJ)', fill:0 },
+  { id:'B-213', z:'Z4', lat:3.03352, lng:101.57909, n:'KK Super Mart (Taipan USJ)', fill:0 },
+  { id:'B-214', z:'Z4', lat:3.03355, lng:101.57905, n:'i-sight optical (Taipan USJ)', fill:0 },
+  { id:'B-215', z:'Z4', lat:3.03333, lng:101.57880, n:'S K Key Lock (Taipan USJ)', fill:0 },
 
-  // ─── Z6: Sunway / SS12 (5 stops) ───
-  { id:'Z6-1', z:'Z6', lat:3.07281, lng:101.60634, n:'Sunway Pyramid', fill:0 },
-  { id:'Z6-2', z:'Z6', lat:3.07156, lng:101.60423, n:'Sunway Medical Centre', fill:0 },
-  { id:'Z6-3', z:'Z6', lat:3.06834, lng:101.60312, n:'Monash University SJ', fill:0 },
-  { id:'Z6-4', z:'Z6', lat:3.07389, lng:101.60789, n:'Sunway GEO Avenue', fill:0 },
-  { id:'Z6-5', z:'Z6', lat:3.07634, lng:101.60234, n:"Taylor's University", fill:0 },
+  // ─── Z5: USJ 16 – USJ 27 USJ Selatan (40 tong) ───
+  { id:'B-216', z:'Z5', lat:3.02222, lng:101.58049, n:'Gloria Jean\'s (USJ Selatan)', fill:0 },
+  { id:'B-217', z:'Z5', lat:3.03226, lng:101.57699, n:'99 Speedmart (USJ Selatan)', fill:0 },
+  { id:'B-218', z:'Z5', lat:3.03258, lng:101.57779, n:'Stadium Curry House (USJ Selatan)', fill:0 },
+  { id:'B-219', z:'Z5', lat:3.03258, lng:101.57687, n:'Billion Seafood (USJ Selatan)', fill:0 },
+  { id:'B-220', z:'Z5', lat:3.03259, lng:101.57737, n:'MMM Bawang Cafe (USJ Selatan)', fill:0 },
+  { id:'B-221', z:'Z5', lat:3.03227, lng:101.57755, n:'Murugan Hair Dressing Salon (USJ Selatan)', fill:0 },
+  { id:'B-222', z:'Z5', lat:3.03229, lng:101.57716, n:'The Great Kopitiam (USJ Selatan)', fill:0 },
+  { id:'B-223', z:'Z5', lat:3.02397, lng:101.58159, n:'Gold Chilli (USJ Selatan)', fill:0 },
+  { id:'B-224', z:'Z5', lat:3.02634, lng:101.58209, n:'KK Super Mart (USJ Selatan)', fill:0 },
+  { id:'B-225', z:'Z5', lat:3.02662, lng:101.58208, n:'7-Eleven (USJ Selatan)', fill:0 },
+  { id:'B-226', z:'Z5', lat:3.02782, lng:101.58209, n:'99 Speedmart (USJ Selatan)', fill:0 },
+  { id:'B-227', z:'Z5', lat:3.03005, lng:101.57246, n:'Bus Stop 12 (USJ Selatan)', fill:0 },
+  { id:'B-228', z:'Z5', lat:3.02037, lng:101.59290, n:'Kampung Tengah (Timur) (USJ Selatan)', fill:0 },
+  { id:'B-229', z:'Z5', lat:3.02065, lng:101.59291, n:'Kampung Tengah (Timur) (USJ Selatan)', fill:0 },
+  { id:'B-230', z:'Z5', lat:3.02015, lng:101.59473, n:'Mee Bungkus LDP (USJ Selatan)', fill:0 },
+  { id:'B-231', z:'Z5', lat:3.01825, lng:101.59076, n:'Ujang 88 Garage (USJ Selatan)', fill:0 },
+  { id:'B-232', z:'Z5', lat:3.03191, lng:101.58858, n:'Pasaraya Borong Matahari (USJ Selatan)', fill:0 },
+  { id:'B-233', z:'Z5', lat:3.02318, lng:101.57237, n:'LRT Alam Megah (USJ Selatan)', fill:0 },
+  { id:'B-234', z:'Z5', lat:3.02639, lng:101.58090, n:'Jaya Grocer (USJ Selatan)', fill:0 },
+  { id:'B-235', z:'Z5', lat:3.02628, lng:101.58089, n:'eco-shop (USJ Selatan)', fill:0 },
+  { id:'B-236', z:'Z5', lat:3.02846, lng:101.57557, n:'Mart (USJ Selatan)', fill:0 },
+  { id:'B-237', z:'Z5', lat:3.02370, lng:101.58198, n:'MyEspresso Cafe (USJ Selatan)', fill:0 },
+  { id:'B-238', z:'Z5', lat:3.02148, lng:101.58136, n:'Hairy Mary (USJ Selatan)', fill:0 },
+  { id:'B-239', z:'Z5', lat:3.01346, lng:101.59173, n:'108 Hideout (USJ Selatan)', fill:0 },
+  { id:'B-240', z:'Z5', lat:3.03259, lng:101.57753, n:'Hedge & Hedge (USJ Selatan)', fill:0 },
+  { id:'B-241', z:'Z5', lat:3.03227, lng:101.57694, n:'Sugar Bites Cake (USJ Selatan)', fill:0 },
+  { id:'B-242', z:'Z5', lat:3.03228, lng:101.57721, n:'dobi Queen (USJ Selatan)', fill:0 },
+  { id:'B-243', z:'Z5', lat:3.03260, lng:101.57764, n:'Lapan (USJ Selatan)', fill:0 },
+  { id:'B-244', z:'Z5', lat:3.03259, lng:101.57710, n:'Do Bae (USJ Selatan)', fill:0 },
+  { id:'B-245', z:'Z5', lat:3.03226, lng:101.57710, n:'16 Degree Coffe & Grocer (USJ Selatan)', fill:0 },
+  { id:'B-246', z:'Z5', lat:3.03259, lng:101.57742, n:'Roxy Auto Accessories Sdn Bhd (USJ Selatan)', fill:0 },
+  { id:'B-247', z:'Z5', lat:3.03227, lng:101.57777, n:'Juan Auto Centre (USJ Selatan)', fill:0 },
+  { id:'B-248', z:'Z5', lat:3.03259, lng:101.57700, n:'Head Artistic Salon (USJ Selatan)', fill:0 },
+  { id:'B-249', z:'Z5', lat:3.03259, lng:101.57697, n:'Kedai Runcit Cap Pa Lang (USJ Selatan)', fill:0 },
+  { id:'B-250', z:'Z5', lat:3.03259, lng:101.57704, n:'Nail Affairs (USJ Selatan)', fill:0 },
+  { id:'B-251', z:'Z5', lat:3.03227, lng:101.57744, n:'FACESUN SCITECH 荟生 (USJ Selatan)', fill:0 },
+  { id:'B-252', z:'Z5', lat:3.03227, lng:101.57759, n:'P G Hardware Shop (USJ Selatan)', fill:0 },
+  { id:'B-253', z:'Z5', lat:3.03225, lng:101.57738, n:'Subang Crystal Clean (USJ Selatan)', fill:0 },
+  { id:'B-254', z:'Z5', lat:3.03227, lng:101.57753, n:'Butik Muslimah Neny (USJ Selatan)', fill:0 },
+  { id:'B-255', z:'Z5', lat:3.02086, lng:101.58688, n:'Kampung Tengah (Barat) (USJ Selatan)', fill:0 },
 
-  // ─── Z7: Bandar Puteri Puchong (5 stops) ───
-  { id:'Z7-1', z:'Z7', lat:3.03625, lng:101.61073, n:'Bandar Puteri Commercial', fill:0 },
-  { id:'Z7-2', z:'Z7', lat:3.04123, lng:101.61234, n:'IOI Mall Puchong', fill:0 },
-  { id:'Z7-3', z:'Z7', lat:3.03489, lng:101.60934, n:'Jalan Puteri 7/1', fill:0 },
-  { id:'Z7-4', z:'Z7', lat:3.03012, lng:101.61456, n:'Puchong Perdana Hub', fill:0 },
-  { id:'Z7-5', z:'Z7', lat:3.03789, lng:101.61345, n:'Pusat Dagangan Puteri', fill:0 },
-
-  // ─── Z8: Puchong Permai (4 stops) ───
-  { id:'Z8-1', z:'Z8', lat:3.02628, lng:101.62072, n:'Puchong Permai Park', fill:0 },
-  { id:'Z8-2', z:'Z8', lat:3.02456, lng:101.61934, n:'Taman Sri Puchong', fill:0 },
-  { id:'Z8-3', z:'Z8', lat:3.02789, lng:101.62156, n:'Puchong Permai Commercial', fill:0 },
-  { id:'Z8-4', z:'Z8', lat:3.02312, lng:101.62234, n:'Permai Indah Residences', fill:0 },
-
-  // ─── Z9: Putra Heights (4 stops) ───
-  { id:'Z9-1', z:'Z9', lat:3.01960, lng:101.55680, n:'Putra Heights Commercial', fill:0 },
-  { id:'Z9-2', z:'Z9', lat:3.01823, lng:101.55534, n:'Putra Heights Central Park', fill:0 },
-  { id:'Z9-3', z:'Z9', lat:3.02078, lng:101.55812, n:'PH Mosque Area', fill:0 },
-  { id:'Z9-4', z:'Z9', lat:3.02234, lng:101.55678, n:'Putra Heights LRT', fill:0 },
-
-  // ─── Z10: Kinrara Seksyen 6 (3 stops) ───
-  { id:'Z10-1', z:'Z10', lat:3.04857, lng:101.62813, n:'Kinrara Seksyen 3 Park', fill:0 },
-  { id:'Z10-2', z:'Z10', lat:3.04634, lng:101.62678, n:'Taman Kinrara Commercial', fill:0 },
-  { id:'Z10-3', z:'Z10', lat:3.05012, lng:101.62934, n:'Kinrara BK8', fill:0 },
-
-  // ─── Z11: Seri Kembangan (3 stops) ───
-  { id:'Z11-1', z:'Z11', lat:3.01561, lng:101.70341, n:'Taman Universiti Indah', fill:0 },
-  { id:'Z11-2', z:'Z11', lat:3.01734, lng:101.70156, n:'Serdang Utama Hub', fill:0 },
-  { id:'Z11-3', z:'Z11', lat:3.01389, lng:101.70489, n:'Taman Seri Serdang', fill:0 },
-
-  // ─── Z12: USJ 1 Eco Park (2 stops) ───
-  { id:'Z12-1', z:'Z12', lat:3.06350, lng:101.59263, n:'USJ 1 Eco Park Entrance', fill:0 },
-  { id:'Z12-2', z:'Z12', lat:3.06234, lng:101.59134, n:'USJ 1/3A Commercial', fill:0 },
+  // ─── Z6: Putra Heights Seksyen 1-10 (45 tong) ───
+  { id:'B-256', z:'Z6', lat:2.99593, lng:101.57316, n:'Warung Kopi Mak Jah (Putra Heights)', fill:0 },
+  { id:'B-257', z:'Z6', lat:2.99304, lng:101.57458, n:'Garden Heights (Putra Heights)', fill:0 },
+  { id:'B-258', z:'Z6', lat:2.99936, lng:101.56062, n:'Falken Tyre Repairs (Putra Heights)', fill:0 },
+  { id:'B-259', z:'Z6', lat:2.99593, lng:101.57253, n:'Chang Cheng 88 Kopitiam (Putra Heights)', fill:0 },
+  { id:'B-260', z:'Z6', lat:2.99637, lng:101.57414, n:'Pizza Hut (Putra Heights)', fill:0 },
+  { id:'B-261', z:'Z6', lat:2.99520, lng:101.57106, n:'Berry Cake House (Putra Heights)', fill:0 },
+  { id:'B-262', z:'Z6', lat:2.99637, lng:101.57381, n:'7-Eleven (Putra Heights)', fill:0 },
+  { id:'B-263', z:'Z6', lat:3.04515, lng:101.60324, n:'Jumble Station (Putra Heights)', fill:0 },
+  { id:'B-264', z:'Z6', lat:3.05595, lng:101.60478, n:'Domino\'s (Putra Heights)', fill:0 },
+  { id:'B-265', z:'Z6', lat:2.99520, lng:101.57575, n:'LRT Putra Heights (Putra Heights)', fill:0 },
+  { id:'B-266', z:'Z6', lat:2.99797, lng:101.56363, n:'Putra Bahagia 8 Small Park (Putra Heights)', fill:0 },
+  { id:'B-267', z:'Z6', lat:2.99526, lng:101.57432, n:'Anwar Maju (Putra Heights)', fill:0 },
+  { id:'B-268', z:'Z6', lat:2.99360, lng:101.57084, n:'99 Speedmart (Putra Heights)', fill:0 },
+  { id:'B-269', z:'Z6', lat:2.99134, lng:101.56061, n:'99 Speedmart (Putra Heights)', fill:0 },
+  { id:'B-270', z:'Z6', lat:3.00983, lng:101.57005, n:'Bus Stop 15 (Putra Heights)', fill:0 },
+  { id:'B-271', z:'Z6', lat:3.00679, lng:101.58147, n:'Playground 16 (Putra Heights)', fill:0 },
+  { id:'B-272', z:'Z6', lat:3.05623, lng:101.60632, n:'Ayam Cincang 7 Warisan (Putra Heights)', fill:0 },
+  { id:'B-273', z:'Z6', lat:2.99322, lng:101.56179, n:'Playground 18 (Putra Heights)', fill:0 },
+  { id:'B-274', z:'Z6', lat:2.99343, lng:101.56341, n:'Playground 19 (Putra Heights)', fill:0 },
+  { id:'B-275', z:'Z6', lat:3.00959, lng:101.57232, n:'LRT Subang Alam (Putra Heights)', fill:0 },
+  { id:'B-276', z:'Z6', lat:3.00855, lng:101.57792, n:'Jibby & Co. (Putra Heights)', fill:0 },
+  { id:'B-277', z:'Z6', lat:3.04849, lng:101.60603, n:'Taman Perindustrian USJ1 (Putra Heights)', fill:0 },
+  { id:'B-278', z:'Z6', lat:2.99008, lng:101.56008, n:'Headlamp Coating Putra Heights (Putra Heights)', fill:0 },
+  { id:'B-279', z:'Z6', lat:3.00410, lng:101.56104, n:'Taman Alam Megah (Selatan) (Putra Heights)', fill:0 },
+  { id:'B-280', z:'Z6', lat:3.00378, lng:101.56117, n:'Taman Alam Megah (Selatan) (Putra Heights)', fill:0 },
+  { id:'B-281', z:'Z6', lat:2.99532, lng:101.57251, n:'MR.DIY (Putra Heights)', fill:0 },
+  { id:'B-282', z:'Z6', lat:2.99634, lng:101.57530, n:'7-Eleven (Putra Heights)', fill:0 },
+  { id:'B-283', z:'Z6', lat:2.99666, lng:101.56905, n:'D\' Passion (Putra Heights)', fill:0 },
+  { id:'B-284', z:'Z6', lat:2.99397, lng:101.57045, n:'Laman Putra (Putra Heights)', fill:0 },
+  { id:'B-285', z:'Z6', lat:2.99433, lng:101.57381, n:'Putra Point Comercial Centre (.. (Putra Heights)', fill:0 },
+  { id:'B-286', z:'Z6', lat:2.99305, lng:101.57527, n:'Putra Point Comercial Centre (.. (Putra Heights)', fill:0 },
+  { id:'B-287', z:'Z6', lat:2.99634, lng:101.57128, n:'Richiamo Coffee (Putra Heights)', fill:0 },
+  { id:'B-288', z:'Z6', lat:2.99635, lng:101.57303, n:'KK Super Mart (Putra Heights)', fill:0 },
+  { id:'B-289', z:'Z6', lat:2.99636, lng:101.57322, n:'ZUS Coffee (Putra Heights)', fill:0 },
+  { id:'B-290', z:'Z6', lat:2.99638, lng:101.57392, n:'Watsons (Putra Heights)', fill:0 },
+  { id:'B-291', z:'Z6', lat:2.99637, lng:101.57408, n:'Tealive (Putra Heights)', fill:0 },
+  { id:'B-292', z:'Z6', lat:3.05605, lng:101.60423, n:'Regalia Business Park (Opp) (Putra Heights)', fill:0 },
+  { id:'B-293', z:'Z6', lat:2.98996, lng:101.57260, n:'Giant Putra Heights (Putra Heights)', fill:0 },
+  { id:'B-294', z:'Z6', lat:2.98988, lng:101.56404, n:'Taman Putra Permai Seksyen 10 (Putra Heights)', fill:0 },
+  { id:'B-295', z:'Z6', lat:2.99024, lng:101.56403, n:'Taman Putra Permai Seksyen 9 (Putra Heights)', fill:0 },
+  { id:'B-296', z:'Z6', lat:2.99155, lng:101.56091, n:'Komersial Putra Heights (Putra Heights)', fill:0 },
+  { id:'B-297', z:'Z6', lat:2.99446, lng:101.56119, n:'Pangsapuri Sri Mutiara (Opp) (Putra Heights)', fill:0 },
+  { id:'B-298', z:'Z6', lat:3.00410, lng:101.56370, n:'Flat Taman Alam Megah (Putra Heights)', fill:0 },
+  { id:'B-299', z:'Z6', lat:3.00380, lng:101.56288, n:'Flat Taman Alam Megah (Putra Heights)', fill:0 },
+  { id:'B-300', z:'Z6', lat:3.00637, lng:101.56575, n:'SK Taman Alam Megah (Putra Heights)', fill:0 },
 ];
 
 var ZONES = [
-  {id:'Z1',name:'SS15 Subang Jaya',hot:true},
-  {id:'Z2',name:'SS18 LRT Station',hot:false},
-  {id:'Z3',name:'Taipan USJ 10',hot:true},
-  {id:'Z4',name:'USJ 9 Perumahan',hot:false},
-  {id:'Z5',name:'USJ 21 LRT Wawasan',hot:false},
-  {id:'Z6',name:'Sunway / SS12',hot:true},
-  {id:'Z7',name:'Bandar Puteri Puchong',hot:true},
-  {id:'Z8',name:'Puchong Permai',hot:false},
-  {id:'Z9',name:'Putra Heights',hot:false},
-  {id:'Z10',name:'Kinrara Seksyen 6',hot:false},
-  {id:'Z11',name:'Seri Kembangan',hot:false},
-  {id:'Z12',name:'USJ 1 Eco Park',hot:false},
+  {id:'Z1',name:'SS12 – SS19 (Pusat Bandar)',hot:true},
+  {id:'Z2',name:'Bandar Sunway (PJS 7,9,11)', hot:true},
+  {id:'Z3',name:'USJ 1 – USJ 8 (USJ Utara)',   hot:false},
+  {id:'Z4',name:'Taipan USJ 9 – USJ 15',       hot:true},
+  {id:'Z5',name:'USJ 16 – USJ 27 (USJ Selatan)', hot:false},
+  {id:'Z6',name:'Putra Heights (Seksyen 1-10)', hot:false},
 ];
 
-// Truck definitions — each visits ALL spots in assigned zones
+// Truck definitions — each covers designated zones across Subang Jaya
 var TRUCK_DEFS = [
-  {id:'T-01',color:'#7c3aed',zones:['Z1','Z2','Z12'],name:'SS15 / SS18 / Eco Park'},
-  {id:'T-02',color:'#0891b2',zones:['Z3','Z4'],      name:'Taipan / USJ 9'},
-  {id:'T-03',color:'#d97706',zones:['Z5','Z9'],      name:'USJ 21 / Putra Heights'},
-  {id:'T-04',color:'#059669',zones:['Z7','Z8','Z10'],name:'Puchong / Kinrara'},
-  {id:'T-05',color:'#e11d48',zones:['Z6','Z11'],     name:'Sunway / Seri Kembangan'},
+  {id:'T-01',color:'#7c3aed',zones:['Z1'],      name:'SS12-SS19 Pusat Bandar'},
+  {id:'T-02',color:'#0891b2',zones:['Z2'],      name:'Bandar Sunway'},
+  {id:'T-03',color:'#059669',zones:['Z3'],      name:'USJ 1 - USJ 8 Utara'},
+  {id:'T-04',color:'#d97706',zones:['Z4'],      name:'Taipan / USJ 9-15'},
+  {id:'T-05',color:'#e11d48',zones:['Z5','Z6'], name:'USJ Selatan / Putra Heights'},
 ];
 
 // ══════════════════════════════════════════════════════════
@@ -577,20 +813,27 @@ async function buildRoutes(){
   ];
   function stepDone(i){loadSteps[i].innerHTML='<span class="ok">&#x2713;</span> '+loadSteps[i].textContent.replace('⏳ ','');}
 
-  // Step 1: TSP per truck
+  // Step 1: TSP per truck — AI Smart Priority Dispatch across 300 IoT bins
   var truckPlans=TRUCK_DEFS.map(function(t){
-    var spots=[];
+    var zoneSpots=[];
     t.zones.forEach(function(zid){
-      BIN_SPOTS.filter(function(b){return b.z===zid;}).forEach(function(b){spots.push(b);});
+      BIN_SPOTS.filter(function(b){return b.z===zid;}).forEach(function(b){zoneSpots.push(b);});
     });
+    // Dispatch bins requiring collection (fill >= 60%) or top priority bins
+    var spotsToCollect = zoneSpots.filter(function(b){return b.fill>=60;});
+    if(spotsToCollect.length < 8){
+      spotsToCollect = zoneSpots.slice().sort(function(a,b){return b.fill-a.fill;}).slice(0, 10);
+    } else if(spotsToCollect.length > 14){
+      spotsToCollect = spotsToCollect.slice().sort(function(a,b){return b.fill-a.fill;}).slice(0, 14);
+    }
     // Apply nearest-neighbour TSP from depot
-    var ordered=nearestNeighbour(spots,DEPOT);
+    var ordered=nearestNeighbour(spotsToCollect,DEPOT);
     return{def:t,ordered:ordered};
   });
   stepDone(0);
 
   // Step 2: OSRM for each truck
-  loadSteps[1].textContent='⏳ Fetching OSRM routes (5 trucks, all '+BIN_SPOTS.length+' stops)...';
+  loadSteps[1].textContent='⏳ Menjana laluan jalan raya OSRM (5 lori, keutamaan kutipan 300 tong)...';
   var results=await Promise.all(truckPlans.map(async function(plan){
     // Waypoints: depot → all stops (TSP order) → transfer → depot
     var wpts=[{lat:DEPOT.lat,lng:DEPOT.lng}];
@@ -860,7 +1103,7 @@ window.addEventListener('load',async function(){
   randomiseFills();
   renderBinMarkers();
   renderZoneList();
-  log('Boot. TSP nearest-neighbour ordering '+BIN_SPOTS.length+' stops...','b');
+  log('Sistem SmartTONG bersedia: 300 tong IoT aktif dipantau di Subang Jaya.','b');
 
   await buildRoutes();
 
