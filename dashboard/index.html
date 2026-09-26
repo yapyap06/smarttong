@@ -3723,8 +3723,8 @@
     function initMap() {
       if (appMap) return;
       appMap = L.map('map', { zoomControl: false }).setView([3.075, 101.58], 12);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '©CartoDB',
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19
       }).addTo(appMap);
       renderMarkers();

@@ -6750,7 +6750,7 @@ Formatkan dengan nombor dan bullet point yang kemas. Jangan berhenti separuh jal
     function initGovMap() {
       if (govMap) return;
       govMap = L.map('gov-map', { zoomControl: false }).setView([3.075, 101.58], 12);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '©CartoDB', maxZoom: 19 }).addTo(govMap);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 }).addTo(govMap);
       renderGovMarkers();
       drawGovOptimizedRoute();
 
