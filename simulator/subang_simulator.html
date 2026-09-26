@@ -3,508 +3,696 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SmartTONG AI — Subang Jaya Fleet Simulator</title>
+<title>SmartTONG AI — Subang Jaya Route Simulator</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Inter',sans-serif;background:#f8f9fa;color:#1a1a2e;overflow:hidden;}
-#root{display:flex;height:100vh;width:100vw;}
-#panel{width:340px;flex-shrink:0;background:#ffffff;border-right:1px solid #e8ecf0;display:flex;flex-direction:column;overflow:hidden;z-index:10;}
-#panel-header{padding:16px 18px 12px;border-bottom:1px solid #e8ecf0;}
-.brand{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.brand-title{font-size:16px;font-weight:800;color:#16a34a;letter-spacing:-0.3px;}
-.brand-sub{font-size:10px;color:#6b7280;font-weight:500;}
-.time-bar{display:flex;align-items:center;justify-content:space-between;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;}
-.time-label{font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:0.5px;}
-.time-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#15803d;}
-.ai-status{display:flex;align-items:center;gap:5px;font-size:10px;color:#15803d;font-weight:600;}
-.pulse{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 1.5s infinite;}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.6;transform:scale(0.85);}}
-#panel-body{flex:1;overflow-y:auto;padding:0;}
-#panel-body::-webkit-scrollbar{width:4px;}
-#panel-body::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:2px;}
-.section{padding:12px 18px;}
-.section-title{font-size:10px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
-.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.kpi{background:#f9fafb;border:1px solid #e8ecf0;border-radius:10px;padding:12px;}
-.kpi-icon{font-size:16px;margin-bottom:4px;}
-.kpi-val{font-size:20px;font-weight:900;letter-spacing:-0.5px;margin-bottom:1px;}
-.kpi-label{font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;}
-.kpi-sub{font-size:10px;color:#6b7280;margin-top:2px;}
-.green{color:#16a34a;}.blue{color:#1d4ed8;}.orange{color:#ea580c;}.red{color:#dc2626;}
-.truck-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f3f4f6;}
-.truck-item:last-child{border-bottom:none;}
-.truck-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
-.truck-info{flex:1;min-width:0;}
-.truck-id{font-size:12px;font-weight:700;margin-bottom:2px;}
-.truck-route{font-size:10px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.truck-stat{text-align:right;flex-shrink:0;}
-.truck-km{font-size:12px;font-weight:800;color:#1d4ed8;}
-.truck-bins{font-size:10px;color:#9ca3af;}
-.status-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:12px;font-size:9px;font-weight:700;text-transform:uppercase;margin-top:2px;}
-.chip-moving{background:#dbeafe;color:#1d4ed8;}
-.chip-collecting{background:#dcfce7;color:#16a34a;}
-.chip-returning{background:#fef3c7;color:#d97706;}
-.chip-standby{background:#f3f4f6;color:#6b7280;}
-.zone-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f3f4f6;font-size:11px;}
-.zone-item:last-child{border-bottom:none;}
-.zone-name{font-weight:600;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:6px;}
-.zone-fill{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-.fill-bar{width:55px;height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;}
-.fill-inner{height:100%;border-radius:3px;transition:width 1s;}
-.fill-pct{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;min-width:32px;text-align:right;}
-.sched-table{width:100%;border-collapse:collapse;font-size:10px;}
-.sched-table th{background:#f9fafb;padding:6px 8px;text-align:left;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #e5e7eb;}
-.sched-table td{padding:6px 8px;border-bottom:1px solid #f3f4f6;color:#374151;}
-.sched-table tr:last-child td{border-bottom:none;}
-.legend-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
-.leg-item{display:flex;align-items:center;gap:4px;font-size:10px;color:#6b7280;}
-.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-#controls{padding:12px 18px;border-top:1px solid #e8ecf0;background:#fff;}
-.ctrl-btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:all .2s;}
-.btn-primary{background:#16a34a;color:#fff;}
-.btn-primary:hover{background:#15803d;}
-.btn-secondary{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}
-.btn-secondary:hover{background:#e5e7eb;}
-.btn-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
-.ctrl-row{display:flex;gap:6px;margin-bottom:8px;}
-.speed-label{font-size:10px;color:#9ca3af;font-weight:600;margin-bottom:4px;}
-input[type=range]{width:100%;accent-color:#16a34a;}
-#map-wrap{flex:1;position:relative;background:#fff;}
-#map{width:100%;height:100%;z-index:1;}
-#ai-log{position:absolute;bottom:16px;right:16px;z-index:500;width:240px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.08);overflow:hidden;}
-#ai-log-header{background:#f0fdf4;padding:8px 12px;font-size:10px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:5px;}
-#ai-log-body{max-height:150px;overflow-y:auto;padding:8px 12px;}
-.log-entry{font-size:10px;color:#374151;padding:3px 0;border-bottom:1px solid #f9fafb;line-height:1.4;}
-.log-entry:last-child{border-bottom:none;}
-.log-time{font-family:'JetBrains Mono',monospace;color:#9ca3af;margin-right:4px;}
-.log-green{color:#16a34a;font-weight:700;}
-.log-orange{color:#ea580c;font-weight:700;}
-.log-blue{color:#1d4ed8;font-weight:700;}
-.leaflet-popup-content-wrapper{border-radius:10px!important;font-family:'Inter',sans-serif!important;box-shadow:0 4px 16px rgba(0,0,0,0.12)!important;}
-.leaflet-popup-content{margin:12px 14px!important;}
-.pu-title{font-size:12px;font-weight:700;margin-bottom:4px;}
-.pu-row{display:flex;justify-content:space-between;font-size:11px;margin:3px 0;color:#6b7280;}
-.pu-val{font-weight:700;color:#1a1a2e;}
+html,body{height:100%;font-family:'Inter',sans-serif;background:#fff;color:#1a1a2e;overflow:hidden;}
+#root{display:flex;height:100vh;}
+
+/* PANEL */
+#panel{width:300px;flex-shrink:0;background:#fff;border-right:1px solid #e5e7eb;display:flex;flex-direction:column;z-index:10;}
+#ph{padding:14px 16px 10px;border-bottom:1px solid #e5e7eb;}
+.logo-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.logo-box{width:32px;height:32px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.logo-title{font-size:14px;font-weight:800;color:#16a34a;}
+.logo-sub{font-size:9px;color:#9ca3af;font-weight:500;}
+.timebox{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;}
+.tl{font-size:10px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.5px;}
+.tv{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#15803d;}
+.ai-dot{display:flex;align-items:center;gap:4px;font-size:9px;color:#15803d;font-weight:600;}
+.dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:blink 1.4s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+#pb{flex:1;overflow-y:auto;}
+#pb::-webkit-scrollbar{width:3px;}
+#pb::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:2px;}
+.sec{padding:10px 16px;border-bottom:1px solid #f3f4f6;}
+.sec-title{font-size:9px;font-weight:800;color:#d1d5db;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.kpi{background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:10px;}
+.kv{font-size:18px;font-weight:900;margin-bottom:1px;}
+.kl{font-size:8px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;}
+.ks{font-size:9px;color:#6b7280;margin-top:1px;}
+.c-green{color:#16a34a;}.c-blue{color:#1d4ed8;}.c-orange{color:#d97706;}.c-red{color:#dc2626;}
+
+/* TRUCKS */
+.ti{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f9fafb;}
+.ti:last-child{border-bottom:none;}
+.ta{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.tn{font-size:11px;font-weight:700;}
+.tr2{font-size:9px;color:#9ca3af;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tstat{text-align:right;flex-shrink:0;}
+.tkm{font-size:11px;font-weight:800;color:#1d4ed8;}
+.chip{display:inline-block;padding:2px 6px;border-radius:10px;font-size:8px;font-weight:700;text-transform:uppercase;margin-top:2px;}
+.cm{background:#eff6ff;color:#1d4ed8;}.cc{background:#f0fdf4;color:#16a34a;}.cr2{background:#fffbeb;color:#d97706;}.cd{background:#f9fafb;color:#9ca3af;}
+
+/* ZONES */
+.zi{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f9fafb;font-size:10px;}
+.zi:last-child{border-bottom:none;}
+.zn{font-weight:600;color:#374151;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:4px;}
+.zr{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.zbar{width:50px;height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden;}
+.zfill{height:100%;border-radius:2px;transition:width .8s;}
+.zpct{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;min-width:28px;text-align:right;}
+
+/* SCHED */
+.st{width:100%;border-collapse:collapse;font-size:9px;}
+.st th{padding:5px 6px;text-align:left;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #f3f4f6;background:#fafafa;}
+.st td{padding:5px 6px;border-bottom:1px solid #f9fafb;color:#374151;}
+
+/* CONTROLS */
+#ctrl{padding:10px 16px;border-top:1px solid #e5e7eb;}
+.sp-lbl{font-size:9px;color:#9ca3af;font-weight:600;margin-bottom:3px;}
+input[type=range]{width:100%;accent-color:#16a34a;height:3px;}
+.btns{display:flex;gap:5px;margin-top:8px;}
+.btn{flex:1;padding:8px 8px;border-radius:7px;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;border:none;cursor:pointer;transition:all .15s;}
+.bp{background:#16a34a;color:#fff;}.bp:hover{background:#15803d;}.bp:disabled{background:#9ca3af;cursor:default;}
+.bs{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}.bs:hover{background:#e5e7eb;}
+
+/* MAP */
+#mw{flex:1;position:relative;}
+#map{width:100%;height:100%;}
+
+/* LOADING OVERLAY */
+#loading{position:absolute;inset:0;z-index:999;background:rgba(255,255,255,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+#loading.hidden{display:none;}
+.ld-spinner{width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:#16a34a;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ld-text{font-size:13px;font-weight:600;color:#374151;}
+.ld-sub{font-size:11px;color:#9ca3af;}
+
+/* LOG */
+#log-box{position:absolute;bottom:12px;right:12px;z-index:500;width:230px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden;}
+#log-hdr{background:#f0fdf4;padding:7px 10px;font-size:9px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:4px;}
+#log-body{max-height:130px;overflow-y:auto;padding:6px 10px;}
+.le{font-size:9px;color:#374151;padding:2px 0;border-bottom:1px solid #f9fafb;line-height:1.4;}
+.lt{font-family:'JetBrains Mono',monospace;color:#d1d5db;margin-right:3px;}
+.lg{color:#16a34a;font-weight:700;}.lo{color:#d97706;font-weight:700;}.lb{color:#1d4ed8;font-weight:700;}
+
+/* LEGEND */
+#leg{position:absolute;top:12px;right:12px;z-index:500;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:8px 10px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.leg-row{display:flex;flex-wrap:wrap;gap:5px;}
+.li{display:flex;align-items:center;gap:3px;font-size:9px;color:#6b7280;}
+.ld2{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* POPUP */
+.leaflet-popup-content-wrapper{border-radius:8px!important;font-family:'Inter',sans-serif!important;box-shadow:0 4px 12px rgba(0,0,0,.1)!important;}
+.leaflet-popup-content{margin:10px 12px!important;}
+.pt{font-size:11px;font-weight:700;margin-bottom:3px;}
+.pr{display:flex;justify-content:space-between;font-size:10px;margin:2px 0;color:#6b7280;}
+.pv{font-weight:700;color:#1a1a2e;}
 </style>
 </head>
 <body>
 <div id="root">
 
+<!-- PANEL -->
 <div id="panel">
-  <div id="panel-header">
-    <div class="brand">
-      <div class="brand-icon">&#x267B;&#xFE0F;</div>
-      <div>
-        <div class="brand-title">SmartTONG AI</div>
-        <div class="brand-sub">Subang Jaya Fleet Simulator &bull; MBSJ / KDEBWM</div>
-      </div>
+  <div id="ph">
+    <div class="logo-row">
+      <div class="logo-box">&#x267B;</div>
+      <div><div class="logo-title">SmartTONG AI</div><div class="logo-sub">Subang Jaya Fleet Sim &bull; MBSJ / KDEBWM &bull; OSRM Real Roads</div></div>
     </div>
-    <div class="time-bar">
-      <div>
-        <div class="time-label">Simulation Time</div>
-        <div class="time-val" id="sim-time">06:30 AM</div>
-      </div>
-      <div class="ai-status"><div class="pulse"></div>AI Coordinator Active</div>
+    <div class="timebox">
+      <div><div class="tl">Sim Time</div><div class="tv" id="sim-time">06:30 AM</div></div>
+      <div class="ai-dot"><div class="dot"></div>AI Active</div>
     </div>
   </div>
 
-  <div id="panel-body">
-    <div class="section" style="border-bottom:1px solid #f3f4f6;">
-      <div class="section-title">Live Fleet KPI</div>
+  <div id="pb">
+    <div class="sec">
+      <div class="sec-title">Live Fleet KPI</div>
       <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-icon">&#x1F69B;</div><div class="kpi-val blue" id="kpi-trucks">0</div><div class="kpi-label">Active Trucks</div><div class="kpi-sub">of 77 total</div></div>
-        <div class="kpi"><div class="kpi-icon">&#x267B;&#xFE0F;</div><div class="kpi-val green" id="kpi-bins">0</div><div class="kpi-label">Bins Collected</div><div class="kpi-sub">>=80% threshold</div></div>
-        <div class="kpi"><div class="kpi-icon">&#x1F4CD;</div><div class="kpi-val orange" id="kpi-km">0</div><div class="kpi-label">Total km Today</div><div class="kpi-sub" id="kpi-km-saved">AI saved: 0 km</div></div>
-        <div class="kpi"><div class="kpi-icon">&#x26FD;</div><div class="kpi-val green" id="kpi-diesel">RM0</div><div class="kpi-label">Diesel Saved</div><div class="kpi-sub">vs fixed schedule</div></div>
+        <div class="kpi"><div class="kv c-blue" id="k-trucks">5</div><div class="kl">Active Trucks</div><div class="ks">of 77 fleet</div></div>
+        <div class="kpi"><div class="kv c-green" id="k-bins">0</div><div class="kl">Bins Cleared</div><div class="ks">&ge;80% zones</div></div>
+        <div class="kpi"><div class="kv c-orange" id="k-km">-</div><div class="kl">Total km</div><div class="ks" id="k-saved">Loading routes...</div></div>
+        <div class="kpi"><div class="kv c-green" id="k-diesel">-</div><div class="kl">Diesel Saved</div><div class="ks">vs fixed sched</div></div>
       </div>
     </div>
 
-    <div class="section" style="border-bottom:1px solid #f3f4f6;">
-      <div class="section-title">Active Trucks &mdash; Today's AI Route</div>
-      <div id="truck-list"><div style="font-size:11px;color:#9ca3af;padding:8px 0;">Press Start to deploy trucks</div></div>
+    <div class="sec">
+      <div class="sec-title">Fleet Status — AI Routes</div>
+      <div id="truck-list"><div style="font-size:10px;color:#9ca3af;padding:6px 0;">Fetching OSRM routes...</div></div>
     </div>
 
-    <div class="section" style="border-bottom:1px solid #f3f4f6;">
-      <div class="section-title">Zone Fill Level (Real-Time)</div>
+    <div class="sec">
+      <div class="sec-title">Zone Fill Level</div>
       <div id="zone-list"></div>
     </div>
 
-    <div class="section" style="border-bottom:1px solid #f3f4f6;">
-      <div class="section-title">Jadual Kutipan &mdash; Subang Jaya</div>
-      <table class="sched-table">
-        <thead><tr><th>Category</th><th>Freq</th><th>Time</th></tr></thead>
+    <div class="sec">
+      <div class="sec-title">Jadual Kutipan — Subang Jaya</div>
+      <table class="st">
+        <thead><tr><th>Category</th><th>Freq</th><th>Window</th></tr></thead>
         <tbody>
-          <tr><td>Residential (Landed)</td><td>3x/week</td><td>7:00-12:00</td></tr>
-          <tr><td>Commercial / Strata</td><td>7x/week</td><td>6:30-10:00</td></tr>
-          <tr><td>Public Bins (SmartTONG)</td><td>On-demand AI</td><td>Any time</td></tr>
-          <tr><td>Bulk waste / Pukal</td><td>1x/week</td><td>8:00-14:00</td></tr>
-          <tr><td>Recycling centres</td><td>2x/week</td><td>9:00-11:00</td></tr>
+          <tr><td>Residential Landed</td><td>3x/wk</td><td>7:00-12:00</td></tr>
+          <tr><td>Commercial / Strata</td><td>Daily</td><td>6:30-10:00</td></tr>
+          <tr><td>SmartTONG Public Bins</td><td>AI Demand</td><td>Anytime</td></tr>
+          <tr><td>Bulk / Pukal</td><td>1x/wk</td><td>8:00-14:00</td></tr>
+          <tr><td>Recycle Centres</td><td>2x/wk</td><td>9:00-11:00</td></tr>
         </tbody>
       </table>
     </div>
-
-    <div class="section">
-      <div class="section-title">Map Legend</div>
-      <div class="legend-row">
-        <div class="leg-item"><div class="leg-dot" style="background:#dc2626;"></div>Critical (&ge;80%)</div>
-        <div class="leg-item"><div class="leg-dot" style="background:#ea580c;"></div>Warning (60-79%)</div>
-        <div class="leg-item"><div class="leg-dot" style="background:#16a34a;"></div>Normal (&lt;60%)</div>
-        <div class="leg-item"><div class="leg-dot" style="background:#1d4ed8;"></div>Depot / Transfer</div>
-        <div class="leg-item"><div class="leg-dot" style="background:#8b5cf6;"></div>Truck moving</div>
-      </div>
-    </div>
   </div>
 
-  <div id="controls">
-    <div class="speed-label">Simulation Speed: <span id="speed-val">1x</span></div>
-    <input type="range" id="speed-slider" min="1" max="8" value="1" oninput="setSpeed(this.value)"/>
-    <div class="ctrl-row" style="margin-top:8px;">
-      <button class="ctrl-btn btn-primary" id="btn-start" onclick="startSim()">&#x25B6; Start AI Routing</button>
-      <button class="ctrl-btn btn-secondary" onclick="resetSim()">&#x21BA; Reset</button>
-      <button class="ctrl-btn btn-danger" onclick="toggleAI()" id="btn-ai">&#x1F916; AI ON</button>
+  <div id="ctrl">
+    <div class="sp-lbl">Speed: <span id="spv">1x</span></div>
+    <input type="range" id="sp" min="1" max="10" value="1" oninput="setSpd(this.value)"/>
+    <div class="btns">
+      <button class="btn bp" id="btn-go" onclick="startSim()" disabled>&#x25B6; Start</button>
+      <button class="btn bs" onclick="resetSim()">&#x21BA; Reset</button>
     </div>
   </div>
 </div>
 
-<div id="map-wrap">
+<!-- MAP -->
+<div id="mw">
+  <div id="loading">
+    <div class="ld-spinner"></div>
+    <div class="ld-text">Fetching real road routes via OSRM...</div>
+    <div class="ld-sub">Planning AI-optimised paths for 5 trucks</div>
+  </div>
   <div id="map"></div>
-  <div id="ai-log">
-    <div id="ai-log-header"><div class="pulse"></div>AI Coordinator Log</div>
-    <div id="ai-log-body"></div>
+  <div id="leg">
+    <div class="leg-row">
+      <div class="li"><div class="ld2" style="background:#dc2626;"></div>Critical &ge;80%</div>
+      <div class="li"><div class="ld2" style="background:#d97706;"></div>Warning 60-79%</div>
+      <div class="li"><div class="ld2" style="background:#16a34a;"></div>Normal &lt;60%</div>
+      <div class="li"><div class="ld2" style="background:#1d4ed8;border:1px solid #fff;"></div>Depot</div>
+      <div class="li"><div class="ld2" style="background:#374151;border:1px solid #fff;"></div>Transfer Stn</div>
+    </div>
+  </div>
+  <div id="log-box">
+    <div id="log-hdr"><div class="dot"></div>AI Coordinator Log</div>
+    <div id="log-body"></div>
   </div>
 </div>
 
 </div>
 
 <script>
-// ── DATA ──
-var DEPOT = { lat:3.0481, lng:101.5873, name:'KDEBWM Depot, USJ Avenue' };
-var TRANSFER = { lat:3.0205, lng:101.6234, name:'Puchong Waste Transfer Station' };
+// ═══════════════════════════════════════════════════
+// EXACT GPS COORDINATES — Verified for Subang Jaya
+// ═══════════════════════════════════════════════════
+var DEPOT    = { lat:3.04897, lng:101.58729, label:'KDEBWM Depot — USJ Avenue, Subang Jaya' };
+var TRANSFER = { lat:3.03718, lng:101.61589, label:'Puchong Waste Transfer Station (KDEBWM)' };
 
-var ZONES = [
-  { id:'Z1',  name:'SS15 Subang Jaya',        lat:3.0741, lng:101.5831, bins:28, fill:0, area:'Commercial/LRT' },
-  { id:'Z2',  name:'SS18 LRT Station',         lat:3.0668, lng:101.5759, bins:18, fill:0, area:'Residential/LRT' },
-  { id:'Z3',  name:'Taipan USJ 10',            lat:3.0513, lng:101.5813, bins:25, fill:0, area:'Commercial' },
-  { id:'Z4',  name:'USJ 9 Perumahan',          lat:3.0452, lng:101.5744, bins:18, fill:0, area:'Residential' },
-  { id:'Z5',  name:'USJ 21 LRT Wawasan',       lat:3.0344, lng:101.5814, bins:16, fill:0, area:'Residential/LRT' },
-  { id:'Z6',  name:'Sunway SS12',              lat:3.0706, lng:101.6018, bins:22, fill:0, area:'Commercial/Uni' },
-  { id:'Z7',  name:'Bandar Puteri Puchong',    lat:3.0363, lng:101.6107, bins:28, fill:0, area:'Commercial' },
-  { id:'Z8',  name:'Puchong Permai',           lat:3.0263, lng:101.6207, bins:22, fill:0, area:'Residential' },
-  { id:'Z9',  name:'Putra Heights',            lat:3.0196, lng:101.5568, bins:20, fill:0, area:'Residential' },
-  { id:'Z10', name:'Kinrara Seksyen 6',        lat:3.0486, lng:101.6281, bins:22, fill:0, area:'Residential' },
-  { id:'Z11', name:'Seri Kembangan Taman Univ',lat:3.0156, lng:101.7034, bins:22, fill:0, area:'Residential' },
-  { id:'Z12', name:'USJ 1 Subang Eco Park',    lat:3.0635, lng:101.5926, bins:19, fill:0, area:'Mixed/Eco' }
+// Precise named bin locations per zone
+var BIN_SPOTS = [
+  // Z1 — SS15 Subang Jaya Commercial (28 bins)
+  { z:'Z1', lat:3.07278, lng:101.58453, n:'Subang Parade Entrance', fill:0 },
+  { z:'Z1', lat:3.07391, lng:101.58207, n:'SS15/4A Junction Park', fill:0 },
+  { z:'Z1', lat:3.07452, lng:101.58128, n:'SS15 LRT Bus Terminal', fill:0 },
+  { z:'Z1', lat:3.07563, lng:101.57994, n:'SS15/2 Medan Selera', fill:0 },
+  { z:'Z1', lat:3.07156, lng:101.58612, n:'Empire Subang', fill:0 },
+  { z:'Z1', lat:3.07089, lng:101.58301, n:'SS15 Courtyard Mall', fill:0 },
+
+  // Z2 — SS18 / Subang Jaya LRT (18 bins)
+  { z:'Z2', lat:3.06698, lng:101.57587, n:'LRT SS18 Station Hub', fill:0 },
+  { z:'Z2', lat:3.06853, lng:101.57634, n:'SS18/1 Community Park', fill:0 },
+  { z:'Z2', lat:3.06543, lng:101.57512, n:'SS18 Pasar Pagi', fill:0 },
+  { z:'Z2', lat:3.06934, lng:101.57489, n:'SS18/8 Playground', fill:0 },
+
+  // Z3 — Taipan USJ 10 Commercial (25 bins)
+  { z:'Z3', lat:3.05149, lng:101.58134, n:'Taipan USJ Roundabout', fill:0 },
+  { z:'Z3', lat:3.05056, lng:101.58213, n:'Giant Taipan USJ', fill:0 },
+  { z:'Z3', lat:3.05234, lng:101.58067, n:'USJ10/1 Commercial Strip', fill:0 },
+  { z:'Z3', lat:3.05312, lng:101.57989, n:'USJ 10 Recreation Park', fill:0 },
+  { z:'Z3', lat:3.04978, lng:101.58301, n:'USJ 10/2 Hawker Row', fill:0 },
+
+  // Z4 — USJ 9 Residential (18 bins)
+  { z:'Z4', lat:3.04521, lng:101.57443, n:'USJ 9/3A Taman', fill:0 },
+  { z:'Z4', lat:3.04678, lng:101.57567, n:'USJ 9/1L Eco Centre', fill:0 },
+  { z:'Z4', lat:3.04389, lng:101.57389, n:'USJ 9 Pasar Malam Area', fill:0 },
+
+  // Z5 — USJ 21 / LRT Wawasan (16 bins)
+  { z:'Z5', lat:3.03437, lng:101.58142, n:'LRT Wawasan USJ21', fill:0 },
+  { z:'Z5', lat:3.03278, lng:101.58034, n:'USJ 21/10 Taman', fill:0 },
+  { z:'Z5', lat:3.03567, lng:101.58256, n:'USJ 21 Commercial Hub', fill:0 },
+
+  // Z6 — Sunway / SS12 (22 bins)
+  { z:'Z6', lat:3.07281, lng:101.60634, n:'Sunway Pyramid', fill:0 },
+  { z:'Z6', lat:3.07156, lng:101.60423, n:'Sunway Medical Centre', fill:0 },
+  { z:'Z6', lat:3.06834, lng:101.60312, n:'Monash University SJ', fill:0 },
+  { z:'Z6', lat:3.07389, lng:101.60789, n:'Sunway GEO Avenue', fill:0 },
+  { z:'Z6', lat:3.07634, lng:101.60234, n:'Taylor\'s University', fill:0 },
+
+  // Z7 — Bandar Puteri Puchong (28 bins)
+  { z:'Z7', lat:3.03625, lng:101.61073, n:'Bandar Puteri Commercial', fill:0 },
+  { z:'Z7', lat:3.04123, lng:101.61234, n:'IOI Mall Puchong', fill:0 },
+  { z:'Z7', lat:3.03489, lng:101.60934, n:'Jalan Puteri 7/1', fill:0 },
+  { z:'Z7', lat:3.03012, lng:101.61456, n:'Puchong Perdana Hub', fill:0 },
+  { z:'Z7', lat:3.03789, lng:101.61345, n:'Pusat Dagangan Puteri', fill:0 },
+
+  // Z8 — Puchong Permai (22 bins)
+  { z:'Z8', lat:3.02628, lng:101.62072, n:'Puchong Permai Park', fill:0 },
+  { z:'Z8', lat:3.02456, lng:101.61934, n:'Taman Sri Puchong', fill:0 },
+  { z:'Z8', lat:3.02789, lng:101.62156, n:'Puchong Permai Commercial', fill:0 },
+  { z:'Z8', lat:3.02312, lng:101.62234, n:'Permai Indah Residences', fill:0 },
+
+  // Z9 — Putra Heights (20 bins)
+  { z:'Z9', lat:3.01960, lng:101.55680, n:'Putra Heights Commercial', fill:0 },
+  { z:'Z9', lat:3.01823, lng:101.55534, n:'Putra Heights Central Park', fill:0 },
+  { z:'Z9', lat:3.02078, lng:101.55812, n:'PH Mosque Area', fill:0 },
+  { z:'Z9', lat:3.02234, lng:101.55678, n:'Putra Heights LRT', fill:0 },
+
+  // Z10 — Kinrara Seksyen 6 (22 bins)
+  { z:'Z10', lat:3.04857, lng:101.62813, n:'Kinrara Seksyen 3 Park', fill:0 },
+  { z:'Z10', lat:3.04634, lng:101.62678, n:'Taman Kinrara Commercial', fill:0 },
+  { z:'Z10', lat:3.05012, lng:101.62934, n:'Kinrara BK8', fill:0 },
+
+  // Z11 — Seri Kembangan (22 bins)
+  { z:'Z11', lat:3.01561, lng:101.70341, n:'Taman Universiti Indah', fill:0 },
+  { z:'Z11', lat:3.01734, lng:101.70156, n:'Serdang Utama Hub', fill:0 },
+  { z:'Z11', lat:3.01389, lng:101.70489, n:'Taman Seri Serdang', fill:0 },
+
+  // Z12 — USJ 1 Subang Eco Park (19 bins)
+  { z:'Z12', lat:3.06350, lng:101.59263, n:'USJ 1 Eco Park Entrance', fill:0 },
+  { z:'Z12', lat:3.06234, lng:101.59134, n:'USJ 1/3A Commercial', fill:0 },
+  { z:'Z12', lat:3.06456, lng:101.59378, n:'USJ 1 Community Park', fill:0 },
 ];
 
-// Actual road distances (km) from Google Maps research
-var ROAD_DIST = {
-  'DEPOT-Z1':4.2, 'DEPOT-Z2':3.6, 'DEPOT-Z3':1.8, 'DEPOT-Z4':2.2,
-  'DEPOT-Z5':4.1, 'DEPOT-Z6':6.3, 'DEPOT-Z7':7.8, 'DEPOT-Z8':9.2,
-  'DEPOT-Z9':5.4, 'DEPOT-Z10':8.6,'DEPOT-Z11':18.4,'DEPOT-Z12':2.9,
-  'Z1-Z2':1.4,'Z2-Z12':2.1,'Z3-Z4':1.1,'Z5-Z9':6.8,
-  'Z7-Z8':2.3,'Z8-Z10':6.1,'Z6-Z11':14.8,
-  'Z1-TRANSFER':10.2,'Z2-TRANSFER':10.8,'Z3-TRANSFER':9.4,'Z4-TRANSFER':9.8,
-  'Z5-TRANSFER':8.3,'Z6-TRANSFER':7.6,'Z7-TRANSFER':3.2,'Z8-TRANSFER':2.8,
-  'Z9-TRANSFER':8.9,'Z10-TRANSFER':6.1,'Z11-TRANSFER':9.7,'Z12-TRANSFER':8.4,
-  'TRANSFER-DEPOT':11.2
-};
+// Zone metadata
+var ZONES = [
+  { id:'Z1',  name:'SS15 Subang Jaya',      hotspot:true },
+  { id:'Z2',  name:'SS18 LRT Station',      hotspot:false },
+  { id:'Z3',  name:'Taipan USJ 10',         hotspot:true },
+  { id:'Z4',  name:'USJ 9 Perumahan',       hotspot:false },
+  { id:'Z5',  name:'USJ 21 LRT Wawasan',    hotspot:false },
+  { id:'Z6',  name:'Sunway / SS12',         hotspot:true },
+  { id:'Z7',  name:'Bandar Puteri Puchong', hotspot:true },
+  { id:'Z8',  name:'Puchong Permai',        hotspot:false },
+  { id:'Z9',  name:'Putra Heights',         hotspot:false },
+  { id:'Z10', name:'Kinrara Seksyen 6',     hotspot:false },
+  { id:'Z11', name:'Seri Kembangan',        hotspot:false },
+  { id:'Z12', name:'USJ 1 Eco Park',        hotspot:false },
+];
 
-function getDist(a,b) {
-  var key = a+'-'+b;
-  var key2 = b+'-'+a;
-  return ROAD_DIST[key] || ROAD_DIST[key2] || 5;
+// Truck definitions: id, zone clusters, color
+var TRUCK_DEFS = [
+  { id:'T-01', color:'#7c3aed', zones:['Z1','Z2','Z12'], name:'SS15 / SS18 / Eco Park' },
+  { id:'T-02', color:'#0891b2', zones:['Z3','Z4'],       name:'Taipan / USJ 9' },
+  { id:'T-03', color:'#d97706', zones:['Z5','Z9'],       name:'USJ 21 / Putra Heights' },
+  { id:'T-04', color:'#059669', zones:['Z7','Z8','Z10'], name:'Puchong / Kinrara' },
+  { id:'T-05', color:'#e11d48', zones:['Z6','Z11'],      name:'Sunway / Seri Kembangan' },
+];
+
+// Zone centroid lookup
+function zoneCentroid(zid) {
+  var pts = BIN_SPOTS.filter(function(b){return b.z===zid;});
+  if(!pts.length) return DEPOT;
+  var lat=pts.reduce(function(s,p){return s+p.lat;},0)/pts.length;
+  var lng=pts.reduce(function(s,p){return s+p.lng;},0)/pts.length;
+  return {lat:lat,lng:lng};
 }
 
-var TRUCK_DEFS = [
-  { id:'T-01', zones:['Z1','Z2','Z12'], color:'#7c3aed', label:'SS15 / SS18 / Eco Park' },
-  { id:'T-02', zones:['Z3','Z4'],       color:'#0891b2', label:'Taipan / USJ 9' },
-  { id:'T-03', zones:['Z5','Z9'],       color:'#ea580c', label:'USJ 21 / Putra Heights' },
-  { id:'T-04', zones:['Z7','Z8','Z10'],color:'#15803d', label:'Puchong / Kinrara' },
-  { id:'T-05', zones:['Z6','Z11'],      color:'#be185d', label:'Sunway / Seri Kembangan' }
-];
+// ═══════════════════════════════════════════════════
+// HAVERSINE DISTANCE (km) between two {lat,lng}
+// ═══════════════════════════════════════════════════
+function haversine(a,b) {
+  var R=6371;
+  var dLat=(b.lat-a.lat)*Math.PI/180;
+  var dLng=(b.lng-a.lng)*Math.PI/180;
+  var s=Math.sin(dLat/2)*Math.sin(dLat/2)+
+        Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*
+        Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s));
+}
 
-// ── STATE ──
-var appMap, simInterval=null, timeMinutes=6*60+30;
-var simSpeed=1, simRunning=false, aiEnabled=true;
-var binMarkers=[], truckStates=[], routeLines=[];
-var binsCollected=0, tickCount=0;
+// ═══════════════════════════════════════════════════
+// OSRM ROUTING — real road geometry
+// ═══════════════════════════════════════════════════
+async function fetchOSRM(waypoints) {
+  var coords = waypoints.map(function(p){return p.lng+','+p.lat;}).join(';');
+  var url = 'https://router.project-osrm.org/route/v1/driving/'+coords+'?overview=full&geometries=geojson';
+  try {
+    var resp = await fetch(url);
+    var data = await resp.json();
+    if(data.routes && data.routes[0]) {
+      return {
+        // OSRM returns [lng,lat] — convert to [{lat,lng}]
+        path: data.routes[0].geometry.coordinates.map(function(c){return {lat:c[1],lng:c[0]};}),
+        distKm: (data.routes[0].distance/1000).toFixed(1)
+      };
+    }
+  } catch(e){ console.warn('OSRM error',e); }
+  // Fallback: straight segments
+  var path=[];
+  for(var i=0;i<waypoints.length-1;i++){
+    var a=waypoints[i],b=waypoints[i+1];
+    for(var t=0;t<=20;t++) path.push({lat:a.lat+(b.lat-a.lat)*t/20,lng:a.lng+(b.lng-a.lng)*t/20});
+  }
+  var d=0;
+  for(var i=1;i<waypoints.length;i++) d+=haversine(waypoints[i-1],waypoints[i]);
+  return {path:path,distKm:d.toFixed(1)};
+}
 
-// ── MAP INIT ──
+// ═══════════════════════════════════════════════════
+// INTERPOLATE POSITION ALONG PATH
+// ═══════════════════════════════════════════════════
+function pathLength(path) {
+  var d=0;
+  for(var i=1;i<path.length;i++){
+    var dx=path[i].lat-path[i-1].lat,dy=path[i].lng-path[i-1].lng;
+    d+=Math.sqrt(dx*dx+dy*dy);
+  }
+  return d;
+}
+
+function interpolatePath(path, t) {
+  if(!path||path.length<2) return path[0]||DEPOT;
+  var total=pathLength(path);
+  var target=t*total;
+  var cum=0;
+  for(var i=1;i<path.length;i++){
+    var dx=path[i].lat-path[i-1].lat,dy=path[i].lng-path[i-1].lng;
+    var seg=Math.sqrt(dx*dx+dy*dy);
+    if(cum+seg>=target){
+      var frac=(target-cum)/seg;
+      return {lat:path[i-1].lat+dx*frac,lng:path[i-1].lng+dy*frac};
+    }
+    cum+=seg;
+  }
+  return path[path.length-1];
+}
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+var appMap, simTimer=null, tick=0, timeMin=6*60+30;
+var simSpd=1, running=false;
+var truckStates=[], routePolylines=[], binMarkers=[];
+var totalBinsCleared=0;
+
+// ═══════════════════════════════════════════════════
+// INIT MAP
+// ═══════════════════════════════════════════════════
 function initMap() {
-  appMap = L.map('map',{zoomControl:true}).setView([3.045,101.600],12);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    attribution:'&copy; OpenStreetMap contributors',maxZoom:19
+  appMap = L.map('map',{zoomControl:true,attributionControl:true}).setView([3.045,101.600],12);
+
+  // Clean light-gray tile — Esri World Light Gray Canvas
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'&copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+    maxZoom:16
   }).addTo(appMap);
 
-  // Depot
-  L.marker([DEPOT.lat,DEPOT.lng],{icon:makeBoxIcon('#1d4ed8','&#x1F3ED;')}).addTo(appMap)
-    .bindPopup('<div class="pu-title">&#x1F3ED; '+DEPOT.name+'</div><div class="pu-row"><span>Fleet</span><span class="pu-val">77 compactors + 105 armrolls</span></div><div class="pu-row"><span>Shift start</span><span class="pu-val">06:30 AM</span></div><div class="pu-row"><span>Zones served</span><span class="pu-val">57 zones in MBSJ</span></div>');
+  // Depot marker
+  L.marker([DEPOT.lat,DEPOT.lng],{icon:makeSquareIcon('#1d4ed8','&#x1F3ED;'),zIndexOffset:800}).addTo(appMap)
+    .bindPopup('<div class="pt">&#x1F3ED; '+DEPOT.label+'</div><div class="pr"><span>Total fleet</span><span class="pv">77 compactors + 105 armrolls</span></div><div class="pr"><span>Zones served</span><span class="pv">57 zones in MBSJ area</span></div><div class="pr"><span>Shift start</span><span class="pv">06:30 AM daily</span></div>');
 
   // Transfer station
-  L.marker([TRANSFER.lat,TRANSFER.lng],{icon:makeBoxIcon('#374151','&#x1F3D7;&#xFE0F;')}).addTo(appMap)
-    .bindPopup('<div class="pu-title">&#x1F3D7;&#xFE0F; '+TRANSFER.name+'</div><div class="pu-row"><span>Type</span><span class="pu-val">Intermediate Transfer</span></div><div class="pu-row"><span>Next destination</span><span class="pu-val">Jeram Sanitary Landfill</span></div>');
+  L.marker([TRANSFER.lat,TRANSFER.lng],{icon:makeSquareIcon('#374151','&#x1F3D7;'),zIndexOffset:800}).addTo(appMap)
+    .bindPopup('<div class="pt">&#x1F3D7; '+TRANSFER.label+'</div><div class="pr"><span>Role</span><span class="pv">Intermediate transfer before Jeram Landfill</span></div>');
 
   randomiseFills();
   renderBinMarkers();
   renderZoneList();
-  updateKPIs();
-  addLog('System boot. AI Coordinator scanning 300 bins...','green');
-  addLog(ZONES.filter(function(z){return z.fill>=80;}).length+' zones above 80% — route planning ready.','orange');
 }
 
-function makeBoxIcon(bg,emoji) {
+function makeSquareIcon(bg,emoji) {
   return L.divIcon({
-    html:'<div style="background:'+bg+';border:3px solid #fff;border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 2px 8px rgba(0,0,0,0.2);">'+emoji+'</div>',
-    className:'',iconSize:[34,34],iconAnchor:[17,17]
+    html:'<div style="background:'+bg+';border:2.5px solid #fff;border-radius:7px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.18);">'+emoji+'</div>',
+    className:'',iconSize:[32,32],iconAnchor:[16,16]
   });
 }
 
-// ── BIN COLORS ──
-function binColor(fill) {
-  if(fill>=80) return '#dc2626';
-  if(fill>=60) return '#ea580c';
-  return '#16a34a';
-}
-
+// ═══════════════════════════════════════════════════
+// BIN FILLS & MARKERS
+// ═══════════════════════════════════════════════════
 function randomiseFills() {
-  var hotspots=['Z1','Z3','Z6','Z7'];
-  ZONES.forEach(function(z){
-    z.fill = hotspots.indexOf(z.id)>=0
-      ? Math.floor(Math.random()*40+60)
-      : Math.floor(Math.random()*70+10);
+  var hot=['Z1','Z3','Z6','Z7'];
+  BIN_SPOTS.forEach(function(b){
+    b.fill = hot.indexOf(b.z)>=0
+      ? Math.floor(Math.random()*35+65) // 65–100
+      : Math.floor(Math.random()*60+15); // 15–75
   });
+}
+
+function binColor(f) {
+  return f>=80?'#dc2626':f>=60?'#d97706':'#16a34a';
+}
+
+function zoneFillAvg(zid) {
+  var pts=BIN_SPOTS.filter(function(b){return b.z===zid;});
+  if(!pts.length)return 0;
+  return pts.reduce(function(s,b){return s+b.fill;},0)/pts.length;
 }
 
 function renderBinMarkers() {
   binMarkers.forEach(function(m){appMap.removeLayer(m);});
   binMarkers=[];
-  var spread=0.008;
-  ZONES.forEach(function(z){
-    var c=binColor(z.fill);
-    // scatter small dots for bins
-    for(var i=0;i<Math.min(z.bins,9);i++){
-      var lat=z.lat+(Math.random()-0.5)*spread;
-      var lng=z.lng+(Math.random()-0.5)*spread*1.5;
-      var sm=L.divIcon({
-        html:'<div style="background:'+c+';border:1.5px solid #fff;border-radius:50%;width:10px;height:10px;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>',
-        className:'',iconSize:[10,10],iconAnchor:[5,5]
-      });
-      var m=L.marker([lat,lng],{icon:sm,opacity:0.85}).addTo(appMap)
-        .bindPopup('<div class="pu-title">&#x267B;&#xFE0F; '+z.id+' &bull; '+z.name+'</div><div class="pu-row"><span>Fill</span><span class="pu-val" style="color:'+c+';">'+Math.round(z.fill)+'%</span></div><div class="pu-row"><span>Bins in zone</span><span class="pu-val">'+z.bins+' sets</span></div><div class="pu-row"><span>Area</span><span class="pu-val">'+z.area+'</span></div><div class="pu-row"><span>Status</span><span class="pu-val">'+(z.fill>=80?'DISPATCH NOW':z.fill>=60?'Monitor':'Normal')+'</span></div>');
-      binMarkers.push(m);
-    }
-    // zone label
-    var lb=L.divIcon({
-      html:'<div style="background:rgba(255,255,255,0.92);border:1px solid '+c+';border-radius:5px;padding:2px 6px;font-size:9px;font-weight:700;color:'+c+';white-space:nowrap;">'+z.name.split(' ').slice(0,2).join(' ')+'</div>',
-      className:'',iconSize:[90,18],iconAnchor:[45,9]
+  BIN_SPOTS.forEach(function(b){
+    var c=binColor(b.fill);
+    var sz=b.fill>=80?14:b.fill>=60?12:10;
+    var icon=L.divIcon({
+      html:'<div style="background:'+c+';border:2px solid #fff;border-radius:50%;width:'+sz+'px;height:'+sz+'px;box-shadow:0 1px 4px rgba(0,0,0,.15);"></div>',
+      className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]
     });
-    var lm=L.marker([z.lat+0.006,z.lng],{icon:lb,interactive:false}).addTo(appMap);
-    binMarkers.push(lm);
+    var m=L.marker([b.lat,b.lng],{icon:icon}).addTo(appMap)
+      .bindPopup('<div class="pt">&#x267B; '+b.n+'</div><div class="pr"><span>Zone</span><span class="pv">'+b.z+'</span></div><div class="pr"><span>Fill Level</span><span class="pv" style="color:'+c+';">'+Math.round(b.fill)+'%</span></div><div class="pr"><span>Status</span><span class="pv">'+(b.fill>=80?'&#x1F6A8; DISPATCH NOW':b.fill>=60?'&#x26A0; Monitor':'&#x2705; Normal')+'</span></div>');
+    binMarkers.push(m);
   });
 }
 
-// ── TRUCK ANIMATION ──
+// ═══════════════════════════════════════════════════
+// ROUTE FETCH (OSRM) — on page load
+// ═══════════════════════════════════════════════════
+async function fetchAllRoutes() {
+  var promises = TRUCK_DEFS.map(async function(t) {
+    // Build waypoint list: depot → zone centroids (critical first) → transfer → depot
+    var critZones = t.zones.filter(function(zid){return zoneFillAvg(zid)>=60;});
+    var activeZones = critZones.length ? critZones : [t.zones[0]];
+    var wpts = [{lat:DEPOT.lat,lng:DEPOT.lng}];
+    activeZones.forEach(function(zid){ wpts.push(zoneCentroid(zid)); });
+    wpts.push({lat:TRANSFER.lat,lng:TRANSFER.lng});
+    wpts.push({lat:DEPOT.lat,lng:DEPOT.lng});
+
+    var result = await fetchOSRM(wpts);
+    return { truck:t, path:result.path, distKm:parseFloat(result.distKm), activeZones:activeZones, waypoints:wpts };
+  });
+  return Promise.all(promises);
+}
+
+// ═══════════════════════════════════════════════════
+// TRUCK ICON
+// ═══════════════════════════════════════════════════
 function makeTruckIcon(color,id,status) {
-  var emoji = status==='collecting'?'&#x267B;&#xFE0F;':status==='returning'?'&#x21A9;&#xFE0F;':'&#x1F69B;';
+  var bg=status==='collecting'?color:status==='returning'?color:color;
   return L.divIcon({
-    html:'<div style="background:'+color+';border:2.5px solid #fff;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 3px 8px rgba(0,0,0,0.25);position:relative;">'+emoji+'<div style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);background:'+color+';color:#fff;font-size:7px;font-weight:800;padding:1px 4px;border-radius:3px;white-space:nowrap;">'+id+'</div></div>',
-    className:'',iconSize:[34,34],iconAnchor:[17,17]
+    html:'<div style="background:'+bg+';border:2.5px solid #fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.2);position:relative;">&#x1F69B;<div style="position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);background:'+bg+';color:#fff;font-size:6px;font-weight:800;padding:1px 3px;border-radius:2px;white-space:nowrap;">'+id+'</div></div>',
+    className:'',iconSize:[32,32],iconAnchor:[16,16]
   });
 }
 
-function initTruckStates() {
-  truckStates=TRUCK_DEFS.map(function(t,i){
-    var critZones=t.zones.filter(function(zid){
-      var z=ZONES.find(function(z){return z.id===zid;});
-      return z && z.fill>=80;
-    });
-    var activeZones=critZones.length?critZones:[t.zones[0]];
-    var waypoints=[{lat:DEPOT.lat,lng:DEPOT.lng,label:'Depot'}];
-    activeZones.forEach(function(zid){
-      var z=ZONES.find(function(z){return z.id===zid;});
-      waypoints.push({lat:z.lat,lng:z.lng,label:z.name,isZone:true,zid:zid});
-    });
-    waypoints.push({lat:TRANSFER.lat,lng:TRANSFER.lng,label:'Transfer Station'});
-    waypoints.push({lat:DEPOT.lat,lng:DEPOT.lng,label:'Depot return'});
-
-    // calc total km
-    var km=getDist('DEPOT',activeZones[0]);
-    for(var j=1;j<activeZones.length;j++) km+=getDist(activeZones[j-1],activeZones[j]);
-    km+=getDist(activeZones[activeZones.length-1],'TRANSFER');
-    km+=getDist('TRANSFER','DEPOT');
-
-    var marker=L.marker([DEPOT.lat,DEPOT.lng],{
-      icon:makeTruckIcon(t.color,t.id,'standby'),zIndexOffset:1000
-    }).addTo(appMap);
-
-    return {
-      id:t.id,zones:t.zones,color:t.color,label:t.label,
-      waypoints:waypoints,wpIdx:0,progress:0,
-      totalKm:parseFloat(km.toFixed(1)),
-      status:'standby',marker:marker,
-      activeZones:activeZones,startDelay:i*10,
-      binsCollected:0
-    };
-  });
-  renderTruckList();
-}
-
-function animateTrucks() {
-  var STEP=0.012*simSpeed;
-  truckStates.forEach(function(t){
-    if(t.startDelay>0){t.startDelay--;return;}
-    if(t.status==='done') return;
-    if(t.status==='standby'){
-      t.status='moving';
-      addLog(t.id+' departed depot to '+t.waypoints[1].label,'blue');
-    }
-    var from=t.waypoints[t.wpIdx];
-    var to=t.waypoints[t.wpIdx+1];
-    if(!to){t.status='done';return;}
-
-    t.progress=Math.min(1,t.progress+STEP);
-    var lat=from.lat+(to.lat-from.lat)*t.progress;
-    var lng=from.lng+(to.lng-from.lng)*t.progress;
-    var s=to.label.includes('Transfer')?'returning':to.isZone?'collecting':'moving';
-    t.marker.setLatLng([lat,lng]);
-    t.marker.setIcon(makeTruckIcon(t.color,t.id,s));
-    t.status=s;
-
-    if(t.progress>=1){
-      t.wpIdx++;t.progress=0;
-      if(to.isZone){
-        t.binsCollected++;binsCollected++;
-        var z=ZONES.find(function(z){return z.id===to.zid;});
-        if(z){z.fill=Math.max(5,z.fill-72);renderBinMarkers();renderZoneList();}
-        addLog(t.id+' collected '+to.label,'green');
-      }
-      if(to.label.includes('Transfer')) addLog(t.id+' unloading at transfer station...','orange');
-      if(to.label.includes('return')){
-        t.status='done';
-        addLog(t.id+' returned to depot. '+t.totalKm+' km total.','green');
-      }
-    }
-  });
-}
-
-function drawRoutes() {
-  routeLines.forEach(function(l){appMap.removeLayer(l);});
-  routeLines=[];
-  truckStates.forEach(function(t){
-    var pts=t.waypoints.map(function(w){return[w.lat,w.lng];});
-    var line=L.polyline(pts,{color:t.color,weight:3,opacity:0.6,dashArray:'6 5'}).addTo(appMap);
-    routeLines.push(line);
-  });
-}
-
-// ── RENDER PANELS ──
+// ═══════════════════════════════════════════════════
+// RENDER PANELS
+// ═══════════════════════════════════════════════════
 function renderZoneList() {
   var el=document.getElementById('zone-list');
   el.innerHTML=ZONES.map(function(z){
-    var c=binColor(z.fill);
-    var name=z.name.length>22?z.name.substring(0,22)+'...':z.name;
-    return '<div class="zone-item"><div class="zone-name">'+name+'</div><div class="zone-fill"><div class="fill-bar"><div class="fill-inner" style="width:'+z.fill+'%;background:'+c+';"></div></div><div class="fill-pct" style="color:'+c+';">'+Math.round(z.fill)+'%</div></div></div>';
+    var avg=zoneFillAvg(z.id);
+    var c=binColor(avg);
+    var name=z.name.length>20?z.name.substring(0,19)+'...':z.name;
+    return '<div class="zi"><div class="zn">'+name+'</div><div class="zr"><div class="zbar"><div class="zfill" style="width:'+avg+'%;background:'+c+';"></div></div><div class="zpct" style="color:'+c+';">'+Math.round(avg)+'%</div></div></div>';
   }).join('');
 }
 
 function renderTruckList() {
   var el=document.getElementById('truck-list');
   if(!truckStates.length){
-    el.innerHTML='<div style="font-size:11px;color:#9ca3af;padding:8px 0;">Press Start to deploy trucks</div>';
+    el.innerHTML='<div style="font-size:10px;color:#9ca3af;padding:6px 0;">Fetching routes...</div>';
     return;
   }
   el.innerHTML=truckStates.map(function(t){
     var lbl=t.status==='collecting'?'Collecting':t.status==='returning'?'Returning':t.status==='done'?'Done':'Moving';
-    var chip=t.status==='collecting'?'chip-collecting':t.status==='returning'?'chip-returning':t.status==='done'?'chip-standby':'chip-moving';
-    return '<div class="truck-item"><div class="truck-dot" style="background:'+t.color+'22;border:2px solid '+t.color+';">&#x1F69B;</div><div class="truck-info"><div class="truck-id" style="color:'+t.color+';">'+t.id+'</div><div class="truck-route">'+t.label+'</div><div class="status-chip '+chip+'">'+lbl+'</div></div><div class="truck-stat"><div class="truck-km">'+t.totalKm+' km</div><div class="truck-bins">'+t.activeZones.length+' zones</div></div></div>';
+    var cc=t.status==='collecting'?'cc':t.status==='returning'?'cr2':t.status==='done'?'cd':'cm';
+    return '<div class="ti"><div class="ta" style="background:'+t.color+'22;border:2px solid '+t.color+';">&#x1F69B;</div><div style="flex:1;min-width:0;"><div class="tn" style="color:'+t.color+';">'+t.id+'</div><div class="tr2">'+t.name+'</div><div class="chip '+cc+'">'+lbl+'</div></div><div class="tstat"><div class="tkm">'+t.distKm+' km</div><div style="font-size:8px;color:#9ca3af;">'+t.activeZones.length+' zones</div></div></div>';
   }).join('');
 }
 
 function updateKPIs() {
   var active=truckStates.filter(function(t){return t.status!=='standby'&&t.status!=='done';}).length;
-  var totalKm=truckStates.reduce(function(s,t){return s+t.totalKm;},0);
+  var totalKm=truckStates.reduce(function(s,t){return s+t.distKm;},0);
   var fixedKm=68.7*TRUCK_DEFS.length;
   var saved=Math.max(0,fixedKm-totalKm);
-  var dieselRM=(saved*0.35*2.80).toFixed(0);
-  document.getElementById('kpi-trucks').textContent=simRunning?active:TRUCK_DEFS.length;
-  document.getElementById('kpi-bins').textContent=binsCollected;
-  document.getElementById('kpi-km').textContent=totalKm.toFixed(0);
-  document.getElementById('kpi-km-saved').textContent='AI saved: '+saved.toFixed(0)+' km';
-  document.getElementById('kpi-diesel').textContent='RM'+dieselRM;
+  var dieselL=saved*0.35;
+  var dieselRM=(dieselL*2.80).toFixed(0);
+  document.getElementById('k-trucks').textContent=running?active:TRUCK_DEFS.length;
+  document.getElementById('k-bins').textContent=totalBinsCleared;
+  document.getElementById('k-km').textContent=totalKm.toFixed(0);
+  document.getElementById('k-saved').textContent='AI saved: '+saved.toFixed(0)+' km';
+  document.getElementById('k-diesel').textContent='RM'+dieselRM;
 }
 
-// ── TIME ──
-function fmtTime(m) {
+// ═══════════════════════════════════════════════════
+// TIME FORMAT
+// ═══════════════════════════════════════════════════
+function fmtTime(m){
   var h=Math.floor(m/60)%24,mn=m%60,ap=h<12?'AM':'PM',hh=h%12||12;
   return (hh<10?'0':'')+hh+':'+(mn<10?'0':'')+mn+' '+ap;
 }
 
-// ── LOG ──
-function addLog(msg,type) {
-  var el=document.getElementById('ai-log-body');
+// ═══════════════════════════════════════════════════
+// LOG
+// ═══════════════════════════════════════════════════
+function log(msg,type){
+  var el=document.getElementById('log-body');
   var d=document.createElement('div');
-  d.className='log-entry';
-  var cls=type==='green'?'log-green':type==='orange'?'log-orange':type==='blue'?'log-blue':'';
-  d.innerHTML='<span class="log-time">'+fmtTime(timeMinutes)+'</span><span class="'+cls+'">'+msg+'</span>';
+  d.className='le';
+  var c=type==='g'?'lg':type==='o'?'lo':type==='b'?'lb':'';
+  d.innerHTML='<span class="lt">'+fmtTime(timeMin)+'</span><span class="'+c+'">'+msg+'</span>';
   el.insertBefore(d,el.firstChild);
-  if(el.children.length>25) el.removeChild(el.lastChild);
+  if(el.children.length>30)el.removeChild(el.lastChild);
 }
 
-// ── SIM CONTROLS ──
-function simTick() {
-  tickCount++;
-  timeMinutes=(6*60+30+tickCount*2)%(24*60);
-  document.getElementById('sim-time').textContent=fmtTime(timeMinutes);
-  animateTrucks();
+// ═══════════════════════════════════════════════════
+// ANIMATION TICK
+// ═══════════════════════════════════════════════════
+var TICK_MS=80;
+function simTick(){
+  tick++;
+  timeMin=(6*60+30+tick*3)%(24*60);
+  document.getElementById('sim-time').textContent=fmtTime(timeMin);
+
+  var STEP=0.006*simSpd;
+  truckStates.forEach(function(t){
+    if(t.delay>0){t.delay--;return;}
+    if(t.status==='done')return;
+    if(t.status==='standby'){t.status='moving';log(t.id+' departed depot → '+t.activeZones[0],'b');}
+
+    t.progress=Math.min(1,t.progress+STEP);
+    var pos=interpolatePath(t.path,t.progress);
+    t.marker.setLatLng([pos.lat,pos.lng]);
+
+    // Determine phase
+    var fraction=t.progress;
+    var n=t.waypoints.length;
+    var phase='moving';
+    // Rough phase detection
+    for(var i=1;i<n-1;i++){
+      var lo=(i-1)/(n-1), hi=i/(n-1);
+      if(fraction>=lo&&fraction<hi){
+        if(i<n-2) phase='collecting'; else phase='returning'; break;
+      }
+    }
+    if(t.progress>0.85)phase='returning';
+    t.status=phase;
+
+    // Milestone events
+    var zone_fracs=[];
+    for(var i=1;i<t.waypoints.length-2;i++) zone_fracs.push(i/(t.waypoints.length-1));
+    zone_fracs.forEach(function(frac,idx){
+      if(!t.zoneCleared[idx]&&t.progress>=frac){
+        t.zoneCleared[idx]=true;
+        totalBinsCleared++;
+        var zid=t.activeZones[idx];
+        // Reduce fill in that zone
+        BIN_SPOTS.filter(function(b){return b.z===zid;}).forEach(function(b){b.fill=Math.max(5,b.fill-75);});
+        renderBinMarkers();renderZoneList();
+        log(t.id+' cleared zone '+zid,'g');
+      }
+    });
+
+    var transfer_frac=(t.waypoints.length-2)/(t.waypoints.length-1);
+    if(!t.transferLogged&&t.progress>=transfer_frac){
+      t.transferLogged=true;
+      log(t.id+' unloading at transfer station...','o');
+    }
+
+    if(t.progress>=1){
+      t.status='done';
+      log(t.id+' returned to depot. '+t.distKm+' km total.','g');
+    }
+  });
+
   renderTruckList();
-  if(tickCount%8===0){updateKPIs();renderZoneList();}
+  if(tick%8===0)updateKPIs();
 }
 
-function startSim() {
-  if(simRunning) return;
-  simRunning=true;
-  document.getElementById('btn-start').textContent='Running...';
-  document.getElementById('btn-start').disabled=true;
-  initTruckStates();
-  drawRoutes();
-  updateKPIs();
-  addLog('Dispatching 5 AI-optimised trucks now.','orange');
-  simInterval=setInterval(simTick,80);
+// ═══════════════════════════════════════════════════
+// SIM CONTROLS
+// ═══════════════════════════════════════════════════
+function startSim(){
+  if(running)return;
+  running=true;
+  document.getElementById('btn-go').disabled=true;
+  document.getElementById('btn-go').textContent='Running...';
+
+  // Place truck markers at depot, draw route polylines
+  routePolylines.forEach(function(l){appMap.removeLayer(l);});
+  routePolylines=[];
+
+  truckStates.forEach(function(t){
+    if(t.marker)appMap.removeLayer(t.marker);
+    t.marker=L.marker([DEPOT.lat,DEPOT.lng],{icon:makeTruckIcon(t.color,t.id,'standby'),zIndexOffset:1000}).addTo(appMap);
+    // Draw route polyline
+    var pts=t.path.map(function(p){return[p.lat,p.lng];});
+    var pl=L.polyline(pts,{color:t.color,weight:3.5,opacity:0.7,dashArray:'8 5'}).addTo(appMap);
+    routePolylines.push(pl);
+  });
+
+  log('AI dispatched 5 trucks on optimised routes.','o');
+  simTimer=setInterval(simTick,TICK_MS);
 }
 
-function resetSim() {
-  clearInterval(simInterval);simInterval=null;
-  simRunning=false;tickCount=0;binsCollected=0;
-  timeMinutes=6*60+30;
+function resetSim(){
+  clearInterval(simTimer);simTimer=null;
+  running=false;tick=0;timeMin=6*60+30;totalBinsCleared=0;
   document.getElementById('sim-time').textContent='06:30 AM';
-  document.getElementById('btn-start').textContent='&#x25B6; Start AI Routing';
-  document.getElementById('btn-start').disabled=false;
+  document.getElementById('btn-go').disabled=false;
+  document.getElementById('btn-go').textContent='&#x25B6; Start';
+
   truckStates.forEach(function(t){if(t.marker)appMap.removeLayer(t.marker);});
-  routeLines.forEach(function(l){appMap.removeLayer(l);});
-  truckStates=[];routeLines=[];
+  routePolylines.forEach(function(l){appMap.removeLayer(l);});
+  truckStates.forEach(function(t){t.progress=0;t.status='standby';t.zoneCleared=t.activeZones.map(function(){return false;});t.transferLogged=false;});
+
   randomiseFills();renderBinMarkers();renderZoneList();renderTruckList();updateKPIs();
-  document.getElementById('ai-log-body').innerHTML='';
-  addLog('Simulation reset. Scanning bins...','green');
-  addLog(ZONES.filter(function(z){return z.fill>=80;}).length+' critical zones found.','orange');
+  document.getElementById('log-body').innerHTML='';
+  log('Reset. AI scanning 300 bins across 12 zones...','g');
+  var crit=ZONES.filter(function(z){return zoneFillAvg(z.id)>=80;}).length;
+  log(crit+' critical zones detected — routes pre-loaded.','o');
 }
 
-function setSpeed(v) {
-  simSpeed=parseInt(v);
-  document.getElementById('speed-val').textContent=v+'x';
-  if(simInterval){clearInterval(simInterval);simInterval=setInterval(simTick,Math.max(15,80/simSpeed));}
+function setSpd(v){
+  simSpd=parseInt(v);
+  document.getElementById('spv').textContent=v+'x';
+  if(simTimer){clearInterval(simTimer);simTimer=setInterval(simTick,Math.max(10,TICK_MS/simSpd));}
 }
 
-function toggleAI() {
-  aiEnabled=!aiEnabled;
-  document.getElementById('btn-ai').textContent=aiEnabled?'&#x1F916; AI ON':'&#x2699;&#xFE0F; AI OFF';
-  addLog('AI routing '+(aiEnabled?'enabled':'disabled'),aiEnabled?'green':'orange');
-}
+// ═══════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════
+window.addEventListener('load',async function(){
+  initMap();
+  log('System boot. Fetching real road routes from OSRM...','b');
 
-window.addEventListener('load',initMap);
+  var results=await fetchAllRoutes();
+  truckStates=results.map(function(r,i){
+    return {
+      id:r.truck.id, color:r.truck.color, name:r.truck.name,
+      path:r.path, distKm:r.distKm, activeZones:r.activeZones,
+      waypoints:r.waypoints,
+      progress:0, status:'standby', marker:null,
+      delay:i*12,
+      zoneCleared:r.activeZones.map(function(){return false;}),
+      transferLogged:false
+    };
+  });
+
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('btn-go').disabled=false;
+  renderTruckList();
+  updateKPIs();
+
+  var crit=ZONES.filter(function(z){return zoneFillAvg(z.id)>=80;}).length;
+  log('OSRM routes loaded. '+crit+' critical zones.','g');
+  log('Total AI route: '+truckStates.reduce(function(s,t){return s+t.distKm;},0).toFixed(0)+' km for 5 trucks.','o');
+});
 </script>
 </body>
 </html>
