@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SmartTONG AI — Subang Jaya Fleet Simulator</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#f8f9fa;color:#1a1a2e;overflow:hidden;}
+#root{display:flex;height:100vh;width:100vw;}
+#panel{width:340px;flex-shrink:0;background:#ffffff;border-right:1px solid #e8ecf0;display:flex;flex-direction:column;overflow:hidden;z-index:10;}
+#panel-header{padding:16px 18px 12px;border-bottom:1px solid #e8ecf0;}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.brand-icon{width:36px;height:36px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.brand-title{font-size:16px;font-weight:800;color:#16a34a;letter-spacing:-0.3px;}
+.brand-sub{font-size:10px;color:#6b7280;font-weight:500;}
+.time-bar{display:flex;align-items:center;justify-content:space-between;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;}
+.time-label{font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:0.5px;}
+.time-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#15803d;}
+.ai-status{display:flex;align-items:center;gap:5px;font-size:10px;color:#15803d;font-weight:600;}
+.pulse{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.6;transform:scale(0.85);}}
+#panel-body{flex:1;overflow-y:auto;padding:0;}
+#panel-body::-webkit-scrollbar{width:4px;}
+#panel-body::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:2px;}
+.section{padding:12px 18px;}
+.section-title{font-size:10px;font-weight:800;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.kpi{background:#f9fafb;border:1px solid #e8ecf0;border-radius:10px;padding:12px;}
+.kpi-icon{font-size:16px;margin-bottom:4px;}
+.kpi-val{font-size:20px;font-weight:900;letter-spacing:-0.5px;margin-bottom:1px;}
+.kpi-label{font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;}
+.kpi-sub{font-size:10px;color:#6b7280;margin-top:2px;}
+.green{color:#16a34a;}.blue{color:#1d4ed8;}.orange{color:#ea580c;}.red{color:#dc2626;}
+.truck-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f3f4f6;}
+.truck-item:last-child{border-bottom:none;}
+.truck-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.truck-info{flex:1;min-width:0;}
+.truck-id{font-size:12px;font-weight:700;margin-bottom:2px;}
+.truck-route{font-size:10px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.truck-stat{text-align:right;flex-shrink:0;}
+.truck-km{font-size:12px;font-weight:800;color:#1d4ed8;}
+.truck-bins{font-size:10px;color:#9ca3af;}
+.status-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:12px;font-size:9px;font-weight:700;text-transform:uppercase;margin-top:2px;}
+.chip-moving{background:#dbeafe;color:#1d4ed8;}
+.chip-collecting{background:#dcfce7;color:#16a34a;}
+.chip-returning{background:#fef3c7;color:#d97706;}
+.chip-standby{background:#f3f4f6;color:#6b7280;}
+.zone-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f3f4f6;font-size:11px;}
+.zone-item:last-child{border-bottom:none;}
+.zone-name{font-weight:600;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:6px;}
+.zone-fill{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.fill-bar{width:55px;height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;}
+.fill-inner{height:100%;border-radius:3px;transition:width 1s;}
+.fill-pct{font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;min-width:32px;text-align:right;}
+.sched-table{width:100%;border-collapse:collapse;font-size:10px;}
+.sched-table th{background:#f9fafb;padding:6px 8px;text-align:left;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #e5e7eb;}
+.sched-table td{padding:6px 8px;border-bottom:1px solid #f3f4f6;color:#374151;}
+.sched-table tr:last-child td{border-bottom:none;}
+.legend-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:10px;color:#6b7280;}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+#controls{padding:12px 18px;border-top:1px solid #e8ecf0;background:#fff;}
+.ctrl-btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:all .2s;}
+.btn-primary{background:#16a34a;color:#fff;}
+.btn-primary:hover{background:#15803d;}
+.btn-secondary{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}
+.btn-secondary:hover{background:#e5e7eb;}
+.btn-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+.ctrl-row{display:flex;gap:6px;margin-bottom:8px;}
+.speed-label{font-size:10px;color:#9ca3af;font-weight:600;margin-bottom:4px;}
+input[type=range]{width:100%;accent-color:#16a34a;}
+#map-wrap{flex:1;position:relative;background:#fff;}
+#map{width:100%;height:100%;z-index:1;}
+#ai-log{position:absolute;bottom:16px;right:16px;z-index:500;width:240px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.08);overflow:hidden;}
+#ai-log-header{background:#f0fdf4;padding:8px 12px;font-size:10px;font-weight:800;color:#15803d;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:5px;}
+#ai-log-body{max-height:150px;overflow-y:auto;padding:8px 12px;}
+.log-entry{font-size:10px;color:#374151;padding:3px 0;border-bottom:1px solid #f9fafb;line-height:1.4;}
+.log-entry:last-child{border-bottom:none;}
+.log-time{font-family:'JetBrains Mono',monospace;color:#9ca3af;margin-right:4px;}
+.log-green{color:#16a34a;font-weight:700;}
+.log-orange{color:#ea580c;font-weight:700;}
+.log-blue{color:#1d4ed8;font-weight:700;}
+.leaflet-popup-content-wrapper{border-radius:10px!important;font-family:'Inter',sans-serif!important;box-shadow:0 4px 16px rgba(0,0,0,0.12)!important;}
+.leaflet-popup-content{margin:12px 14px!important;}
+.pu-title{font-size:12px;font-weight:700;margin-bottom:4px;}
+.pu-row{display:flex;justify-content:space-between;font-size:11px;margin:3px 0;color:#6b7280;}
+.pu-val{font-weight:700;color:#1a1a2e;}
+</style>
+</head>
+<body>
+<div id="root">
+
+<div id="panel">
+  <div id="panel-header">
+    <div class="brand">
+      <div class="brand-icon">&#x267B;&#xFE0F;</div>
+      <div>
+        <div class="brand-title">SmartTONG AI</div>
+        <div class="brand-sub">Subang Jaya Fleet Simulator &bull; MBSJ / KDEBWM</div>
+      </div>
+    </div>
+    <div class="time-bar">
+      <div>
+        <div class="time-label">Simulation Time</div>
+        <div class="time-val" id="sim-time">06:30 AM</div>
+      </div>
+      <div class="ai-status"><div class="pulse"></div>AI Coordinator Active</div>
+    </div>
+  </div>
+
+  <div id="panel-body">
+    <div class="section" style="border-bottom:1px solid #f3f4f6;">
+      <div class="section-title">Live Fleet KPI</div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-icon">&#x1F69B;</div><div class="kpi-val blue" id="kpi-trucks">0</div><div class="kpi-label">Active Trucks</div><div class="kpi-sub">of 77 total</div></div>
+        <div class="kpi"><div class="kpi-icon">&#x267B;&#xFE0F;</div><div class="kpi-val green" id="kpi-bins">0</div><div class="kpi-label">Bins Collected</div><div class="kpi-sub">>=80% threshold</div></div>
+        <div class="kpi"><div class="kpi-icon">&#x1F4CD;</div><div class="kpi-val orange" id="kpi-km">0</div><div class="kpi-label">Total km Today</div><div class="kpi-sub" id="kpi-km-saved">AI saved: 0 km</div></div>
+        <div class="kpi"><div class="kpi-icon">&#x26FD;</div><div class="kpi-val green" id="kpi-diesel">RM0</div><div class="kpi-label">Diesel Saved</div><div class="kpi-sub">vs fixed schedule</div></div>
+      </div>
+    </div>
+
+    <div class="section" style="border-bottom:1px solid #f3f4f6;">
+      <div class="section-title">Active Trucks &mdash; Today's AI Route</div>
+      <div id="truck-list"><div style="font-size:11px;color:#9ca3af;padding:8px 0;">Press Start to deploy trucks</div></div>
+    </div>
+
+    <div class="section" style="border-bottom:1px solid #f3f4f6;">
+      <div class="section-title">Zone Fill Level (Real-Time)</div>
+      <div id="zone-list"></div>
+    </div>
+
+    <div class="section" style="border-bottom:1px solid #f3f4f6;">
+      <div class="section-title">Jadual Kutipan &mdash; Subang Jaya</div>
+      <table class="sched-table">
+        <thead><tr><th>Category</th><th>Freq</th><th>Time</th></tr></thead>
+        <tbody>
+          <tr><td>Residential (Landed)</td><td>3x/week</td><td>7:00-12:00</td></tr>
+          <tr><td>Commercial / Strata</td><td>7x/week</td><td>6:30-10:00</td></tr>
+          <tr><td>Public Bins (SmartTONG)</td><td>On-demand AI</td><td>Any time</td></tr>
+          <tr><td>Bulk waste / Pukal</td><td>1x/week</td><td>8:00-14:00</td></tr>
+          <tr><td>Recycling centres</td><td>2x/week</td><td>9:00-11:00</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Map Legend</div>
+      <div class="legend-row">
+        <div class="leg-item"><div class="leg-dot" style="background:#dc2626;"></div>Critical (&ge;80%)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#ea580c;"></div>Warning (60-79%)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#16a34a;"></div>Normal (&lt;60%)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#1d4ed8;"></div>Depot / Transfer</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#8b5cf6;"></div>Truck moving</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="controls">
+    <div class="speed-label">Simulation Speed: <span id="speed-val">1x</span></div>
+    <input type="range" id="speed-slider" min="1" max="8" value="1" oninput="setSpeed(this.value)"/>
+    <div class="ctrl-row" style="margin-top:8px;">
+      <button class="ctrl-btn btn-primary" id="btn-start" onclick="startSim()">&#x25B6; Start AI Routing</button>
+      <button class="ctrl-btn btn-secondary" onclick="resetSim()">&#x21BA; Reset</button>
+      <button class="ctrl-btn btn-danger" onclick="toggleAI()" id="btn-ai">&#x1F916; AI ON</button>
+    </div>
+  </div>
+</div>
+
+<div id="map-wrap">
+  <div id="map"></div>
+  <div id="ai-log">
+    <div id="ai-log-header"><div class="pulse"></div>AI Coordinator Log</div>
+    <div id="ai-log-body"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ── DATA ──
+var DEPOT = { lat:3.0481, lng:101.5873, name:'KDEBWM Depot, USJ Avenue' };
+var TRANSFER = { lat:3.0205, lng:101.6234, name:'Puchong Waste Transfer Station' };
+
+var ZONES = [
+  { id:'Z1',  name:'SS15 Subang Jaya',        lat:3.0741, lng:101.5831, bins:28, fill:0, area:'Commercial/LRT' },
+  { id:'Z2',  name:'SS18 LRT Station',         lat:3.0668, lng:101.5759, bins:18, fill:0, area:'Residential/LRT' },
+  { id:'Z3',  name:'Taipan USJ 10',            lat:3.0513, lng:101.5813, bins:25, fill:0, area:'Commercial' },
+  { id:'Z4',  name:'USJ 9 Perumahan',          lat:3.0452, lng:101.5744, bins:18, fill:0, area:'Residential' },
+  { id:'Z5',  name:'USJ 21 LRT Wawasan',       lat:3.0344, lng:101.5814, bins:16, fill:0, area:'Residential/LRT' },
+  { id:'Z6',  name:'Sunway SS12',              lat:3.0706, lng:101.6018, bins:22, fill:0, area:'Commercial/Uni' },
+  { id:'Z7',  name:'Bandar Puteri Puchong',    lat:3.0363, lng:101.6107, bins:28, fill:0, area:'Commercial' },
+  { id:'Z8',  name:'Puchong Permai',           lat:3.0263, lng:101.6207, bins:22, fill:0, area:'Residential' },
+  { id:'Z9',  name:'Putra Heights',            lat:3.0196, lng:101.5568, bins:20, fill:0, area:'Residential' },
+  { id:'Z10', name:'Kinrara Seksyen 6',        lat:3.0486, lng:101.6281, bins:22, fill:0, area:'Residential' },
+  { id:'Z11', name:'Seri Kembangan Taman Univ',lat:3.0156, lng:101.7034, bins:22, fill:0, area:'Residential' },
+  { id:'Z12', name:'USJ 1 Subang Eco Park',    lat:3.0635, lng:101.5926, bins:19, fill:0, area:'Mixed/Eco' }
+];
+
+// Actual road distances (km) from Google Maps research
+var ROAD_DIST = {
+  'DEPOT-Z1':4.2, 'DEPOT-Z2':3.6, 'DEPOT-Z3':1.8, 'DEPOT-Z4':2.2,
+  'DEPOT-Z5':4.1, 'DEPOT-Z6':6.3, 'DEPOT-Z7':7.8, 'DEPOT-Z8':9.2,
+  'DEPOT-Z9':5.4, 'DEPOT-Z10':8.6,'DEPOT-Z11':18.4,'DEPOT-Z12':2.9,
+  'Z1-Z2':1.4,'Z2-Z12':2.1,'Z3-Z4':1.1,'Z5-Z9':6.8,
+  'Z7-Z8':2.3,'Z8-Z10':6.1,'Z6-Z11':14.8,
+  'Z1-TRANSFER':10.2,'Z2-TRANSFER':10.8,'Z3-TRANSFER':9.4,'Z4-TRANSFER':9.8,
+  'Z5-TRANSFER':8.3,'Z6-TRANSFER':7.6,'Z7-TRANSFER':3.2,'Z8-TRANSFER':2.8,
+  'Z9-TRANSFER':8.9,'Z10-TRANSFER':6.1,'Z11-TRANSFER':9.7,'Z12-TRANSFER':8.4,
+  'TRANSFER-DEPOT':11.2
+};
+
+function getDist(a,b) {
+  var key = a+'-'+b;
+  var key2 = b+'-'+a;
+  return ROAD_DIST[key] || ROAD_DIST[key2] || 5;
+}
+
+var TRUCK_DEFS = [
+  { id:'T-01', zones:['Z1','Z2','Z12'], color:'#7c3aed', label:'SS15 / SS18 / Eco Park' },
+  { id:'T-02', zones:['Z3','Z4'],       color:'#0891b2', label:'Taipan / USJ 9' },
+  { id:'T-03', zones:['Z5','Z9'],       color:'#ea580c', label:'USJ 21 / Putra Heights' },
+  { id:'T-04', zones:['Z7','Z8','Z10'],color:'#15803d', label:'Puchong / Kinrara' },
+  { id:'T-05', zones:['Z6','Z11'],      color:'#be185d', label:'Sunway / Seri Kembangan' }
+];
+
+// ── STATE ──
+var appMap, simInterval=null, timeMinutes=6*60+30;
+var simSpeed=1, simRunning=false, aiEnabled=true;
+var binMarkers=[], truckStates=[], routeLines=[];
+var binsCollected=0, tickCount=0;
+
+// ── MAP INIT ──
+function initMap() {
+  appMap = L.map('map',{zoomControl:true}).setView([3.045,101.600],12);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'&copy; OpenStreetMap contributors',maxZoom:19
+  }).addTo(appMap);
+
+  // Depot
+  L.marker([DEPOT.lat,DEPOT.lng],{icon:makeBoxIcon('#1d4ed8','&#x1F3ED;')}).addTo(appMap)
+    .bindPopup('<div class="pu-title">&#x1F3ED; '+DEPOT.name+'</div><div class="pu-row"><span>Fleet</span><span class="pu-val">77 compactors + 105 armrolls</span></div><div class="pu-row"><span>Shift start</span><span class="pu-val">06:30 AM</span></div><div class="pu-row"><span>Zones served</span><span class="pu-val">57 zones in MBSJ</span></div>');
+
+  // Transfer station
+  L.marker([TRANSFER.lat,TRANSFER.lng],{icon:makeBoxIcon('#374151','&#x1F3D7;&#xFE0F;')}).addTo(appMap)
+    .bindPopup('<div class="pu-title">&#x1F3D7;&#xFE0F; '+TRANSFER.name+'</div><div class="pu-row"><span>Type</span><span class="pu-val">Intermediate Transfer</span></div><div class="pu-row"><span>Next destination</span><span class="pu-val">Jeram Sanitary Landfill</span></div>');
+
+  randomiseFills();
+  renderBinMarkers();
+  renderZoneList();
+  updateKPIs();
+  addLog('System boot. AI Coordinator scanning 300 bins...','green');
+  addLog(ZONES.filter(function(z){return z.fill>=80;}).length+' zones above 80% — route planning ready.','orange');
+}
+
+function makeBoxIcon(bg,emoji) {
+  return L.divIcon({
+    html:'<div style="background:'+bg+';border:3px solid #fff;border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 2px 8px rgba(0,0,0,0.2);">'+emoji+'</div>',
+    className:'',iconSize:[34,34],iconAnchor:[17,17]
+  });
+}
+
+// ── BIN COLORS ──
+function binColor(fill) {
+  if(fill>=80) return '#dc2626';
+  if(fill>=60) return '#ea580c';
+  return '#16a34a';
+}
+
+function randomiseFills() {
+  var hotspots=['Z1','Z3','Z6','Z7'];
+  ZONES.forEach(function(z){
+    z.fill = hotspots.indexOf(z.id)>=0
+      ? Math.floor(Math.random()*40+60)
+      : Math.floor(Math.random()*70+10);
+  });
+}
+
+function renderBinMarkers() {
+  binMarkers.forEach(function(m){appMap.removeLayer(m);});
+  binMarkers=[];
+  var spread=0.008;
+  ZONES.forEach(function(z){
+    var c=binColor(z.fill);
+    // scatter small dots for bins
+    for(var i=0;i<Math.min(z.bins,9);i++){
+      var lat=z.lat+(Math.random()-0.5)*spread;
+      var lng=z.lng+(Math.random()-0.5)*spread*1.5;
+      var sm=L.divIcon({
+        html:'<div style="background:'+c+';border:1.5px solid #fff;border-radius:50%;width:10px;height:10px;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>',
+        className:'',iconSize:[10,10],iconAnchor:[5,5]
+      });
+      var m=L.marker([lat,lng],{icon:sm,opacity:0.85}).addTo(appMap)
+        .bindPopup('<div class="pu-title">&#x267B;&#xFE0F; '+z.id+' &bull; '+z.name+'</div><div class="pu-row"><span>Fill</span><span class="pu-val" style="color:'+c+';">'+Math.round(z.fill)+'%</span></div><div class="pu-row"><span>Bins in zone</span><span class="pu-val">'+z.bins+' sets</span></div><div class="pu-row"><span>Area</span><span class="pu-val">'+z.area+'</span></div><div class="pu-row"><span>Status</span><span class="pu-val">'+(z.fill>=80?'DISPATCH NOW':z.fill>=60?'Monitor':'Normal')+'</span></div>');
+      binMarkers.push(m);
+    }
+    // zone label
+    var lb=L.divIcon({
+      html:'<div style="background:rgba(255,255,255,0.92);border:1px solid '+c+';border-radius:5px;padding:2px 6px;font-size:9px;font-weight:700;color:'+c+';white-space:nowrap;">'+z.name.split(' ').slice(0,2).join(' ')+'</div>',
+      className:'',iconSize:[90,18],iconAnchor:[45,9]
+    });
+    var lm=L.marker([z.lat+0.006,z.lng],{icon:lb,interactive:false}).addTo(appMap);
+    binMarkers.push(lm);
+  });
+}
+
+// ── TRUCK ANIMATION ──
+function makeTruckIcon(color,id,status) {
+  var emoji = status==='collecting'?'&#x267B;&#xFE0F;':status==='returning'?'&#x21A9;&#xFE0F;':'&#x1F69B;';
+  return L.divIcon({
+    html:'<div style="background:'+color+';border:2.5px solid #fff;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 3px 8px rgba(0,0,0,0.25);position:relative;">'+emoji+'<div style="position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);background:'+color+';color:#fff;font-size:7px;font-weight:800;padding:1px 4px;border-radius:3px;white-space:nowrap;">'+id+'</div></div>',
+    className:'',iconSize:[34,34],iconAnchor:[17,17]
+  });
+}
+
+function initTruckStates() {
+  truckStates=TRUCK_DEFS.map(function(t,i){
+    var critZones=t.zones.filter(function(zid){
+      var z=ZONES.find(function(z){return z.id===zid;});
+      return z && z.fill>=80;
+    });
+    var activeZones=critZones.length?critZones:[t.zones[0]];
+    var waypoints=[{lat:DEPOT.lat,lng:DEPOT.lng,label:'Depot'}];
+    activeZones.forEach(function(zid){
+      var z=ZONES.find(function(z){return z.id===zid;});
+      waypoints.push({lat:z.lat,lng:z.lng,label:z.name,isZone:true,zid:zid});
+    });
+    waypoints.push({lat:TRANSFER.lat,lng:TRANSFER.lng,label:'Transfer Station'});
+    waypoints.push({lat:DEPOT.lat,lng:DEPOT.lng,label:'Depot return'});
+
+    // calc total km
+    var km=getDist('DEPOT',activeZones[0]);
+    for(var j=1;j<activeZones.length;j++) km+=getDist(activeZones[j-1],activeZones[j]);
+    km+=getDist(activeZones[activeZones.length-1],'TRANSFER');
+    km+=getDist('TRANSFER','DEPOT');
+
+    var marker=L.marker([DEPOT.lat,DEPOT.lng],{
+      icon:makeTruckIcon(t.color,t.id,'standby'),zIndexOffset:1000
+    }).addTo(appMap);
+
+    return {
+      id:t.id,zones:t.zones,color:t.color,label:t.label,
+      waypoints:waypoints,wpIdx:0,progress:0,
+      totalKm:parseFloat(km.toFixed(1)),
+      status:'standby',marker:marker,
+      activeZones:activeZones,startDelay:i*10,
+      binsCollected:0
+    };
+  });
+  renderTruckList();
+}
+
+function animateTrucks() {
+  var STEP=0.012*simSpeed;
+  truckStates.forEach(function(t){
+    if(t.startDelay>0){t.startDelay--;return;}
+    if(t.status==='done') return;
+    if(t.status==='standby'){
+      t.status='moving';
+      addLog(t.id+' departed depot to '+t.waypoints[1].label,'blue');
+    }
+    var from=t.waypoints[t.wpIdx];
+    var to=t.waypoints[t.wpIdx+1];
+    if(!to){t.status='done';return;}
+
+    t.progress=Math.min(1,t.progress+STEP);
+    var lat=from.lat+(to.lat-from.lat)*t.progress;
+    var lng=from.lng+(to.lng-from.lng)*t.progress;
+    var s=to.label.includes('Transfer')?'returning':to.isZone?'collecting':'moving';
+    t.marker.setLatLng([lat,lng]);
+    t.marker.setIcon(makeTruckIcon(t.color,t.id,s));
+    t.status=s;
+
+    if(t.progress>=1){
+      t.wpIdx++;t.progress=0;
+      if(to.isZone){
+        t.binsCollected++;binsCollected++;
+        var z=ZONES.find(function(z){return z.id===to.zid;});
+        if(z){z.fill=Math.max(5,z.fill-72);renderBinMarkers();renderZoneList();}
+        addLog(t.id+' collected '+to.label,'green');
+      }
+      if(to.label.includes('Transfer')) addLog(t.id+' unloading at transfer station...','orange');
+      if(to.label.includes('return')){
+        t.status='done';
+        addLog(t.id+' returned to depot. '+t.totalKm+' km total.','green');
+      }
+    }
+  });
+}
+
+function drawRoutes() {
+  routeLines.forEach(function(l){appMap.removeLayer(l);});
+  routeLines=[];
+  truckStates.forEach(function(t){
+    var pts=t.waypoints.map(function(w){return[w.lat,w.lng];});
+    var line=L.polyline(pts,{color:t.color,weight:3,opacity:0.6,dashArray:'6 5'}).addTo(appMap);
+    routeLines.push(line);
+  });
+}
+
+// ── RENDER PANELS ──
+function renderZoneList() {
+  var el=document.getElementById('zone-list');
+  el.innerHTML=ZONES.map(function(z){
+    var c=binColor(z.fill);
+    var name=z.name.length>22?z.name.substring(0,22)+'...':z.name;
+    return '<div class="zone-item"><div class="zone-name">'+name+'</div><div class="zone-fill"><div class="fill-bar"><div class="fill-inner" style="width:'+z.fill+'%;background:'+c+';"></div></div><div class="fill-pct" style="color:'+c+';">'+Math.round(z.fill)+'%</div></div></div>';
+  }).join('');
+}
+
+function renderTruckList() {
+  var el=document.getElementById('truck-list');
+  if(!truckStates.length){
+    el.innerHTML='<div style="font-size:11px;color:#9ca3af;padding:8px 0;">Press Start to deploy trucks</div>';
+    return;
+  }
+  el.innerHTML=truckStates.map(function(t){
+    var lbl=t.status==='collecting'?'Collecting':t.status==='returning'?'Returning':t.status==='done'?'Done':'Moving';
+    var chip=t.status==='collecting'?'chip-collecting':t.status==='returning'?'chip-returning':t.status==='done'?'chip-standby':'chip-moving';
+    return '<div class="truck-item"><div class="truck-dot" style="background:'+t.color+'22;border:2px solid '+t.color+';">&#x1F69B;</div><div class="truck-info"><div class="truck-id" style="color:'+t.color+';">'+t.id+'</div><div class="truck-route">'+t.label+'</div><div class="status-chip '+chip+'">'+lbl+'</div></div><div class="truck-stat"><div class="truck-km">'+t.totalKm+' km</div><div class="truck-bins">'+t.activeZones.length+' zones</div></div></div>';
+  }).join('');
+}
+
+function updateKPIs() {
+  var active=truckStates.filter(function(t){return t.status!=='standby'&&t.status!=='done';}).length;
+  var totalKm=truckStates.reduce(function(s,t){return s+t.totalKm;},0);
+  var fixedKm=68.7*TRUCK_DEFS.length;
+  var saved=Math.max(0,fixedKm-totalKm);
+  var dieselRM=(saved*0.35*2.80).toFixed(0);
+  document.getElementById('kpi-trucks').textContent=simRunning?active:TRUCK_DEFS.length;
+  document.getElementById('kpi-bins').textContent=binsCollected;
+  document.getElementById('kpi-km').textContent=totalKm.toFixed(0);
+  document.getElementById('kpi-km-saved').textContent='AI saved: '+saved.toFixed(0)+' km';
+  document.getElementById('kpi-diesel').textContent='RM'+dieselRM;
+}
+
+// ── TIME ──
+function fmtTime(m) {
+  var h=Math.floor(m/60)%24,mn=m%60,ap=h<12?'AM':'PM',hh=h%12||12;
+  return (hh<10?'0':'')+hh+':'+(mn<10?'0':'')+mn+' '+ap;
+}
+
+// ── LOG ──
+function addLog(msg,type) {
+  var el=document.getElementById('ai-log-body');
+  var d=document.createElement('div');
+  d.className='log-entry';
+  var cls=type==='green'?'log-green':type==='orange'?'log-orange':type==='blue'?'log-blue':'';
+  d.innerHTML='<span class="log-time">'+fmtTime(timeMinutes)+'</span><span class="'+cls+'">'+msg+'</span>';
+  el.insertBefore(d,el.firstChild);
+  if(el.children.length>25) el.removeChild(el.lastChild);
+}
+
+// ── SIM CONTROLS ──
+function simTick() {
+  tickCount++;
+  timeMinutes=(6*60+30+tickCount*2)%(24*60);
+  document.getElementById('sim-time').textContent=fmtTime(timeMinutes);
+  animateTrucks();
+  renderTruckList();
+  if(tickCount%8===0){updateKPIs();renderZoneList();}
+}
+
+function startSim() {
+  if(simRunning) return;
+  simRunning=true;
+  document.getElementById('btn-start').textContent='Running...';
+  document.getElementById('btn-start').disabled=true;
+  initTruckStates();
+  drawRoutes();
+  updateKPIs();
+  addLog('Dispatching 5 AI-optimised trucks now.','orange');
+  simInterval=setInterval(simTick,80);
+}
+
+function resetSim() {
+  clearInterval(simInterval);simInterval=null;
+  simRunning=false;tickCount=0;binsCollected=0;
+  timeMinutes=6*60+30;
+  document.getElementById('sim-time').textContent='06:30 AM';
+  document.getElementById('btn-start').textContent='&#x25B6; Start AI Routing';
+  document.getElementById('btn-start').disabled=false;
+  truckStates.forEach(function(t){if(t.marker)appMap.removeLayer(t.marker);});
+  routeLines.forEach(function(l){appMap.removeLayer(l);});
+  truckStates=[];routeLines=[];
+  randomiseFills();renderBinMarkers();renderZoneList();renderTruckList();updateKPIs();
+  document.getElementById('ai-log-body').innerHTML='';
+  addLog('Simulation reset. Scanning bins...','green');
+  addLog(ZONES.filter(function(z){return z.fill>=80;}).length+' critical zones found.','orange');
+}
+
+function setSpeed(v) {
+  simSpeed=parseInt(v);
+  document.getElementById('speed-val').textContent=v+'x';
+  if(simInterval){clearInterval(simInterval);simInterval=setInterval(simTick,Math.max(15,80/simSpeed));}
+}
+
+function toggleAI() {
+  aiEnabled=!aiEnabled;
+  document.getElementById('btn-ai').textContent=aiEnabled?'&#x1F916; AI ON':'&#x2699;&#xFE0F; AI OFF';
+  addLog('AI routing '+(aiEnabled?'enabled':'disabled'),aiEnabled?'green':'orange');
+}
+
+window.addEventListener('load',initMap);
+</script>
+</body>
+</html>
