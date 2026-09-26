@@ -665,10 +665,109 @@ function setSpd(v){
 }
 
 // ══════════════════════════════════════════════════════════
+// SEMPADAN — MBSJ Subang Jaya Boundary
+// Uses Nominatim (free OSM geocoder) with hardcoded fallback
+// ══════════════════════════════════════════════════════════
+var boundaryLayer=null;
+async function drawSubangBoundary(){
+  // --- Attempt 1: Nominatim by admin area name ---
+  var queries=[
+    'Subang Jaya Municipal Council Selangor',
+    'Majlis Bandaraya Subang Jaya Selangor Malaysia',
+    'Subang Jaya Selangor Malaysia'
+  ];
+  for(var qi=0;qi<queries.length;qi++){
+    try{
+      var url='https://nominatim.openstreetmap.org/search?format=geojson&polygon_geojson=1&limit=5&q='
+              +encodeURIComponent(queries[qi]);
+      var resp=await fetch(url,{headers:{'User-Agent':'SmartTONG-Simulator/1.0'}});
+      var data=await resp.json();
+      if(!data.features)continue;
+      // Find the feature that is a Polygon/MultiPolygon with enough vertices
+      var feat=data.features.find(function(f){
+        var g=f.geometry;
+        if(!g)return false;
+        if(g.type==='Polygon')return g.coordinates[0].length>20;
+        if(g.type==='MultiPolygon')return g.coordinates[0][0].length>20;
+        return false;
+      });
+      if(feat){
+        boundaryLayer=L.geoJSON(feat,{
+          style:{color:'#2563eb',weight:2.5,opacity:.9,fillColor:'#3b82f6',fillOpacity:.07,dashArray:'10 5',lineCap:'round'}
+        }).addTo(appMap);
+        boundaryLayer.bindPopup('<div class="pt">&#x1F3D9; Sempadan MBSJ</div><div class="pr"><span>Kawasan</span><span class="pv">Majlis Bandaraya Subang Jaya</span></div><div class="pr"><span>Sumber</span><span class="pv">OpenStreetMap Nominatim</span></div>');
+        log('Sempadan MBSJ berjaya dimuatkan dari OSM.','b');
+        return;
+      }
+    }catch(e){console.warn('Nominatim attempt '+qi+' failed',e);}
+  }
+
+  // --- Attempt 2: Overpass API for relation boundary ---
+  try{
+    var oq='[out:json][timeout:20];(relation["boundary"="administrative"]["name"~"Subang Jaya"];);out geom;';
+    var oresp=await fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(oq));
+    var odata=await oresp.json();
+    if(odata.elements&&odata.elements.length>0){
+      var rel=odata.elements[0];
+      if(rel.members){
+        // Build coordinate array from outer way members
+        var coords=[];
+        rel.members.forEach(function(mem){
+          if(mem.role==='outer'&&mem.geometry){
+            mem.geometry.forEach(function(g){coords.push([g.lat,g.lon]);});
+          }
+        });
+        if(coords.length>10){
+          boundaryLayer=L.polygon(coords,{color:'#2563eb',weight:2.5,opacity:.9,fillColor:'#3b82f6',fillOpacity:.07,dashArray:'10 5'}).addTo(appMap);
+          boundaryLayer.bindPopup('<div class="pt">&#x1F3D9; Sempadan MBSJ (Overpass)</div>');
+          log('Sempadan MBSJ dari Overpass API.','b');
+          return;
+        }
+      }
+    }
+  }catch(e2){console.warn('Overpass boundary failed',e2);}
+
+  // --- Fallback: Hand-traced approximate MBSJ boundary ---
+  // Based on published MBSJ jurisdiction map covering:
+  // SS1-SS25, USJ 1-25, Puchong, Putra Heights, Sunway area
+  var approxBoundary=[
+    [3.0934,101.5723], // N — near Federal Hwy / Sungai Klang
+    [3.0901,101.5867],
+    [3.0878,101.6034], // NE — PJ/Sunway border
+    [3.0812,101.6189],
+    [3.0756,101.6312], // E — Sunway/Kinrara
+    [3.0634,101.6423],
+    [3.0523,101.6512],
+    [3.0389,101.6478], // SE — Kinrara / Puchong Perdana
+    [3.0234,101.6401],
+    [3.0112,101.6312],
+    [2.9967,101.6201], // S — Serdang / Puchong Selatan border
+    [2.9878,101.6034],
+    [2.9856,101.5812],
+    [2.9912,101.5623], // SW — Shah Alam border
+    [3.0078,101.5423],
+    [3.0234,101.5312],
+    [3.0423,101.5256], // W — Putra Heights / Shah Alam
+    [3.0612,101.5334],
+    [3.0734,101.5456],
+    [3.0845,101.5589],
+    [3.0934,101.5723]  // back to N
+  ];
+  boundaryLayer=L.polygon(approxBoundary,{
+    color:'#2563eb',weight:2.5,opacity:.85,
+    fillColor:'#3b82f6',fillOpacity:.07,dashArray:'10 5',lineCap:'round'
+  }).addTo(appMap);
+  boundaryLayer.bindPopup('<div class="pt">&#x1F3D9; Sempadan MBSJ (Anggaran)</div><div class="pr"><span>Nota</span><span class="pv">Sempadan dilakar berdasarkan peta jurisdiksi MBSJ</span></div>');
+  log('Sempadan MBSJ anggaran dipaparkan (OSM tidak tersedia).','o');
+}
+
+// ══════════════════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════════════════
 window.addEventListener('load',async function(){
   initMap();
+  // Draw boundary in background — non-blocking
+  drawSubangBoundary();
   randomiseFills();
   renderBinMarkers();
   renderZoneList();
